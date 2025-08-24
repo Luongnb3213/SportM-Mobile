@@ -1,8 +1,12 @@
-import React, { useState, useCallback, useEffect } from 'react'
-import { GiftedChat,IMessage  } from 'react-native-gifted-chat'
+import React, { useState, useCallback, useEffect } from 'react';
+import { KeyboardAvoidingView, View } from 'react-native';
+import { GiftedChat, IMessage } from 'react-native-gifted-chat';
+import { Platform } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function TabTwoScreen() {
   const [messages, setMessages] = useState<IMessage[]>([]);
+  const insets = useSafeAreaInsets();
 
   useEffect(() => {
     setMessages([
@@ -16,21 +20,24 @@ export default function TabTwoScreen() {
           avatar: 'https://placeimg.com/140/140/any',
         },
       },
-    ])
-  }, [])
+    ]);
+  }, []);
 
   const onSend = useCallback((newMessages: IMessage[] = []) => {
-    setMessages(prev => GiftedChat.append(prev, newMessages));
+    setMessages((prev) => GiftedChat.append(prev, newMessages));
   }, []);
   return (
-   
-       <GiftedChat
-      messages={messages}
-      onSend={messages => onSend(messages)}
-      user={{
-        _id: 1,
-      }}
-    />
+    <KeyboardAvoidingView
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      style={{ flex: 1 }}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0} // Adjust offset as needed
+    >
+      <GiftedChat
+        messages={messages}
+        onSend={(newMessages) => onSend(newMessages)}
+        user={{ _id: 1 }}
+        isKeyboardInternallyHandled={false} // Important for Android
+      />
+    </KeyboardAvoidingView>
   );
 }
-

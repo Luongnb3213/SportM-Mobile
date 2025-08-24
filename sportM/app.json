@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "sportM",
-    "slug": "sportM",
+    "slug": "sportm",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
@@ -9,7 +9,12 @@
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.choai.sportM",
+      "googleServicesFile": "./GoogleService-Info.plist",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -17,7 +22,12 @@
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,
-      "package": "com.choai.sportM"
+      "package": "com.choai.sportM",
+      "statusBar": {
+        "translucent": false,
+        "backgroundColor": "#ffffff"
+      },
+      "googleServicesFile": "./google-services.json"
     },
     "web": {
       "bundler": "metro",
@@ -25,6 +35,12 @@
       "favicon": "./assets/images/favicon.png"
     },
     "plugins": [
+      [ 
+        "@react-native-google-signin/google-signin",
+        {
+          "iosUrlScheme": "com.googleusercontent.apps.504083896204-du75dra9lbe1kglvlsrsa5apv7d3145e"
+        }
+      ],
       "expo-router",
       [
         "expo-splash-screen",
@@ -34,7 +50,8 @@
           "resizeMode": "contain",
           "backgroundColor": "#ffffff"
         }
-      ]
+      ],
+      "expo-build-properties"
     ],
     "experiments": {
       "typedRoutes": true
@@ -42,8 +59,9 @@
     "extra": {
       "router": {},
       "eas": {
-        "projectId": "dce745a6-e757-4ace-ae09-2fdeaeb757d3"
+        "projectId": "b621e09f-45a3-41e8-acb2-7c3ae6dc5a2c"
       }
-    }
+    },
+    "owner": "choai"
   }
 }
