@@ -17,7 +17,7 @@ export default function TabsLayout() {
           left: 0,
           right: 0,
           bottom: 0,
-          paddingBottom: 100,
+          paddingBottom: 20,
           paddingTop: 10,
           borderTopWidth: 0,
           elevation: 12,
@@ -27,7 +27,7 @@ export default function TabsLayout() {
       }}
     >
       {[
-        { name: "index", icon: "home" as const },
+        { name: "home", icon: "home" as const },
         { name: "search", icon: "search" as const },
         { name: "account", icon: "user" as const },
       ].map((t) => (
