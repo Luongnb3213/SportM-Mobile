@@ -1,45 +1,51 @@
-import { Tabs } from 'expo-router';
-import React from 'react';
-import { Platform } from 'react-native';
+import React from "react";
+import { Tabs } from "expo-router";
+import { Feather } from "@expo/vector-icons";
+import { View } from "react-native";
 
-import { HapticTab } from '@/components/HapticTab';
-import { IconSymbol } from '@/components/ui/IconSymbol';
-import TabBarBackground from '@/components/ui/TabBarBackground';
-import { Colors } from '@/constants/Colors';
-import { useColorScheme } from '@/hooks/useColorScheme';
-
-export default function TabLayout() {
-  const colorScheme = useColorScheme();
-
+export default function TabsLayout() {
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
         headerShown: false,
-        tabBarButton: HapticTab,
-        tabBarBackground: TabBarBackground,
-        tabBarStyle: Platform.select({
-          ios: {
-            // Use a transparent background on iOS to show the blur effect
-            position: 'absolute',
-          },
-          default: {},
-        }),
-      }}>
-      <Tabs.Screen
-        name="index"
-        options={{
-          title: 'Home',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="house.fill" color={color} />,
-        }}
-      />
-      <Tabs.Screen
-        name="explore"
-        options={{
-          title: 'Explore',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="paperplane.fill" color={color} />,
-        }}
-      />
+        tabBarShowLabel: false,
+        tabBarStyle: {
+          backgroundColor: "#4D8A43",
+          borderTopLeftRadius: 24,
+          borderTopRightRadius: 24,
+          position: "absolute",
+          left: 0,
+          right: 0,
+          bottom: 0,
+          paddingBottom: 100,
+          paddingTop: 10,
+          borderTopWidth: 0,
+          elevation: 12,
+        },
+        tabBarActiveTintColor: "#4D8A43",
+        tabBarInactiveTintColor: "#ffffff",
+      }}
+    >
+      {[
+        { name: "index", icon: "home" as const },
+        { name: "search", icon: "search" as const },
+        { name: "account", icon: "user" as const },
+      ].map((t) => (
+        <Tabs.Screen
+          key={t.name}
+          name={t.name}
+          options={{
+            tabBarIcon: ({ focused, color, size }) =>
+              focused ? (
+                <View className="w-10 h-10 rounded-full bg-white items-center justify-center">
+                  <Feather name={t.icon} size={size ?? 22} color="#4D8A43" />
+                </View>
+              ) : (
+                <Feather name={t.icon} size={size ?? 22} color="white" />
+              ),
+          }}
+        />
+      ))}
     </Tabs>
   );
 }
