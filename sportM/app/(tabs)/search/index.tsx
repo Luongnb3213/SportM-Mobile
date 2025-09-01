@@ -16,7 +16,7 @@ GoogleSignin.configure({
     '504083896204-du75dra9lbe1kglvlsrsa5apv7d3145e.apps.googleusercontent.com',
 });
 
-export default function HomeScreen() {
+export default function GoogleSigninScreen() {
 
     const signOutFromGoogle = async () => {
     try {
