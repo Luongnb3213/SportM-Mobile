@@ -1,19 +1,20 @@
-import React from "react";
-import { Tabs } from "expo-router";
-import { Feather } from "@expo/vector-icons";
-import { View } from "react-native";
+import React from 'react';
+import { Tabs } from 'expo-router';
+import { Feather } from '@expo/vector-icons';
+import { View } from 'react-native';
 
 export default function TabsLayout() {
   return (
     <Tabs
+      initialRouteName="home"
       screenOptions={{
         headerShown: false,
         tabBarShowLabel: false,
         tabBarStyle: {
-          backgroundColor: "#4D8A43",
+          backgroundColor: '#4D8A43',
           borderTopLeftRadius: 24,
           borderTopRightRadius: 24,
-          position: "absolute",
+          position: 'absolute',
           left: 0,
           right: 0,
           bottom: 0,
@@ -22,14 +23,16 @@ export default function TabsLayout() {
           borderTopWidth: 0,
           elevation: 12,
         },
-        tabBarActiveTintColor: "#4D8A43",
-        tabBarInactiveTintColor: "#ffffff",
+        tabBarActiveTintColor: '#4D8A43',
+        tabBarInactiveTintColor: '#ffffff',
       }}
     >
+        <Tabs.Screen name="index" options={{ href: null }} />
       {[
-        { name: "home", icon: "home" as const },
-        { name: "search", icon: "search" as const },
-        { name: "account", icon: "user" as const },
+        { name: 'home', icon: 'home' as const },
+        { name: 'search', icon: 'search' as const },
+        { name: 'account', icon: 'user' as const },
+        { name: 'map', icon: 'map' as const },
       ].map((t) => (
         <Tabs.Screen
           key={t.name}
