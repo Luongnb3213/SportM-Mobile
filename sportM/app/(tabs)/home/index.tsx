@@ -1,46 +1,65 @@
-"use client"
+'use client';
 
-import { useRef, useState } from "react"
-import { View, Text, type ScrollView, Dimensions, TouchableOpacity, TextInput } from "react-native"
-import { Button } from "@/components/Button"
-import { Card } from "@/components/Card"
-import { useAppTheme } from "@/styles/theme"
-import { Feather } from "@expo/vector-icons"
-import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context"
-import TrustStatsSection from "./components/TrustStatsSection"
-import EmailSubscribeSection from "./components/EmailSubscribeSection"
-import { KeyboardAwareScrollView, KeyboardProvider } from "react-native-keyboard-controller"
+import { useRef, useState } from 'react';
+import {
+  View,
+  Text,
+  ScrollView,
+  Dimensions,
+  TouchableOpacity,
+  TextInput,
+  ImageBackground,
+  Image,
+} from 'react-native';
+import { Button } from '@/components/Button';
+import { Card } from '@/components/Card';
+import { useAppTheme } from '@/styles/theme';
+import { Feather, Ionicons } from '@expo/vector-icons';
+import {
+  SafeAreaView,
+  useSafeAreaInsets,
+} from 'react-native-safe-area-context';
+import TrustStatsSection from './components/TrustStatsSection';
+import EmailSubscribeSection from './components/EmailSubscribeSection';
+import {
+  KeyboardAwareScrollView,
+  KeyboardProvider,
+} from 'react-native-keyboard-controller';
+import GolfDealCard from './components/GolfDealCard';
 
-const { width } = Dimensions.get("window")
+const { width } = Dimensions.get('window');
 
 const banners = [
   {
-    id: "1",
-    title: "SÂN GOLF NEM CHUA",
-    subtitle: "Mai Lâm, Đông Anh",
-    image: "https://images.unsplash.com/photo-1504280390368-3971f660b5f3?q=80&w=1974&auto=format&fit=crop",
+    id: '1',
+    title: 'SÂN GOLF NEM CHUA',
+    subtitle: 'Mai Lâm, Đông Anh',
+    image:
+      'https://images.unsplash.com/photo-1504280390368-3971f660b5f3?q=80&w=1974&auto=format&fit=crop',
   },
   {
-    id: "2",
-    title: "SÂN GOLF LONG THÀNH",
-    subtitle: "Đồng Nai",
-    image: "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?q=80&w=2069&auto=format&fit=crop",
+    id: '2',
+    title: 'SÂN GOLF LONG THÀNH',
+    subtitle: 'Đồng Nai',
+    image:
+      'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?q=80&w=2069&auto=format&fit=crop',
   },
   {
-    id: "3",
-    title: "SÂN GOLF SKYLAKE",
-    subtitle: "Chương Mỹ, Hà Nội",
-    image: "https://images.unsplash.com/photo-1526404079162-8fc36f2a4f3b?q=80&w=1964&auto=format&fit=crop",
+    id: '3',
+    title: 'SÂN GOLF SKYLAKE',
+    subtitle: 'Chương Mỹ, Hà Nội',
+    image:
+      'https://images.unsplash.com/photo-1526404079162-8fc36f2a4f3b?q=80&w=1964&auto=format&fit=crop',
   },
-]
+];
 
 export default function HomeScreen() {
-  const t = useAppTheme()
-  const [guest, setGuest] = useState(2)
-  const [loc, setLoc] = useState("")
-  const [page, setPage] = useState(0)
-  const scrollRef = useRef<ScrollView>(null)
-  const insets = useSafeAreaInsets()
+  const t = useAppTheme();
+  const [guest, setGuest] = useState(2);
+  const [loc, setLoc] = useState('');
+  const [page, setPage] = useState(0);
+  const scrollRef = useRef<ScrollView>(null);
+  const insets = useSafeAreaInsets();
 
   return (
     <KeyboardProvider>
@@ -49,10 +68,10 @@ export default function HomeScreen() {
           keyboardShouldPersistTaps="handled"
           contentContainerStyle={{ paddingBottom: insets.bottom + 24 }}
           extraKeyboardSpace={0}
-        >``
+        >
           <View style={{ backgroundColor: t.background }}>
             {/* Header */}
-            {/* <View className="px-4 pt-5 flex-row items-center gap-3">
+            <View className="px-4 pt-5 flex-row items-center gap-3">
             <Image
               source={{ uri: 'https://i.pravatar.cc/100?img=12' }}
               className="w-10 h-10 rounded-full"
@@ -65,10 +84,10 @@ export default function HomeScreen() {
                 <Feather name="bell" size={18} color={t.foreground} />
               </View>
             </TouchableOpacity>
-          </View> */}
+          </View>
 
             {/* Permission card */}
-            {/* <TouchableOpacity className="mx-4 mt-3 rounded-xl bg-[#7CB37A] px-4 py-3 flex-row items-center justify-between">
+            <TouchableOpacity className="mx-4 mt-3 rounded-xl bg-[#7CB37A] px-4 py-3 flex-row items-center justify-between">
             <View className="w-9 h-9 rounded-full bg-white/90 items-center justify-center">
               <Ionicons name="location-outline" size={18} color="#4D8A43" />
             </View>
@@ -81,10 +100,10 @@ export default function HomeScreen() {
               </Text>
             </View>
             <Feather name="chevron-right" size={20} color="white" />
-          </TouchableOpacity> */}
+          </TouchableOpacity>
 
             {/* Banner carousel */}
-            {/* <ScrollView
+            <ScrollView
             ref={scrollRef}
             horizontal
             pagingEnabled
@@ -126,7 +145,7 @@ export default function HomeScreen() {
                 </View>
               </ImageBackground>
             ))}
-          </ScrollView> */}
+          </ScrollView>
 
             {/* Search card */}
             <Card className="rounded-2xl p-4 mx-4 -mt-7 bg-white">
@@ -149,7 +168,9 @@ export default function HomeScreen() {
               {/* Row 2: pick date */}
               <TouchableOpacity className="flex-row items-center py-2">
                 <Feather name="calendar" size={18} color={t.foreground} />
-                <Text className="ml-2 text-base font-semibold text-black">Chọn lịch</Text>
+                <Text className="ml-2 text-base font-semibold text-black">
+                  Chọn lịch
+                </Text>
               </TouchableOpacity>
 
               {/* divider */}
@@ -159,7 +180,9 @@ export default function HomeScreen() {
               <View className="flex-row items-center justify-between">
                 <View className="flex-row items-center">
                   <Feather name="users" size={18} color={t.foreground} />
-                  <Text className="ml-2 text-base font-semibold text-black">Số lượng khách</Text>
+                  <Text className="ml-2 text-base font-semibold text-black">
+                    Số lượng khách
+                  </Text>
                 </View>
                 <View className="flex-row items-center gap-2">
                   <Button
@@ -168,7 +191,9 @@ export default function HomeScreen() {
                     className="h-9 w-9 rounded-xl"
                     onPress={() => setGuest((g) => Math.max(1, g - 1))}
                   />
-                  <Text className="min-w-7 text-center text-base font-bold">{guest}</Text>
+                  <Text className="min-w-7 text-center text-base font-bold">
+                    {guest}
+                  </Text>
                   <Button
                     variant="default"
                     label="+"
@@ -181,23 +206,23 @@ export default function HomeScreen() {
               {/* Mã khuyến mại */}
               <TouchableOpacity className="mt-2 flex-row items-center">
                 <Feather name="tag" size={18} color="#3b7c2e" />
-                <Text className="ml-2 font-bold" style={{ color: "#3b7c2e" }}>
+                <Text className="ml-2 font-bold" style={{ color: '#3b7c2e' }}>
                   Mã khuyến mại
                 </Text>
               </TouchableOpacity>
             </Card>
 
             {/* Golf deal card */}
-            {/* <View className="mt-3">
-            <GolfDealCard
-              title="Trải nghiệm được đầy đủ dịch vụ và tiện nghi khi đặt sân"
-              image="https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?q=80&w=2069&auto=format&fit=crop"
-              placeName="Sân Golf Nem Chua"
-              description="Đây là sân golf với sự lâu đời vãi lớn, rất nhiều người đã thuê sân này và một đi không trở lại. Bạn có thể thuê ngay để tìm kho báu của những người đi trước.Hời lắm, thuê đi.Khi bạn tìm được kho báu thì bạn 30 chúng tôi 70. thế nhé.Peace out!"
-              discountPercent={36}
-              onBook={() => console.log('Đặt ngay')}
-            />
-          </View> */}
+            <View className="mt-3">
+              <GolfDealCard
+                title="Trải nghiệm được đầy đủ dịch vụ và tiện nghi khi đặt sân"
+                image="https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?q=80&w=2069&auto=format&fit=crop"
+                placeName="Sân Golf Nem Chua"
+                description="Đây là sân golf với sự lâu đời vãi lớn, rất nhiều người đã thuê sân này và một đi không trở lại. Bạn có thể thuê ngay để tìm kho báu của những người đi trước.Hời lắm, thuê đi.Khi bạn tìm được kho báu thì bạn 30 chúng tôi 70. thế nhé.Peace out!"
+                discountPercent={36}
+                onBook={() => console.log('Đặt ngay')}
+              />
+            </View>
 
             {/* trust stats section */}
             <View className="mt-3">
@@ -207,7 +232,7 @@ export default function HomeScreen() {
                 paragraph={`Mỗi một đồng bạn đặt xuống là một đồng tôi nhận được. Fact thôi nhưng tôi sẽ cân bạn sâu vcl.
 Everybody knows that but who gives a fuck`}
                 ctaLabel="Đăng ký hội viên"
-                onPressCTA={() => console.log("Đăng ký hội viên")}
+                onPressCTA={() => console.log('Đăng ký hội viên')}
                 stat1Value="360+"
                 stat1Desc="Hơn 360 sân được liệt kê trong hệ thống"
                 stat2Value="22k+"
@@ -222,7 +247,7 @@ Everybody knows that but who gives a fuck`}
                 privacyUrl="https://sportm.vn/privacy"
                 onSubmit={async (email) => {
                   // TODO: call API ở đây
-                  console.log("subscribe:", email)
+                  console.log('subscribe:', email);
                 }}
               />
             </View>
@@ -230,5 +255,5 @@ Everybody knows that but who gives a fuck`}
         </KeyboardAwareScrollView>
       </SafeAreaView>
     </KeyboardProvider>
-  )
+  );
 }
