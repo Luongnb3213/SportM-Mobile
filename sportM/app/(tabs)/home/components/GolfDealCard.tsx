@@ -3,7 +3,7 @@ import { Image, View, Text } from 'react-native';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 
 import { Card } from '@/components/Card';
-import { Button } from '@/components/Button';
+import  Button  from '@/components/Button';
 
 type GolfDealCardProps = {
   heading?: string; // “HÃY ĐẶT SÂN VỚI CHÚNG TÔI”
@@ -69,11 +69,12 @@ export default function GolfDealCard({
 
         {/* Nút đặt */}
         <Button
-          label="Đặt ngay"
           className="rounded-xl bg-green-700"
-          labelClasses="text-white"
+          textClassName='text-white'
           onPress={onBook}
-        />
+        >
+            Đặt ngay
+        </Button>
       </Card>
     </View>
   );

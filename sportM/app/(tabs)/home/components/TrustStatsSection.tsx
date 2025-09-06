@@ -3,7 +3,7 @@ import React from 'react';
 import { View, Text } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
-import { Button } from '@/components/Button';
+import Button from '@/components/Button';
 
 type Props = {
   eyebrow?: string; // "KẾT NỐI VỚI CHÚNG TÔI"
@@ -54,11 +54,13 @@ export default function TrustStatsSection({
 
       {/* CTA */}
       <Button
-        label={ctaLabel}
-        className="bg-green-700  rounded-2xl mb-8 "
+        className="bg-green-700 rounded-2xl mb-8"
         onPress={onPressCTA}
-        labelClasses="text-yellow-300"
-      />
+        textClassName="text-yellow-300"
+      >
+        {ctaLabel}
+      </Button>
+
       {/* Icon sau nút */}
       <View className="absolute right-9 top-[154px]">
         <Ionicons name="arrow-forward" size={18} color="#fff" />

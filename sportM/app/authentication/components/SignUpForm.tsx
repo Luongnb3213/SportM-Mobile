@@ -1,11 +1,16 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
 import { Feather, AntDesign } from '@expo/vector-icons';
-import { Input } from '@/components/Input';      // :contentReference[oaicite:4]{index=4}
-import { Button } from '@/components/Button';    // :contentReference[oaicite:5]{index=5}
+import { Input } from '@/components/Input'; // :contentReference[oaicite:4]{index=4}
+import Button from '@/components/Button'; // :contentReference[oaicite:5]{index=5}
 
 type SignUpFormProps = {
-  onSubmit?: (phone: string, fullName: string, password: string, confirm: string) => void;
+  onSubmit?: (
+    phone: string,
+    fullName: string,
+    password: string,
+    confirm: string
+  ) => void;
   onGooglePress?: () => void;
   onGoSignIn?: () => void;
 };
@@ -55,7 +60,10 @@ export default function SignUpForm({
             className="flex-1"
             inputClasses="rounded-xl bg-white pr-10"
           />
-          <TouchableOpacity className="absolute right-3 h-full justify-center" onPress={() => setShow1(v => !v)}>
+          <TouchableOpacity
+            className="absolute right-3 h-full justify-center"
+            onPress={() => setShow1((v) => !v)}
+          >
             <Feather name={show1 ? 'eye-off' : 'eye'} size={18} />
           </TouchableOpacity>
         </View>
@@ -72,17 +80,21 @@ export default function SignUpForm({
             className="flex-1"
             inputClasses="rounded-xl bg-white pr-10"
           />
-          <TouchableOpacity className="absolute right-3 h-full justify-center" onPress={() => setShow2(v => !v)}>
+          <TouchableOpacity
+            className="absolute right-3 h-full justify-center"
+            onPress={() => setShow2((v) => !v)}
+          >
             <Feather name={show2 ? 'eye-off' : 'eye'} size={18} />
           </TouchableOpacity>
         </View>
       </View>
 
       <Button
-        label="Đăng ký"
         className="rounded-xl h-11 mt-2 bg-[#4D8A43]"
         onPress={() => onSubmit?.(phone, fullName, pwd, pwd2)}
-      />
+      >
+        Đăng ký
+      </Button>
 
       <View className="mt-3 flex-row justify-center">
         <Text>Đã có tài khoản? </Text>

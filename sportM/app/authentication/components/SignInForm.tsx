@@ -2,9 +2,10 @@ import React, { useState } from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
 import { Feather, AntDesign } from '@expo/vector-icons';
 import { Input } from '@/components/Input';        // :contentReference[oaicite:0]{index=0}
-import { Button } from '@/components/Button';      // :contentReference[oaicite:1]{index=1}
+import Button  from '@/components/Button';      // :contentReference[oaicite:1]{index=1}
 import { Checkbox } from '@/components/Checkbox';  // :contentReference[oaicite:2]{index=2}
 import { ExternalLink } from '@/components/ExternalLink'; // :contentReference[oaicite:3]{index=3}
+import { router } from 'expo-router';
 
 type SignInFormProps = {
   onSubmit?: (email: string, password: string, remember: boolean) => void;
@@ -58,10 +59,11 @@ export default function SignInForm({
       </View>
 
       <Button
-        label="Đăng nhập"
         className="rounded-xl h-11 mt-2 bg-[#4D8A43]"
         onPress={() => onSubmit?.(email, pwd, remember)}
-      />
+      >
+        Đăng nhập
+      </Button>
 
       <View className="flex-row items-center justify-between mt-3">
         <TouchableOpacity
@@ -73,9 +75,11 @@ export default function SignInForm({
           <Text>Ghi nhớ mật khẩu</Text>
         </TouchableOpacity>
 
-        <ExternalLink href={onForgotPasswordHref as any} className="underline">
-          <Text className="text-[#4D8A43]">Quên mật khẩu</Text>
-        </ExternalLink>
+        <View className="underline">
+          <Text onPress={() => {
+             router.push("/authentication/VerifyEmail");
+          }} className="text-[#4D8A43] underline">Quên mật khẩu</Text>
+        </View>
       </View>
 
       <View className="mt-3 flex-row justify-center">

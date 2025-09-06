@@ -11,7 +11,7 @@ import { Ionicons } from '@expo/vector-icons';
 
 import { Input } from '@/components/Input';
 import { Checkbox } from '@/components/Checkbox';
-import { Button } from '@/components/Button';
+import Button from '@/components/Button';
 import { ExternalLink } from '@/components/ExternalLink';
 import { useToast } from '@/components/Toast';
 
@@ -75,13 +75,13 @@ export default function EmailSubscribeSection({
 
       {/* Input – underline style */}
 
-        <Input
-          value={email}
-          onChangeText={setEmail}
-          placeholder="you@example.comss"
-          className="mb-5"
-          inputClasses="rounded-none border-x-0 border-t-0 border-b border-input pb-3 px-0"
-        />
+      <Input
+        value={email}
+        onChangeText={setEmail}
+        placeholder="you@example.comss"
+        className="mb-5"
+        inputClasses="rounded-none border-x-0 border-t-0 border-b border-input pb-3 px-0"
+      />
 
       {/* Terms checkbox row */}
       <View className="flex-row items-start gap-3 mb-6">
@@ -105,11 +105,12 @@ export default function EmailSubscribeSection({
 
       {/* Submit */}
       <Button
-        label={loading ? 'Đang gửi...' : 'Đăng ký'}
         onPress={handleSubmit}
         className="w-44 rounded-2xl bg-primary/95 disabled:opacity-40"
-        labelClasses="text-yellow-300 text-lg"
-      />
+        textClassName="text-yellow-300"
+      >
+        {loading ? 'Đang gửi...' : 'Đăng ký'}
+      </Button>
     </View>
   );
 }
