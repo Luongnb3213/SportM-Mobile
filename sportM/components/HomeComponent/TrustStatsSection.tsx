@@ -35,7 +35,7 @@ export default function TrustStatsSection({
   return (
     <View className="px-4 py-6">
       {/* Eyebrow */}
-      <Text className="text-xs tracking-wide text-muted-foreground mb-2">
+      <Text className="text-base tracking-wide text-muted-foreground mb-2">
         {eyebrow}
       </Text>
 
@@ -53,13 +53,16 @@ export default function TrustStatsSection({
       </Text>
 
       {/* CTA */}
-      <Button
-        className="bg-green-700 rounded-2xl mb-8"
-        onPress={onPressCTA}
-        textClassName="text-yellow-300"
-      >
-        {ctaLabel}
-      </Button>
+      <View className='w-fit'>
+        <Button
+          className="bg-primary w-48 h-12  rounded-2xl mb-8"
+          onPress={onPressCTA}
+          size="lg"
+          textClassName="text-yellow-300 text-base"
+        >
+          {ctaLabel}
+        </Button>
+      </View>
 
       {/* Icon sau nút */}
       <View className="absolute right-9 top-[154px]">
@@ -68,20 +71,20 @@ export default function TrustStatsSection({
 
       {/* Stats block 1 */}
       <View className="mb-8">
-        <Text className="text-6xl font-bold text-green-700 mb-2">
+        <Text className="text-6xl font-medium text-primary mb-2">
           {stat1Value}
         </Text>
-        <Text className="text-lg text-primary">{stat1Desc}</Text>
+        <Text className="text-lg text-[#181818]">{stat1Desc}</Text>
       </View>
 
       {/* Stats block 2 */}
       <View className="mb-2">
-        <Text className="text-6xl font-bold text-green-700 mb-2">
+        <Text className="text-6xl font-medium text-primary mb-2">
           {stat2Value}
         </Text>
-        <Text className="text-lg text-primary mb-1">{stat2Desc}</Text>
+        <Text className="text-lg text-[#181818] mb-1">{stat2Desc}</Text>
         {!!hashtags && (
-          <Text className="text-base text-green-700/90">{hashtags}</Text>
+          <Text className="text-base text-primary/90">{hashtags}</Text>
         )}
       </View>
     </View>

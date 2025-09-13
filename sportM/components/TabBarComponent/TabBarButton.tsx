@@ -36,7 +36,7 @@ const TabBarButton: React.FC<TabBarButtonProps> = (props) => {
   return (
     <Pressable {...props} style={styles.container}>
       <Animated.View style={[styles.focusedContainer, animatedBackgroundStyle]} />
-      {icons[routeName]({ color: isFocused ? "#669250" : color })}
+      {icons[routeName]({ color: isFocused ? "#1F2257" : color })}
     </Pressable>
   )
 }

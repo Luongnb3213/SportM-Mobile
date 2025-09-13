@@ -90,7 +90,7 @@ export default function SignUpForm({
       </View>
 
       <Button
-        className="rounded-xl h-11 mt-2 bg-[#4D8A43]"
+        className="rounded-xl h-11 mt-2 bg-[#1F2257]"
         onPress={() => onSubmit?.(phone, fullName, pwd, pwd2)}
       >
         Đăng ký
@@ -99,7 +99,7 @@ export default function SignUpForm({
       <View className="mt-3 flex-row justify-center">
         <Text>Đã có tài khoản? </Text>
         <TouchableOpacity onPress={onGoSignIn}>
-          <Text className="text-[#2E7D32] font-semibold">Đăng nhập</Text>
+          <Text className="text-[#1F2257] font-semibold">Đăng nhập</Text>
         </TouchableOpacity>
       </View>
 

@@ -59,7 +59,7 @@ export default function SignInForm({
       </View>
 
       <Button
-        className="rounded-xl h-11 mt-2 bg-[#4D8A43]"
+        className="rounded-xl h-11 mt-2 bg-[#1F2257]"
         onPress={() => onSubmit?.(email, pwd, remember)}
       >
         Đăng nhập
@@ -78,14 +78,14 @@ export default function SignInForm({
         <View className="underline">
           <Text onPress={() => {
              router.push("/authentication/VerifyEmail");
-          }} className="text-[#4D8A43] underline">Quên mật khẩu</Text>
+          }} className="text-[#1F2257] underline">Quên mật khẩu</Text>
         </View>
       </View>
 
       <View className="mt-3 flex-row justify-center">
         <Text>Chưa có tài khoản? </Text>
         <TouchableOpacity onPress={onGoSignUp}>
-          <Text className="text-[#2E7D32] font-semibold">Đăng ký</Text>
+          <Text className="text-[#1F2257] font-semibold">Đăng ký</Text>
         </TouchableOpacity>
       </View>
 

@@ -17,12 +17,12 @@ export default function AuthScreen() {
         <KeyboardAwareScrollView
           keyboardShouldPersistTaps="handled"
           contentContainerStyle={{ flexGrow: 1 }}
-          style={{ backgroundColor: '#4D8A43' }}
+          style={{ backgroundColor: '#1F2257' }}
         >
           {/* khung xanh + panel trắng giống mockup */}
-          <View className="rounded-2xl p-5 bg-[#4D8A43]">
+          <View className="rounded-2xl p-5 bg-[#1F2257]">
             <View className="rounded-2xl h-full bg-white px-5 py-6">
-              <Text className="text-5xl font-extrabold text-[#2E7D32] text-center mb-4">
+              <Text className="text-7xl font-extrabold text-[#1F2257] text-center mb-4">
                 SPORTM
               </Text>
 

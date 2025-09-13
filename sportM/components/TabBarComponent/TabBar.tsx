@@ -9,7 +9,7 @@ const TabBar: React.FC<BottomTabBarProps> = ({
   descriptors,
   navigation,
 }) => {
-  const primaryColor = '#669250';
+  const primaryColor = '#1F2257';
   const whiteColor = 'white';
   return (
     <View style={styles.tabbar}>
@@ -69,11 +69,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    backgroundColor: '#669250',
+    backgroundColor: '#1F2257',
     marginHorizontal: 10,
-    paddingVertical: 18,
+    paddingVertical: 22,
     paddingHorizontal: 10,
-    borderRadius: 30,
+    borderRadius: 50,
     borderCurve: 'continuous',
     shadowColor: 'black',
     shadowOffset: { width: 0, height: 10 },

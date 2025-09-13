@@ -61,6 +61,7 @@ const OtpVerify: React.FC<OtpVerifyProps> = ({
           size="sm"
           shouldAutoSubmit={false}
           ariaLabel="OTP Input"
+          shouldHandleClipboard={false}
         />
       </View>
 
@@ -69,7 +70,7 @@ const OtpVerify: React.FC<OtpVerifyProps> = ({
         <Text className="text-black/60">Bạn chưa nhận được mã OTP?</Text>
         {onResend ? (
           <Pressable onPress={onResend}>
-            <Text className="text-[#2E6E3A] font-semibold">Gửi lại</Text>
+            <Text className="text-[#1F2257] font-semibold">Gửi lại mã Otp</Text>
           </Pressable>
         ) : null}
       </View>

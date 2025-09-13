@@ -7,9 +7,6 @@ import {
   Platform,
   TextInput,
 } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-
-import { Input } from '@/components/Input';
 import { Checkbox } from '@/components/Checkbox';
 import Button from '@/components/Button';
 import { ExternalLink } from '@/components/ExternalLink';
@@ -51,15 +48,15 @@ export default function EmailSubscribeSection({
   };
 
   return (
-    <View className="px-4 py-6">
+    <View className="px-4 py-6 bg-[#EBE8E8]">
       {/* Eyebrow */}
-      <Text className="text-2xl text-primary/80 mb-2">
+      <Text className="text-2xl text-[#454545] mb-4">
         Đặt nhiều hơn, chi ít hơn
       </Text>
 
       {/* Heading */}
-      <Text className="text-5xl font-extrabold text-primary mb-3">
-        Đăng ký nhận Email
+      <Text className="text-4xl font-semibold text-[#222222] mb-3">
+        Đăng ký làm Chủ Sân
       </Text>
 
       {/* Subtitle */}
@@ -68,20 +65,15 @@ export default function EmailSubscribeSection({
       </Text>
 
       {/* Email label */}
-      <View className="flex-row items-center gap-2 mb-2">
-        <Ionicons name="mail-outline" size={18} />
+      <View className="flex-col items-start gap-2 mb-2">
         <Text className="text-base">Email</Text>
+        <TextInput
+          value={email}
+          onChangeText={setEmail}
+          placeholder="you@example.com"
+          className="mb-5 w-full border-b text-lg border-[#000]"
+        />
       </View>
-
-      {/* Input – underline style */}
-
-      <Input
-        value={email}
-        onChangeText={setEmail}
-        placeholder="you@example.comss"
-        className="mb-5"
-        inputClasses="rounded-none border-x-0 border-t-0 border-b border-input pb-3 px-0"
-      />
 
       {/* Terms checkbox row */}
       <View className="flex-row items-start gap-3 mb-6">
@@ -89,10 +81,10 @@ export default function EmailSubscribeSection({
           onPress={() => setAgree((v) => !v)}
           activeOpacity={0.8}
         >
-          <Checkbox checkboxClasses="w-5 h-5 rounded-md" className="mt-1" />
+          <Checkbox checkboxClasses="w-5 h-5" className="mt-1" />
         </TouchableOpacity>
 
-        <Text className="flex-1 text-base leading-6 text-primary">
+        <Text className="flex-1 text-base leading-6 text-[#454545] italic">
           Tôi đã đọc, đồng ý với các điều khoản của{' '}
           <ExternalLink
             href={privacyUrl as any}
@@ -106,8 +98,8 @@ export default function EmailSubscribeSection({
       {/* Submit */}
       <Button
         onPress={handleSubmit}
-        className="w-44 rounded-2xl bg-primary/95 disabled:opacity-40"
-        textClassName="text-yellow-300"
+        className="w-36 h-12 rounded-2xl bg-primary/95 disabled:opacity-40"
+        textClassName="text-yellow-300 text-lg"
       >
         {loading ? 'Đang gửi...' : 'Đăng ký'}
       </Button>
