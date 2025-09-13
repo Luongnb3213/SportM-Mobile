@@ -16,7 +16,7 @@ export const theme: { light: ThemePalette; dark: ThemePalette } = {
     card: "#ffffff",
     border: "#e5e7eb",   // slate-200
     muted: "#6b7280",    // slate-500
-    primary: "#4D8A43",
+    primary: "#1F2257",
     accent: "#ffd60a",
   },
   dark: {
@@ -25,7 +25,7 @@ export const theme: { light: ThemePalette; dark: ThemePalette } = {
     card: "#111827",       // slate-900-ish
     border: "#1f2937",     // slate-800
     muted: "#9ca3af",      // slate-400
-    primary: "#4D8A43",
+    primary: "#1F2257",
     accent: "#ffd60a",
   },
 };

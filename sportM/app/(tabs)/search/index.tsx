@@ -71,6 +71,7 @@ export default function GoogleSigninScreen() {
           backgroundColor: 'violet',
         }}
       />
+      <Button onPress={handlePress} title="Press me" />
       <Button onPress={handleGoogleSignin} title="Click gg" />
       <Button onPress={signOutFromGoogle} title="Sign out" />
     </View>
