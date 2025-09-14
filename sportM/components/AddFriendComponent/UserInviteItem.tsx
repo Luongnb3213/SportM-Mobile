@@ -130,12 +130,12 @@ export function UserInviteItem({
   return (
     <Card
       className={cn(
-        'flex-row items-center gap-3 px-3 py-2 rounded-2xl bg-white shadow-sm',
+        `flex-row items-center gap-3 px-3 py-2 rounded-2xl ${avatarUri ? 'bg-[#D0CFCF]' : 'bg-white'} shadow-sm`,
         className,
       )}
     >
       {/* Avatar */}
-      <Avatar className="w-12 h-12">
+      <Avatar className="w-20 h-20">
         {avatarUri ? (
           <AvatarImage source={{ uri: avatarUri }} />
         ) : (
@@ -146,7 +146,7 @@ export function UserInviteItem({
       {/* Info */}
       <View className="flex-1">
         <Text
-          className="text-lg font-extrabold"
+          className="text-xl font-extrabold"
           style={{ color: accentHex }}
           numberOfLines={1}
         >

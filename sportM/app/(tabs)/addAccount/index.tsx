@@ -7,6 +7,7 @@ import {
   KeyboardProvider,
 } from 'react-native-keyboard-controller';
 import { UserInviteItem } from '@/components/AddFriendComponent/UserInviteItem';
+import HeaderUser from '@/components/ui/HeaderUser';
 
 type User = { id: string; name: string; subtitle?: string; avatar?: string };
 type SectionKey = 'suggest' | 'pending' | 'sent';
@@ -14,7 +15,6 @@ type SectionKey = 'suggest' | 'pending' | 'sent';
 const NAVY = '#202652';
 
 export default function FriendsScreen() {
-  // demo data
   const [suggest, setSuggest] = useState<User[]>([
     { id: '1', name: 'Lại Gia Tùng', subtitle: 'Chủ sân' },
     { id: '2', name: 'Nguyễn Hồng Phúc', subtitle: 'Thủ môn' },
@@ -26,9 +26,8 @@ export default function FriendsScreen() {
     { id: '4', name: 'Bùi Đức Anh', subtitle: 'Đã gửi lời mời' },
   ]);
 
-  const [section, setSection] = useState<SectionKey>('sent');
+  const [section, setSection] = useState<SectionKey>('suggest');
 
-  // handlers chuyển item giữa các danh sách
   const handleAdd = (u: User) => {
     setSuggest((prev) => prev.filter((x) => x.id !== u.id));
     setSent((prev) => [{ ...u, subtitle: 'Đã gửi lời mời' }, ...prev]);
@@ -60,10 +59,11 @@ export default function FriendsScreen() {
           keyboardShouldPersistTaps="handled"
           contentContainerStyle={{ flexGrow: 1 }}
         >
-          <View className="p-5">
-            <View className="h-full bg-white px-5 py-6 rounded-2xl">
+          <View className="px-4 py-4">
+            <HeaderUser />
+            <View className="h-full bg-white py-6 rounded-2xl">
               <Text className="text-xl font-bold mb-4">Bạn bè</Text>
-              <View className="flex-row items-center justify-center px-4 gap-3">
+              <View className="flex-row items-center justify-start gap-3">
                 <TouchableOpacity
                   onPress={() => {
                     handleChangeScreen('suggest');
@@ -98,8 +98,8 @@ export default function FriendsScreen() {
                 </TouchableOpacity>
               </View>
 
-              <View>
-                <View className={'mt-3'}>
+              <View className="">
+                <View className={'mt-3 flex flex-col gap-5'}>
                   {section === 'suggest' &&
                     suggest.map((u, idx) => {
                       return (
