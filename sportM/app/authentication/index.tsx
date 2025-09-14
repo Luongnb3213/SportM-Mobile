@@ -7,8 +7,8 @@ import {
   KeyboardAwareScrollView,
 } from 'react-native-keyboard-controller';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/Tabs'; // :contentReference[oaicite:6]{index=6}
-import SignInForm from './components/SignInForm';
-import SignUpForm from './components/SignUpForm';
+import SignInForm from '../../components/AuthenticationComponent/SignInForm';
+import SignUpForm from '../../components/AuthenticationComponent/SignUpForm';
 
 export default function AuthScreen() {
   return (

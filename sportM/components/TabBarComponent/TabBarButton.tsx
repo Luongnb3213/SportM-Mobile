@@ -14,7 +14,7 @@ interface TabBarButtonProps extends PressableProps {
 }
 
 const TabBarButton: React.FC<TabBarButtonProps> = (props) => {
-  const { isFocused, label, routeName, color } = props
+  const { isFocused, routeName, color } = props
 
   const backgroundScale = useSharedValue(0)
 

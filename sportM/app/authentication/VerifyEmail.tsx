@@ -6,8 +6,8 @@ import {
   KeyboardProvider,
   KeyboardAwareScrollView,
 } from 'react-native-keyboard-controller';
-import RequestEmail from './components/RequestEmail';
-import OtpVerify from './components/OtpVerify';
+import OtpVerify from '../../components/AuthenticationComponent/OtpVerify';
+import RequestEmail from '@/components/AuthenticationComponent/RequestEmail';
 
 export default function VerifyEmail() {
   return (
@@ -24,13 +24,13 @@ export default function VerifyEmail() {
               <Text className="text-5xl font-extrabold text-[#1F2257] text-center mb-4">
                 SPORTM
               </Text>
-              <OtpVerify
+              {/* <OtpVerify
                 maskedEmail="mother*****@gmail.com"
                 onResend={() => {
                 }}
                 onConfirm={async (code) => {
                 }}
-              />
+              /> */}
               <RequestEmail
                 onSubmit={() => {}}
                 defaultEmail="mother*****@gmail.com"
