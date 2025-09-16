@@ -29,6 +29,7 @@ import {
 import GolfDealCard from '../../../components/HomeComponent/GolfDealCard';
 import GolfCourseCard from '@/components/HomeComponent/GolfCourseCard';
 import HeaderUser from '@/components/ui/HeaderUser';
+import { router } from 'expo-router';
 
 export default function HomeScreen() {
   const t = useAppTheme();
@@ -67,6 +68,11 @@ export default function HomeScreen() {
                 pricePerHour="1.000.000/ giờ"
                 rating={4.5}
                 imageUri="https://images.unsplash.com/photo-1502877338535-766e1452684a?q=80&w=1600"
+                onPress={() => {
+                  // navigate to detail screen
+                  // navigation.navigate('DetailSport');
+                  router.push('/home/DetailSport/BookingSuccessScreen');
+                }}
               />
               <GolfCourseCard
                 title="Bíc cờ bôn"

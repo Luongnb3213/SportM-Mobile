@@ -96,7 +96,6 @@ const renderItem = ({ item, index }: { item: any; index: number }) => {
     <View
       className={`flex-1 relative`}
       key={index}
-      style={{ paddingHorizontal: GAP / 2 }}
     >
       <GolfCourseCard
         title={item.title}
