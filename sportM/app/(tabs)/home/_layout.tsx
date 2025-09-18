@@ -15,6 +15,8 @@ export default function HomeStack() {
         name="DetailSport"
         options={{ animation: 'slide_from_right' }} // riêng màn detail dùng fade
       />
+      <Stack.Screen name="booking" options={{}} />
+
     </Stack>
   );
 }

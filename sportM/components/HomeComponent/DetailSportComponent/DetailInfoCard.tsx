@@ -21,8 +21,6 @@ type TabItem = { key: string; label: string };
 
 const TABS: TabItem[] = [
   { key: 'info', label: 'Thông tin' },
-  { key: 'price', label: 'Bảng giá' },
-  { key: 'policy', label: 'Chính sách' },
   { key: 'review', label: 'Đánh giá' },
 ];
 

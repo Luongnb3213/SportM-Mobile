@@ -78,11 +78,6 @@ const DetailSport = () => {
           <View className="shadow-2xl">
             <DetailInfoCard />
           </View>
-
-          {/* Golf deal card */}
-          <View className="mt-4">
-            <GolfDealCard title="Sân quanh đây" />
-          </View>
         </KeyboardAwareScrollView>
       </SafeAreaView>
     </KeyboardProvider>

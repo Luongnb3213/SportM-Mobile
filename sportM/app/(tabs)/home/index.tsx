@@ -71,7 +71,7 @@ export default function HomeScreen() {
                 onPress={() => {
                   // navigate to detail screen
                   // navigation.navigate('DetailSport');
-                  router.push('/home/DetailSport/BookingSuccessScreen');
+                  router.push('/home/booking');
                 }}
               />
               <GolfCourseCard
