@@ -10,6 +10,7 @@ import 'react-native-reanimated';
 import './globals.css';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { ToastProvider } from '@/components/Toast';
+import { AuthProvider } from '@/providers/AuthProvider';
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
@@ -25,16 +26,18 @@ export default function RootLayout() {
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
       <ToastProvider position="top">
-        <Stack>
-          <Stack.Screen
-            name="authentication"
-            options={{ headerShown: false }}
-          />
-          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-          <Stack.Screen name="index" options={{ headerShown: false }} />
-          <Stack.Screen name="+not-found" />
-        </Stack>
-        <StatusBar style="auto" />
+        <AuthProvider>
+          <Stack>
+            <Stack.Screen name="index" options={{ headerShown: false }} />
+            <Stack.Screen
+              name="authentication"
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+            <Stack.Screen name="+not-found" />
+          </Stack>
+          <StatusBar style="auto" />
+        </AuthProvider>
       </ToastProvider>
     </ThemeProvider>
   );

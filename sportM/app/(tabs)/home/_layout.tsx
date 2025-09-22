@@ -6,16 +6,17 @@ export default function HomeStack() {
     <Stack
       screenOptions={{
         headerShown: false,
-        animation: 'slide_from_right', // mặc định trong tab Home
+        animation: 'slide_from_right',
         gestureEnabled: true,
       }}
     >
-      {/* tuỳ chỉnh animation theo từng màn nếu muốn */}
       <Stack.Screen name="index" options={{}} />
       <Stack.Screen
-        name="detail"
+        name="DetailSport"
         options={{ animation: 'slide_from_right' }} // riêng màn detail dùng fade
       />
+      <Stack.Screen name="booking" options={{}} />
+
     </Stack>
   );
 }

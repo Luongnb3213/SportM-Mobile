@@ -1,0 +1,87 @@
+import DetailInfoCard from '@/components/HomeComponent/DetailSportComponent/DetailInfoCard';
+import GolfDealCard from '@/components/HomeComponent/GolfDealCard';
+import HeaderUser from '@/components/ui/HeaderUser';
+import { Ionicons } from '@expo/vector-icons';
+import React from 'react';
+import { ImageBackground, Text, TouchableOpacity, View } from 'react-native';
+import {
+  KeyboardAwareScrollView,
+  KeyboardProvider,
+} from 'react-native-keyboard-controller';
+import { SafeAreaView } from 'react-native-safe-area-context';
+
+const DetailSport = () => {
+  return (
+    <KeyboardProvider>
+      <SafeAreaView className="flex-1">
+        <KeyboardAwareScrollView
+          keyboardShouldPersistTaps="handled"
+          extraKeyboardSpace={0}
+          contentContainerStyle={{ flexGrow: 1 }}     
+        >
+          <View className="px-4">
+            <HeaderUser />
+          </View>
+
+          <View className="">
+            <ImageBackground
+              source={{
+                uri: 'https://images.unsplash.com/photo-1502877338535-766e1452684a?q=80&w=1600',
+              }}
+              resizeMode="cover"
+              className="w-full"
+              style={{ aspectRatio: 16 / 12 }}
+            >
+              {/* overlay làm tối ảnh một chút để chữ nổi bật */}
+              <View className="absolute inset-0 bg-black/25" />
+
+              {/* header back */}
+              <View className="px-4">
+                <TouchableOpacity
+                  className="flex-row items-center gap-2 py-2"
+                  onPress={() => {
+                    // router.back() nếu dùng expo-router
+                    // router.back();
+                  }}
+                >
+                  <Ionicons name="chevron-back" size={20} color="#E5E7EB" />
+                  <Text className="text-base text-gray-200">
+                    Trở về trang trước
+                  </Text>
+                </TouchableOpacity>
+              </View>
+
+              {/* texts */}
+              <View className="px-4 mt-2">
+                <Text className="text-lg text-gray-200">Mai Lâm, Đông Anh</Text>
+
+                <Text
+                  // màu vàng tươi giống ảnh
+                  style={{ color: '#FFF200' }}
+                  className="mt-2 text-4xl font-medium leading-tight"
+                >
+                  SÂN GOLF NEM CHUA
+                </Text>
+
+                {/* rating pill */}
+                <View className="mt-3 flex-row items-center">
+                  <View className="flex-row items-center gap-1 rounded-full bg-black/60 px-3 py-1.5">
+                    <Text className="text-white text-base font-semibold">
+                      5.0
+                    </Text>
+                    <Ionicons name="star" size={14} color="#FFD54F" />
+                  </View>
+                </View>
+              </View>
+            </ImageBackground>
+          </View>
+          <View className="shadow-2xl">
+            <DetailInfoCard />
+          </View>
+        </KeyboardAwareScrollView>
+      </SafeAreaView>
+    </KeyboardProvider>
+  );
+};
+
+export default DetailSport;
