@@ -19,75 +19,47 @@ Mapbox.setAccessToken(
 const MapboxExample = () => {
   const mapRef = useRef<MapView>(null);
   const cameraRef = useRef<Camera>(null);
+  const [mapReady, setMapReady] = useState(false);
+  const [userLocation, setUserLocation] = useState<[number, number] | null>(null);
+
+  const initialCoordinates: [number, number] = [105.804817, 21.028511]; // (thực ra là Hà Nội)
 
   useEffect(() => {
-    const requestLocationPermission = async () => {
-      const isGranted = await Mapbox.requestAndroidLocationPermissions();
-      if (isGranted) {
-        console.log('Location permission granted');
-      } else {
-        console.log('Location permission denied');
-      }
-    };
-    requestLocationPermission();
+    (async () => {
+      const ok = await Mapbox.requestAndroidLocationPermissions();
+      console.log('Location permission', ok ? 'granted' : 'denied');
+    })();
   }, []);
 
-  const [userLocation, setUserLocation] = useState<[number, number] | null>(
-    null
-  );
-
-  // Sample coordinates (Ho Chi Minh City)
-  const initialCoordinates: [number, number] = [105.804817, 21.028511];
-
-  // Sample markers
-  const markers = [
-    {
-      id: '1',
-      coordinate: [105.804817, 21.228511] as [number, number],
-      title: 'Landmark 81',
-      description: 'Tòa nhà cao nhất Việt Nam',
-    },
-    {
-      id: '2',
-      coordinate: [105.804817, 21.028511] as [number, number],
-      title: 'Sân bay Tân Sơn Nhất',
-      description: 'Sân bay quốc tế',
-    },
-  ];
-
-  const handleUserLocationUpdate = (location: any) => {
-    const coords: [number, number] = [
-      location.coords.longitude,
-      location.coords.latitude,
-    ];
-    setUserLocation(coords);
+  const handleUserLocationUpdate = (loc: any) => {
+    setUserLocation([loc.coords.longitude, loc.coords.latitude]);
   };
 
-  const flyToLocation = (coordinate: [number, number]) => {
+  const flyToLocation = (coord: [number, number]) => {
+    if (!mapReady) return;
     cameraRef.current?.setCamera({
-      centerCoordinate: coordinate,
+      centerCoordinate: coord,
       zoomLevel: 14,
       animationDuration: 2000,
     });
   };
 
   const flyToUserLocation = () => {
-    if (userLocation) {
-      flyToLocation(userLocation);
-    }
+    if (userLocation) flyToLocation(userLocation);
   };
 
   return (
     <View style={styles.container}>
-      <MapView
+      <Mapbox.MapView
         ref={mapRef}
         style={styles.map}
-        styleJSON="mapbox://styles/mapbox/streets-v9"
-        zoomEnabled={true}
-        scrollEnabled={true}
-        pitchEnabled={true}
-        rotateEnabled={true}
+        styleURL="mapbox://styles/mapbox/streets-v9"   // ✅ dùng styleURL
+        zoomEnabled
+        scrollEnabled
+        pitchEnabled
+        rotateEnabled
         scaleBarEnabled={false}
+        onDidFinishRenderingMapFully={() => setMapReady(true)} // ✅ chờ map ready
       >
         <Camera
           ref={cameraRef}
@@ -99,36 +71,26 @@ const MapboxExample = () => {
           animationDuration={1000}
         />
 
-        {/* User Location */}
         <UserLocation
-          visible={true}
+          visible
           onUpdate={handleUserLocationUpdate}
-          showsUserHeadingIndicator={true}
+          showsUserHeadingIndicator
         />
 
-        <Mapbox.MarkerView id="marker1" coordinate={[105.854444, 21.029167]}>
-          <View className="relative items-center justify-center">
-            {/* <View className="bg-green-500 rounded-full w-12 h-12 items-center justify-center shadow-lg">
-              <Image
-                source={require('../../../assets/images/react-logo.png')}
-                className="w-8 h-8"
-              />
+        {/* ✅ Dùng PointAnnotation thay MarkerView */}
+        {mapReady && (
+          <Mapbox.PointAnnotation id="marker1" coordinate={[105.854444, 21.029167]}>
+            <View style={{ alignItems: 'center', justifyContent: 'center' }}>
+              <FontAwesome5 name="map-marker-alt" size={24} color="black" />
             </View>
-            <View className="absolute bottom-[-8px] w-0 h-0 border-l-8 border-r-8 border-t-8 border-l-transparent border-r-transparent border-t-green-500" /> */}
-            <FontAwesome5 name="map-marker-alt" size={24} color="black" />
-          </View>
-        </Mapbox.MarkerView>
-      </MapView>
+          </Mapbox.PointAnnotation>
+        )}
+      </Mapbox.MapView>
 
-      {/* Control Buttons */}
       <View style={styles.buttonContainer}>
-        <TouchableOpacity
-          style={styles.button}
-          onPress={() => flyToLocation(initialCoordinates)}
-        >
+        <TouchableOpacity style={styles.button} onPress={() => flyToLocation(initialCoordinates)}>
           <Text style={styles.buttonText}>Về TPHCM</Text>
         </TouchableOpacity>
-
         <TouchableOpacity style={styles.button} onPress={flyToUserLocation}>
           <Text style={styles.buttonText}>Vị trí của tôi</Text>
         </TouchableOpacity>

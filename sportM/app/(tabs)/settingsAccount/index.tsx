@@ -1,6 +1,10 @@
 import React from 'react';
 import { View, Text, Image, TouchableOpacity } from 'react-native';
-import { AntDesign, Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
+import {
+  AntDesign,
+  Ionicons,
+  MaterialCommunityIcons,
+} from '@expo/vector-icons';
 
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/Avatar';
 import { Card, CardHeader, CardContent, CardFooter } from '@/components/Card';
@@ -9,7 +13,13 @@ import {
   KeyboardAwareScrollView,
   KeyboardProvider,
 } from 'react-native-keyboard-controller';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import {
+  SafeAreaView,
+  useSafeAreaInsets,
+} from 'react-native-safe-area-context';
+import { clearTokens } from '@/lib/tokenStorage';
+import { router } from 'expo-router';
+import { useAuth } from '@/providers/AuthProvider';
 
 type Pill = { id: string | number; label: string; icon?: React.ReactNode };
 
@@ -22,12 +32,23 @@ const pills: Pill[] = [
 ];
 
 export default function ProfileCard() {
+  const insets = useSafeAreaInsets();
+  const auth = useAuth();
+
+  const handleLogout = () => {
+    clearTokens();
+    console.log('User', auth.user);
+    router.replace('/authentication');
+    auth.setUser(null);
+    console.log('Logging out...');
+  };
   return (
     <KeyboardProvider>
       <SafeAreaView className="flex-1">
         <KeyboardAwareScrollView
           keyboardShouldPersistTaps="handled"
           extraKeyboardSpace={0}
+          contentContainerStyle={{ paddingBottom: insets.bottom + 24 }}
         >
           <View className="m-3 rounded-2xl overflow-hidden">
             {/* Header */}
@@ -104,6 +125,14 @@ export default function ProfileCard() {
                 <Ionicons name="time-outline" size={14} />
                 <Text className="text-xl">Tất cả các ngày</Text>
               </View>
+            </View>
+            <View className="my-5">
+              <Button
+                onPress={handleLogout}
+                className="rounded-xl h-12 bg-[#1F2257]"
+              >
+                Logout
+              </Button>
             </View>
           </View>
         </KeyboardAwareScrollView>

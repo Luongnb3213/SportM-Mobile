@@ -1,28 +1,25 @@
 import React, { useState } from 'react';
-import {
-  View,
-  Text,
-  Pressable,
-} from 'react-native';
+import { View, Text, Pressable } from 'react-native';
 import Button from '@/components/Button';
 import { OTPInput } from '@/components/OTPInput';
+import { useAxios } from '@/lib/api';
+import { router } from 'expo-router';
+import Toast from 'react-native-toast-message';
 
 type OtpVerifyProps = {
   maskedEmail: string; // ví dụ: mother*****@gmail.com
   length?: number; // default 6
-  onResend?: () => void; // handler khi bấm "Gửi lại"
-  onConfirm: (code: string) => Promise<void> | void;
   errorText?: string | false; // hiển thị lỗi otp (nếu có)
   submittingText?: string; // "Đang xác nhận..."
+  from?: string;
 };
 
 const OtpVerify: React.FC<OtpVerifyProps> = ({
   maskedEmail,
   length = 6,
-  onResend,
-  onConfirm,
   errorText = false,
   submittingText = 'Đang xác nhận...',
+  from,
 }) => {
   const [code, setCode] = useState('');
   const [loading, setLoading] = useState(false);
@@ -31,9 +28,48 @@ const OtpVerify: React.FC<OtpVerifyProps> = ({
     if (loading) return;
     setLoading(true);
     try {
-      await onConfirm(code);
+      const { data: res } = await useAxios.post('/auth/verify-otp', {
+        email: maskedEmail.trim(),
+        otp: code.trim(),
+      });
+      if (res.status == 'success') {
+        if (from === 'signup') {
+          router.push({
+            pathname: '/authentication',
+            params: { screenname: 'signup', email: maskedEmail.trim() },
+          });
+        } else {
+          router.push({
+            pathname: '/authentication/ChangePassword',
+            params: { screenname: 'forgotpassword', email: maskedEmail.trim() },
+          });
+        }
+      }
     } finally {
       setLoading(false);
+    }
+  };
+
+  const onResend = async () => {
+    setCode('');
+    const url = from === 'forgotpassword' ? '/auth/send-otp-forgot-password' : '/auth/send-otp-signup';
+    try {
+      const { data: res } = await useAxios.post(url, {
+        email: maskedEmail.trim(),
+      });
+      if (res.status == 'success') {
+        Toast.show({
+          type: 'success',
+          text1: 'Thành công',
+          text2: 'Mã OTP đã được gửi lại đến email của bạn',
+        });
+      }
+    } catch (error) {
+      Toast.show({
+        type: 'error',
+        text1: 'Lỗi',
+        text2: 'Không thể gửi lại mã OTP',
+      });
     }
   };
 
@@ -46,7 +82,7 @@ const OtpVerify: React.FC<OtpVerifyProps> = ({
 
       {/* Mô tả + email */}
       <Text className="text-base text-black/70 text-center mt-2">
-        Nhập mã OTP đã gửi qua{' '}
+        Nhập mã OTP đã gửi qua {''}
         <Text className="font-semibold text-black">{maskedEmail}</Text>
       </Text>
 
@@ -80,12 +116,12 @@ const OtpVerify: React.FC<OtpVerifyProps> = ({
         className="mt-6"
         onPress={handleConfirm}
         disabled={code.length !== length || loading}
+        textClassName="text-base"
       >
         {loading ? submittingText : 'Xác nhận'}
       </Button>
     </View>
   );
 };
-
 
 export default OtpVerify;

@@ -27,7 +27,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const refreshFromStorage = async () => {
     const tokens = await getTokens();
-    const access = tokens?.accessToken;
+    const access = tokens;
     if (access) {
       const payload = decodeJwt(access);
       setUser(payload);

@@ -8,15 +8,17 @@ interface CheckboxProps extends React.ComponentPropsWithoutRef<typeof View> {
   label?: string;
   labelClasses?: string;
   checkboxClasses?: string;
+  checked?: boolean;
 }
 function Checkbox({
   label,
   labelClasses,
   checkboxClasses,
   className,
+  checked,
   ...props
 }: CheckboxProps) {
-  const [isChecked, setChecked] = useState(false);
+  const [isChecked, setChecked] = useState(checked || false);
 
   const toggleCheckbox = () => {
     setChecked(prev => !prev);

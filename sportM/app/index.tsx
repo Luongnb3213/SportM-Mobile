@@ -9,10 +9,12 @@ export default function Index() {
   if (status === 'loading') {
     return (
       <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-        <ActivityIndicator />
+        <ActivityIndicator size={'large'} />
       </View>
     );
   }
 
-  return <Redirect href={status === 'authenticated' ? '/home' : '/authentication'} />;
+  return (
+    <Redirect href={status === 'authenticated' ? '/home' : '/authentication'} />
+  );
 }
