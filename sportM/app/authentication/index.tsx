@@ -1,6 +1,6 @@
 // app/(auth)/index.tsx
 import React from 'react';
-import { View, Text } from 'react-native';
+import { View, Text, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import {
   KeyboardProvider,
@@ -22,9 +22,12 @@ export default function AuthScreen() {
           {/* khung xanh + panel trắng giống mockup */}
           <View className="rounded-2xl p-5 bg-[#1F2257]">
             <View className="rounded-2xl h-full bg-white px-5 py-6">
-              <Text className="text-7xl font-extrabold text-[#1F2257] text-center mb-4">
-                SPORTM
-              </Text>
+              <View className="w-[241px] h-[148px] self-center mb-6">
+                <Image
+                  source={require('../../assets/images/logo_sport_M.png')}
+                  className="w-full h-full"
+                />
+              </View>
 
               <Tabs defaultValue="login">
                 <TabsList className="mb-4 gap-2">

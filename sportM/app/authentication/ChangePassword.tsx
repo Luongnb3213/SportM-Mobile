@@ -1,8 +1,9 @@
 import Button from '@/components/Button';
 import { Input } from '@/components/Input';
-import { Feather } from '@expo/vector-icons';
+import { Feather, Ionicons } from '@expo/vector-icons';
 import React, { useState } from 'react';
 import { Text, TouchableOpacity } from 'react-native';
+import { Image } from 'react-native';
 import { View } from 'react-native';
 import {
   KeyboardAwareScrollView,
@@ -24,9 +25,26 @@ const ChangePassword = () => {
         >
           <View className="rounded-2xl p-5 bg-[#1F2257]">
             <View className="rounded-2xl h-full bg-white px-5 py-6">
-              <Text className="text-5xl font-extrabold text-[#1F2257] text-center mb-4">
-                SPORTM
-              </Text>
+              <View className="mb-4">
+                <TouchableOpacity
+                  className="flex-row items-center gap-2"
+                  onPress={() => {
+                    // router.back() nếu dùng expo-router
+                    // router.back();
+                  }}
+                >
+                  <Ionicons name="chevron-back" size={20} color="#1F2257" />
+                  <Text className="text-base text-primary font-medium">
+                    Trở về trang trước
+                  </Text>
+                </TouchableOpacity>
+              </View>
+              <View className="w-[241px] h-[148px] self-center mb-6">
+                <Image
+                  source={require('../../assets/images/logo_sport_M.png')}
+                  className="w-full h-full"
+                />
+              </View>
               <View>
                 <Text className="text-xl font-semibold text-black text-center mt-6 mb-4">
                   Đổi mật khẩu
