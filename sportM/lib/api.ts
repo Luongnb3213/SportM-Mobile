@@ -53,9 +53,10 @@ export function getApi(): AxiosInstance {
   // --- Request: chỉ cần gắn access token hiện có ---
   api.interceptors.request.use(async (config) => {
     const tokens = await getTokens();
-    if (tokens?.accessToken) {
+    console.log(`Attaching token to request ${config.url}:`, tokens);
+    if (tokens) {
       if (config.headers) {
-        config.headers.set('Authorization', `Bearer ${tokens.accessToken}`);
+        config.headers.set('Authorization', `Bearer ${tokens}`);
       }
     }
     return config;
@@ -66,7 +67,9 @@ export function getApi(): AxiosInstance {
     (res) => res,
     async (error: AxiosError) => {
       const original = error.config!;
-      if (error.response?.status !== 401) throw error;
+      // if (error.response?.status !== 401) throw error;
+      if (true) throw error;
+
 
       // @ts-expect-error: tránh vòng lặp vô hạn
       if (original._retry) throw error;

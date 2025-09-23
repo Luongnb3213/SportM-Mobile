@@ -9,7 +9,6 @@ import { StatusBar } from 'expo-status-bar';
 import 'react-native-reanimated';
 import './globals.css';
 import { useColorScheme } from '@/hooks/useColorScheme';
-import { ToastProvider } from '@/components/Toast';
 import { AuthProvider } from '@/providers/AuthProvider';
 import Toast, { BaseToast, ErrorToast } from 'react-native-toast-message';
 export default function RootLayout() {
@@ -58,7 +57,6 @@ export default function RootLayout() {
 
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <ToastProvider position="top">
         <AuthProvider>
           <Stack>
             <Stack.Screen name="index" options={{ headerShown: false }} />
@@ -72,7 +70,6 @@ export default function RootLayout() {
           <StatusBar style="auto" />
           <Toast config={toastConfig} />
         </AuthProvider>
-      </ToastProvider>
     </ThemeProvider>
   );
 }

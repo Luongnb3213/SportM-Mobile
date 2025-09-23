@@ -1,12 +1,26 @@
+import { useAxios } from '@/lib/api';
+import { useAuth } from '@/providers/AuthProvider';
 import { useAppTheme } from '@/styles/theme';
 import { Feather, Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { TouchableOpacity } from 'react-native';
 import { Text } from 'react-native';
 import { Image, View } from 'react-native';
-
+import * as Location from 'expo-location';
 const HeaderUser = () => {
   const t = useAppTheme();
+  const { user } = useAuth();
+  const PermissionLocation = async () => {
+    const { status } = await Location.requestForegroundPermissionsAsync();
+    if (status !== 'granted') {
+      console.log('Permission to access location was denied');
+      return;
+    }
+    const perm = await Location.getForegroundPermissionsAsync();
+    console.log('Current permission:', perm.status);
+    const loc = await Location.getCurrentPositionAsync({});
+    console.log('Location:', loc);
+  };
 
   return (
     <View className="py-4">
@@ -16,7 +30,7 @@ const HeaderUser = () => {
           className="w-12 h-12 rounded-full"
         />
         <Text className="flex-1 text-base font-bold text-center">
-          Xin chào, Lại Gia Tùng
+          Xin chào, {user?.fullName || ''}
         </Text>
         <TouchableOpacity>
           <View className="w-12 h-12 rounded-full bg-white items-center justify-center shadow-2xl">
@@ -28,7 +42,10 @@ const HeaderUser = () => {
           </View>
         </TouchableOpacity>
       </View>
-      <TouchableOpacity className="mt-3 rounded-xl bg-primary px-4 py-5 flex-row items-center justify-between">
+      <TouchableOpacity
+        onPress={PermissionLocation}
+        className="mt-3 rounded-xl bg-primary px-4 py-5 flex-row items-center justify-between"
+      >
         <View className="w-9 h-9 rounded-full bg-white/90 items-center justify-center">
           <Ionicons name="location-outline" size={18} color="#1F2257" />
         </View>

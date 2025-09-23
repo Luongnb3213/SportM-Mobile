@@ -10,6 +10,7 @@ export default function AccountStack() {
       }}
     >
       <Stack.Screen name="index" />
+      <Stack.Screen name="detailAccount" />
     </Stack>
   );
 }

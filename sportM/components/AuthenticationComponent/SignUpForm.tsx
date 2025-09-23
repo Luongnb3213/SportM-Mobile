@@ -6,7 +6,23 @@ import Button from '@/components/Button'; // :contentReference[oaicite:3]{index=
 import { router, useLocalSearchParams } from 'expo-router';
 import Toast from 'react-native-toast-message';
 import { useAxios } from '@/lib/api';
+import {
+  GoogleSignin,
+  isErrorWithCode,
+  isSuccessResponse,
+  statusCodes,
+} from '@react-native-google-signin/google-signin';
+import { saveTokens } from '@/lib/tokenStorage';
+import { decodeJwt } from '@/lib/jwt';
+import { useAuth } from '@/providers/AuthProvider';
 
+GoogleSignin.configure({
+  webClientId:
+    '504083896204-iff4f78io6sc5rs1otq0t9o1lhitignv.apps.googleusercontent.com',
+  profileImageSize: 120,
+  iosClientId:
+    '504083896204-du75dra9lbe1kglvlsrsa5apv7d3145e.apps.googleusercontent.com',
+});
 export default function SignUpForm({ email }: { email?: string }) {
   const [fullName, setFullName] = useState('');
   const [pwd, setPwd] = useState('');
@@ -19,7 +35,7 @@ export default function SignUpForm({ email }: { email?: string }) {
     pwd?: string;
     pwd2?: string;
   }>({});
-
+  const auth = useAuth();
   const pwdOK = useMemo(() => {
     const p = pwd;
     if (p.length < 6) return false;
@@ -91,6 +107,54 @@ export default function SignUpForm({ email }: { email?: string }) {
       return;
     }
   }, []);
+
+  const handleGoogleSignin = async () => {
+    try {
+      await GoogleSignin.signOut();
+      await GoogleSignin.hasPlayServices();
+      const response = await GoogleSignin.signIn();
+      if (isSuccessResponse(response)) {
+        const { user } = response.data;
+        const { email, name } = user;
+        const { data } = await useAxios.post('/auth/signin', {
+          email: email.trim(),
+          fullName: name,
+        });
+        const { access } = data.data;
+       
+        Toast.show({
+          type: 'success',
+          text1: 'Đăng nhập thành công',
+          text2: 'Chào mừng bạn đã trở lại!',
+        });
+        const payload = decodeJwt(access);
+        auth.setUser(payload);
+        await saveTokens('accessToken', access);
+        router.replace('/home');
+      }
+    } catch (error) {
+      Toast.show({
+        type: 'error',
+        text1: 'Lỗi',
+        text2: 'Đăng nhập thất bại. Vui lòng thử lại.',
+      });
+      if (isErrorWithCode(error)) {
+        switch (error.code) {
+          case statusCodes.SIGN_IN_CANCELLED:
+            console.log('User cancelled the login flow');
+            break;
+          case statusCodes.IN_PROGRESS:
+            console.log('Sign in is in progress already');
+            break;
+          case statusCodes.PLAY_SERVICES_NOT_AVAILABLE:
+            console.log('Play services not available or outdated');
+            break;
+          default:
+            console.log('Some other error happened:', error);
+        }
+      }
+    }
+  };
 
   return (
     <View className="border-0 p-0 flex-col gap-3">
@@ -183,7 +247,7 @@ export default function SignUpForm({ email }: { email?: string }) {
 
       <TouchableOpacity
         className="h-11 mt-3 rounded-xl bg-black/90 flex-row items-center justify-center"
-        onPress={() => console.log('google sign up')}
+        onPress={handleGoogleSignin}
       >
         <AntDesign name="google" size={18} color="#fff" />
         <Text className="text-white ml-8">hoặc đăng ký với Google</Text>

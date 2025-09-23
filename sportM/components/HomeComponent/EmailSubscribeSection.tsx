@@ -10,7 +10,7 @@ import {
 import { Checkbox } from '@/components/Checkbox';
 import Button from '@/components/Button';
 import { ExternalLink } from '@/components/ExternalLink';
-import { useToast } from '@/components/Toast';
+
 
 type Props = {
   onSubmit?: (email: string) => Promise<void> | void;
@@ -23,7 +23,6 @@ export default function EmailSubscribeSection({
   privacyUrl = 'https://example.com/privacy',
   defaultEmail = '',
 }: Props) {
-  const { toast } = useToast();
   const [email, setEmail] = useState(defaultEmail);
   const [agree, setAgree] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -37,11 +36,9 @@ export default function EmailSubscribeSection({
     try {
       setLoading(true);
       if (onSubmit) await onSubmit(email);
-      toast('Đăng ký thành công! 🎉', 'success', 2500, 'top', true);
       setEmail('');
       setAgree(false);
     } catch (e) {
-      toast('Có lỗi xảy ra. Thử lại nhé!', 'destructive');
     } finally {
       setLoading(false);
     }

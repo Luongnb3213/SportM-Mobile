@@ -8,6 +8,7 @@ import {
 } from 'react-native-keyboard-controller';
 import { UserInviteItem } from '@/components/AddFriendComponent/UserInviteItem';
 import HeaderUser from '@/components/ui/HeaderUser';
+import { UserInviteListSkeleton } from '@/components/Skeleton/UserInviteItemSkeleton';
 
 type User = { id: string; name: string; subtitle?: string; avatar?: string };
 type SectionKey = 'suggest' | 'pending' | 'sent';
@@ -130,7 +131,8 @@ export default function FriendsScreen() {
                           onCancel={() => handleCancelPending(u)}
                         />
                       );
-                    })}
+                    })
+                    }
 
                   {section === 'sent' &&
                     sent.map((u, idx) => {

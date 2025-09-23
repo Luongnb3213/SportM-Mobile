@@ -67,7 +67,6 @@ export default function SignInForm() {
         password: pwd,
       });
       const { access } = data.data;
-      await saveTokens('accessToken', access);
       Toast.show({
         type: 'success',
         text1: 'Đăng nhập thành công',
@@ -75,6 +74,7 @@ export default function SignInForm() {
       });
       const payload = decodeJwt(access);
       auth.setUser(payload);
+      await saveTokens('accessToken', access);
       router.replace('/home');
     } catch (err: any) {
       Toast.show({
@@ -93,13 +93,12 @@ export default function SignInForm() {
       const response = await GoogleSignin.signIn();
       if (isSuccessResponse(response)) {
         const { user } = response.data;
-        const { email } = user;
+        const { email, name } = user;
         const { data } = await useAxios.post('/auth/signin', {
           email: email.trim(),
-          password: null,
+          fullName: name,
         });
         const { access } = data.data;
-        await saveTokens('accessToken', access);
         Toast.show({
           type: 'success',
           text1: 'Đăng nhập thành công',
@@ -107,6 +106,7 @@ export default function SignInForm() {
         });
         const payload = decodeJwt(access);
         auth.setUser(payload);
+        await saveTokens('accessToken', access);
         router.replace('/home');
       }
     } catch (error) {
