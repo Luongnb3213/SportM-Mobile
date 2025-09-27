@@ -35,8 +35,6 @@ export default function CourtsGrid({
           Icon={iconPack}
         />
       )}
-      // QUAN TRỌNG: không có ScrollView dọc bên trong
-      // -> header “Sân X” và các ô luôn đi liền nhau khi cuộn
       ListFooterComponent={<View style={{ width: 4 }} />}
     />
   );

@@ -1,113 +1,294 @@
-import React from 'react';
-import { View, Text, Image, TouchableOpacity } from 'react-native';
-import { AntDesign, Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
+// ProfileScreen.tsx
+import React, { useEffect } from 'react';
+import { Image, View, Text, TouchableOpacity, ScrollView } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { Ionicons, MaterialCommunityIcons, Octicons } from '@expo/vector-icons';
 
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/Avatar';
-import { Card, CardHeader, CardContent, CardFooter } from '@/components/Card';
-import { Button } from '@/components/Button';
-import {
-  KeyboardAwareScrollView,
-  KeyboardProvider,
-} from 'react-native-keyboard-controller';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import Button from '@/components/Button';
+import { Card, CardContent } from '@/components/Card';
+import { router } from 'expo-router';
+import { clearTokens } from '@/lib/tokenStorage';
+import { useAuth } from '@/providers/AuthProvider';
+import { useAxios } from '@/lib/api';
+import ProfileScreenSkeleton from '@/components/Skeleton/ProfileScreenSkeleton';
 
-type Pill = { id: string | number; label: string; icon?: React.ReactNode };
+export default function ProfileScreen() {
+  const version = '2.2.2';
+  const auth = useAuth();
 
-const pills: Pill[] = [
-  { id: 1, label: 'Cầu lông' },
-  { id: 2, label: 'Cầu lông' },
-  { id: 3, label: 'Cầu lông' },
-  { id: 4, label: 'Cầu lông' },
-  { id: 5, label: 'Cầu lông' },
-];
+  const [userData, setUserData] = React.useState(auth.user);
+  const [loading, setLoading] = React.useState(false);
+  useEffect(() => {
+    async function fetchUserData() {
+      setLoading(true);
+      try {
+        const { data } = await useAxios.get(`/users/${auth.user?.userId}`);
+        setUserData(data.data);
+      } catch (error: any) {
+        console.log(
+          'Error fetching user data in Detail account:',
+          JSON.stringify(error.message)
+        );
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchUserData();
+  }, []);
 
-export default function ProfileCard() {
+  const handleLogout = () => {
+    clearTokens();
+    router.replace('/authentication');
+    auth.setUser(null);
+    console.log('Logging out...');
+  };
+
+  if (loading) {
+    return (
+      <SafeAreaView className="flex-1 bg-background">
+        <ProfileScreenSkeleton />
+      </SafeAreaView>
+    );
+  }
+
   return (
-    <KeyboardProvider>
-      <SafeAreaView className="flex-1">
-        <KeyboardAwareScrollView
-          keyboardShouldPersistTaps="handled"
-          extraKeyboardSpace={0}
+    <SafeAreaView className="flex-1 bg-background">
+      {/* Top bar */}
+      <View className="px-4 pb-2 flex-row items-center justify-between">
+        <TouchableOpacity
+          onPress={() => {
+            router.back();
+          }}
+          className="flex-row items-center gap-2 py-2"
         >
-          <View className="m-3 rounded-2xl overflow-hidden">
-            {/* Header */}
-            <View className="pb-0">
-              <View className="flex-row items-center justify-between">
-                <View className="flex-row items-start gap-3">
-                  <TouchableOpacity className="p-1.5 rounded-full">
-                    <Ionicons name="chevron-back" size={22} />
-                  </TouchableOpacity>
+          <Ionicons name="chevron-back" size={22} />
+          <Text className="text-[15px] text-primary font-medium">
+            Trở về trang trước
+          </Text>
+        </TouchableOpacity>
 
-                  <View className="flex-row items-center gap-3">
-                    <Avatar>
-                      <AvatarImage
-                        source={{ uri: 'https://i.pravatar.cc/100?img=65' }}
-                      />
-                      <AvatarFallback>PL</AvatarFallback>
-                    </Avatar>
-                    <View>
-                      <Text className="text-base font-semibold text-primary">
-                        PLEH
-                      </Text>
-                      <Text className="text-xs text-muted-foreground">
-                        Thành phố Hà Nội · 22t
+        <TouchableOpacity
+          onPress={() => {
+            router.push('/(tabs)/settingsAccount/updateAccount');
+          }}
+        >
+          <View className="w-12 h-12 rounded-full bg-white items-center justify-center shadow-2xl">
+            <Ionicons name="create-outline" size={24} />
+          </View>
+        </TouchableOpacity>
+      </View>
+
+      <ScrollView
+        contentContainerStyle={{ paddingBottom: 150 }}
+        showsVerticalScrollIndicator={false}
+      >
+        <View className="px-4">
+          {/* Card container */}
+          <View className="rounded-2xl overflow-hidden bg-white">
+            <Card className="border-0">
+              <CardContent className="p-0">
+                {/* Cover */}
+                <View className="relative">
+                  {userData?.avatarUri ? (
+                    <Image
+                      source={{ uri: userData?.avatarUri }}
+                      className="w-full"
+                      style={{ aspectRatio: 16 / 9 }}
+                      resizeMode="cover"
+                    />
+                  ) : (
+                    <View
+                      className="w-full items-center justify-center"
+                      style={{
+                        aspectRatio: 16 / 9,
+                        backgroundColor: '#e1e1e1',
+                      }}
+                    >
+                      <Text className="text-5xl font-bold text-primary">
+                        {userData?.fullName
+                          ?.split(' ')
+                          .map((w: string) => w[0])
+                          .slice(0, 2)
+                          .join('') || 'U'}
                       </Text>
                     </View>
+                  )}
+
+                  {/* Floating small actions on cover */}
+                  <TouchableOpacity
+                    onPress={() => {
+                      router.push('/(tabs)/notification');
+                    }}
+                    className="absolute bottom-[-22px] left-20 flex-row gap-3"
+                  >
+                    <View className="w-12 h-12 rounded-full items-center justify-center bg-[#2E2F68] shadow-2xl">
+                      <Ionicons
+                        name="notifications-outline"
+                        size={18}
+                        color="#fff"
+                      />
+                    </View>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity className="absolute bottom-[-22px] right-20 flex-row gap-3">
+                    <View className="w-12 h-12 rounded-full items-center justify-center bg-[#2E2F68] shadow-2xl">
+                      <Ionicons
+                        name="calendar-outline"
+                        size={18}
+                        color="#fff"
+                      />
+                    </View>
+                  </TouchableOpacity>
+
+                  {/* Avatar overlap */}
+                  <View className="absolute left-1/2 -translate-x-1/2 -bottom-10">
+                    <Avatar className="w-28 h-28 border-4 border-white">
+                      {userData?.avatarUri ? (
+                        <AvatarImage source={{ uri: userData.avatarUri }} />
+                      ) : (
+                        <AvatarFallback textClassname="text-base">
+                          {userData?.fullName
+                            ?.split(' ')
+                            .map((w: string) => w[0])
+                            .slice(0, 2)
+                            .join('') || 'U'}
+                        </AvatarFallback>
+                      )}
+                    </Avatar>
                   </View>
                 </View>
-                <TouchableOpacity>
-                  <View className="w-12 h-12 rounded-full bg-white items-center justify-center shadow-2xl">
-                    <Ionicons name="create-outline" size={24} />
-                  </View>
-                </TouchableOpacity>
-              </View>
-            </View>
 
-            {/* Ảnh chính */}
-            <View className="pt-3">
-              <View className="rounded-xl overflow-hidden">
-                <Image
-                  source={{ uri: 'https://i.pravatar.cc/100?img=66' }}
-                  className="w-full"
-                  style={{ aspectRatio: 3 / 4 }}
-                  resizeMode="cover"
-                />
-              </View>
-            </View>
+                {/* Name */}
+                <View className="items-center mt-14 px-4">
+                  <Text className="text-[20px] font-semibold text-primary text-center">
+                    {userData?.fullName || ''}
+                  </Text>
+                </View>
 
-            {/* Hàng pill */}
-            <View className="pt-3">
-              <View className="flex-row flex-wrap gap-2">
-                {pills.map((p) => (
-                  <View
-                    key={p.id}
-                    className="rounded-lg px-3 flex items-center flex-col shadow-xl py-3 bg-white"
-                  >
-                    <MaterialCommunityIcons name="badminton" size={14} />
-                    <Text className="text-xs"> {p.label}</Text>
-                  </View>
-                ))}
-              </View>
-            </View>
+                {/* 3 quick actions */}
+                <View className="flex-row gap-3 bg-white px-5 py-1 mt-4 border border-[#eee] shadow-sm rounded-2xl">
+                  <QuickAction
+                    icon={
+                      <Ionicons name="information-circle-outline" size={18} />
+                    }
+                    label="Thông tin"
+                    onPress={() => {}}
+                  />
+                  <QuickAction
+                    icon={<Octicons name="issue-opened" size={18} />}
+                    label="Báo lỗi"
+                    onPress={() => {}}
+                  />
+                  <QuickAction
+                    icon={<MaterialCommunityIcons name="logout" size={18} />}
+                    label="Đăng xuất"
+                    onPress={handleLogout}
+                  />
+                </View>
 
-            {/* Thông tin chi tiết */}
-            <View className="flex-col items-start gap-2 mt-3">
-              <View className="flex-row items-center gap-2">
-                <AntDesign name="home" size={14} color="black" />
-                <Text className="text-xl">Cầu Giấy, thành phố Hà Nội</Text>
-              </View>
-              <View className="flex-row items-center gap-2">
-                <Ionicons name="location-outline" size={14} />
-                <Text className="text-xl">1 kilometer away</Text>
-              </View>
-              <View className="flex-row items-center gap-2">
-                <Ionicons name="time-outline" size={14} />
-                <Text className="text-xl">Tất cả các ngày</Text>
-              </View>
-            </View>
+                {/* Hoạt động */}
+                <SectionHeader title="Hoạt động" className="mt-5 px-4" />
+                <View className="px-4">
+                  <ListItem
+                    icon={<Ionicons name="calendar-outline" size={18} />}
+                    label="Danh sách lịch đã đặt"
+                    onPress={() => {}}
+                  />
+                </View>
+
+                {/* Hệ thống */}
+                <SectionHeader title="Hệ thống" className="mt-4 px-4" />
+                <View className="px-4">
+                  <ListItem
+                    icon={
+                      <Ionicons name="information-circle-outline" size={18} />
+                    }
+                    label={`Thông tin phiên bản: ${version}`}
+                    onPress={() => {}}
+                  />
+                  <ListItem
+                    icon={<Ionicons name="document-text-outline" size={18} />}
+                    label="Điều khoản và chính sách"
+                    onPress={() => {}}
+                  />
+                  <ListItem
+                    icon={<Ionicons name="list-outline" size={18} />}
+                    label="Danh sách lịch đã đặt"
+                    onPress={() => {}}
+                  />
+                </View>
+              </CardContent>
+            </Card>
           </View>
-        </KeyboardAwareScrollView>
-      </SafeAreaView>
-    </KeyboardProvider>
+        </View>
+      </ScrollView>
+    </SafeAreaView>
+  );
+}
+
+/* ---------- nhỏ gọn tái sử dụng ---------- */
+
+function SectionHeader({
+  title,
+  className = '',
+}: {
+  title: string;
+  className?: string;
+}) {
+  return (
+    <View className={`flex-row items-center justify-between ${className}`}>
+      <Text className="text-[15px] font-semibold">{title}</Text>
+    </View>
+  );
+}
+
+function QuickAction({
+  icon,
+  label,
+  onPress,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  onPress?: () => void;
+}) {
+  return (
+    <View className="flex-1">
+      <TouchableOpacity
+        onPress={onPress}
+        className="bg-white  h-20 items-center justify-center "
+      >
+        <View className="w-9 h-9 rounded-full items-center justify-center bg-[#EEF1FF] mb-1">
+          {/* để icon mặc định màu theo theme */}
+          {icon}
+        </View>
+        <Text className="text-[12px]">{label}</Text>
+      </TouchableOpacity>
+    </View>
+  );
+}
+
+function ListItem({
+  icon,
+  label,
+  onPress,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  onPress?: () => void;
+}) {
+  return (
+    <TouchableOpacity
+      onPress={onPress}
+      className="flex-row items-center justify-between bg-white rounded-2xl px-4 py-3 my-2 border border-[#eee] shadow-sm"
+    >
+      <View className="flex-row items-center gap-3">
+        <View className="w-7 h-7 rounded-full items-center justify-center bg-[#EEF1FF]">
+          {icon}
+        </View>
+        <Text className="text-[14px]">{label}</Text>
+      </View>
+      <Ionicons name="chevron-forward" size={18} />
+    </TouchableOpacity>
   );
 }

@@ -66,7 +66,7 @@ const data: NearByYardProps[] = [
 ];
 
 export default function GolfDealCard({
-  heading = 'CÁC ĐIỂM ĐẾN NỔI BẬT',
+  heading = 'Gợi ý cho bạn',
   title,
 }: GolfDealCardProps) {
   return (

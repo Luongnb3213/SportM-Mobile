@@ -9,8 +9,13 @@ import {
 import OtpVerify from '../../components/AuthenticationComponent/OtpVerify';
 import RequestEmail from '@/components/AuthenticationComponent/RequestEmail';
 import { Ionicons } from '@expo/vector-icons';
+import { router, useLocalSearchParams } from 'expo-router';
 
 export default function VerifyEmail() {
+  const { mode, email } = useLocalSearchParams<{
+    mode?: string;
+    email?: string;
+  }>();
   return (
     <KeyboardProvider>
       <SafeAreaView className="flex-1 bg-background">
@@ -26,12 +31,11 @@ export default function VerifyEmail() {
                 <TouchableOpacity
                   className="flex-row items-center gap-2"
                   onPress={() => {
-                    // router.back() nếu dùng expo-router
-                    // router.back();
+                    router.back();
                   }}
                 >
                   <Ionicons name="chevron-back" size={20} color="#1F2257" />
-                  <Text className="text-base text-primary font-medium">
+                  <Text className="text-lg text-primary font-medium">
                     Trở về trang trước
                   </Text>
                 </TouchableOpacity>
@@ -42,18 +46,18 @@ export default function VerifyEmail() {
                   className="w-full h-full"
                 />
               </View>
-              {/* <OtpVerify
-                maskedEmail="mother*****@gmail.com"
-                onResend={() => {
-                }}
-                onConfirm={async (code) => {
-                }}
-              /> */}
-              <RequestEmail
-                onSubmit={() => {}}
-                defaultEmail="mother*****@gmail.com"
-                submittingText="Đang gửi..."
-              />
+              {email ? (
+                <OtpVerify
+                  maskedEmail={email}
+                  from={mode}
+                />
+              ) : (
+                <RequestEmail
+                  from={mode}
+                  defaultEmail="luongnb3213@gmail.com"
+                  submittingText="Đang gửi..."
+                />
+              )}
             </View>
           </View>
         </KeyboardAwareScrollView>

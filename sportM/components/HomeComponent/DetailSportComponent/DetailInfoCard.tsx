@@ -24,51 +24,39 @@ const TABS: TabItem[] = [
   { key: 'review', label: 'Đánh giá' },
 ];
 
-export default function DetailInfoCard() {
+export default function DetailInfoCard({ courtID }: { courtID: string }) {
   const [active, setActive] = useState('info');
 
   return (
     <Card className="mx-3 my-3 overflow-hidden rounded-2xl ">
       {/* HEADER: tab scroll ngang bằng FlatList */}
       <CardHeader className="p-0">
-        <View className="bg-yellow-300 py-1">
-          <FlatList
-            data={TABS}
-            keyExtractor={(it) => it.key}
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={{
-              paddingHorizontal: 12,
-              paddingVertical: 10,
-            }}
-            renderItem={({ item }) => {
-              const focused = item.key === active;
-              return (
-                <TouchableOpacity
-                  onPress={() => setActive(item.key)}
-                  className="mr-6"
-                >
-                  <View
-                    className={`rounded-full ${focused ? 'text-white' : ''}`}
+        <View className="bg-yellow-300 py-3 flex-row px-3 justify-center gap-8">
+          {TABS.map((item, index) => {
+            const focused = item.key === active;
+            return (
+              <TouchableOpacity
+                onPress={() => setActive(item.key)}
+                className="text-center"
+              >
+                <View className={`rounded-full ${focused ? 'text-white' : ''}`}>
+                  <Text
+                    className={`text-lg ${
+                      focused ? 'font-semibold text-primary' : 'font-medium'
+                    }`}
                   >
-                    <Text
-                      className={`text-base ${
-                        focused ? 'font-semibold text-primary' : 'font-medium'
-                      }`}
-                    >
-                      {item.label}
-                    </Text>
-                  </View>
-                </TouchableOpacity>
-              );
-            }}
-          />
+                    {item.label}
+                  </Text>
+                </View>
+              </TouchableOpacity>
+            );
+          })}
         </View>
       </CardHeader>
 
       {/* BODY: nội dung cuộn dọc */}
       <CardContent className="px-3 py-4 bg-white">
-        {active === 'review' && <RatingCard />}
+        {active === 'review' && <RatingCard courtID={courtID} />}
         {['info', 'price', 'policy'].includes(active) && (
           <ScrollView
             style={{ maxHeight: 400 }}
@@ -91,9 +79,15 @@ export default function DetailInfoCard() {
               <Ionicons name="pricetag-outline" size={18} />
               <Text className="text-[15px] text-primary">Mã khuyến mại</Text>
             </View>
-            <Button onPress={() => {
-               router.push('/home/DetailSport/bookingSchedule');
-            }} className="h-12 flex-1 w-full rounded-xl">
+            <Button
+              onPress={() => {
+                router.push({
+                   pathname: '/home/DetailSport/bookingSchedule',
+                   params: { courtID },
+                });
+              }}
+              className="h-12 flex-1 w-full rounded-xl"
+            >
               <Text className="text-base text-white font-semibold">
                 Đặt lịch
               </Text>

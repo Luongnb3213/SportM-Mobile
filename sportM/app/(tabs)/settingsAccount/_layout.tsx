@@ -6,10 +6,12 @@ export default function AccountStack() {
     <Stack
       screenOptions={{
         headerShown: false,
-        animation: "slide_from_left", // mặc định trong tab Account
+        animation: "slide_from_right", // mặc định trong tab Account
       }}
     >
       <Stack.Screen name="index" />
+      <Stack.Screen name="detailAccount" />
+      <Stack.Screen name="updateAccount" />
     </Stack>
   );
 }

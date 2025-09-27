@@ -109,12 +109,7 @@ export function UserInviteItem({
       case 'sent':
         return (
           <View className="flex-row gap-3">
-            <Circle
-              variant="light"
-              onPress={onCancel}
-              accessibilityLabel="Thu hồi lời mời"
-              icon={<Ionicons name="close" size={20} color={accentHex} />}
-            />
+
           </View>
         );
     }
