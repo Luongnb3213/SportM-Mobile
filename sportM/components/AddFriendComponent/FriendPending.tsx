@@ -6,6 +6,7 @@ import { useAxios } from '@/lib/api';
 import { UserInviteListSkeleton } from '../Skeleton/UserInviteItemSkeleton';
 import Button from '../Button';
 import { Ionicons } from '@expo/vector-icons';
+import Toast from 'react-native-toast-message';
 type User = { id: string; name: string; subtitle?: string; avatar?: string };
 
 const NAVY = '#202652';
@@ -39,13 +40,47 @@ const FriendPending = () => {
       }
     })();
   }, []);
-  const handleConfirm = (u: User) => {
+  const handleConfirm = async (u: User) => {
     // accept -> bỏ khỏi pending (coi như đã thành bạn)
-    setPending((prev) => prev.filter((x) => x.id !== u.id));
+    try {
+      setPending((prev) => prev.filter((x) => x.id !== u.id));
+      const { data } = await useAxios.post(`/friend-request/${u.id}`, {
+        status: true,
+      });
+      Toast.show({
+        type: 'success',
+        text1: 'Thành công',
+        text2: `Bạn và ${u.name} đã trở thành bạn bè.`,
+      });
+    } catch (error) {
+      console.error(error);
+      Toast.show({
+        type: 'error',
+        text1: 'Lỗi',
+        text2: 'Không thể xác nhận lời mời lúc này. Vui lòng thử lại sau.',
+      });
+    }
   };
-  const handleCancelPending = (u: User) => {
+  const handleCancelPending = async (u: User) => {
     // từ chối -> bỏ khỏi pending
-    setPending((prev) => prev.filter((x) => x.id !== u.id));
+    try {
+      setPending((prev) => prev.filter((x) => x.id !== u.id));
+      await useAxios.post(`/friend-request/${u.id}`, {
+        status: false,
+      });
+      Toast.show({
+        type: 'success',
+        text1: 'Thành công',
+        text2: `Bạn đã từ chối lời mời kết bạn từ ${u.name}.`,
+      });
+    } catch (error) {
+      console.error(error);
+      Toast.show({
+        type: 'error',
+        text1: 'Lỗi',
+        text2: 'Không thể từ chối lời mời lúc này. Vui lòng thử lại sau.',
+      });
+    }
   };
 
   const loadMore = async () => {

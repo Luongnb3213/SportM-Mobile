@@ -60,11 +60,19 @@ const RequestEmail: React.FC<RequestEmailProps> = ({
           });
         }
       } catch (error: any) {
+        console.log(JSON.stringify(error.response));
+
         if (error.status === 404) {
           Toast.show({
             type: 'error',
             text1: 'Lỗi',
             text2: 'Email không tồn tại',
+          });
+        }else{
+           Toast.show({
+            type: 'error',
+            text1: 'Lỗi',
+            text2: 'Đã có lỗi xảy ra, vui lòng thử lại sau',
           });
         }
       } finally {

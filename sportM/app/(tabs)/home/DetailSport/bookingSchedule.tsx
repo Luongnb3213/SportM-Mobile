@@ -1,6 +1,7 @@
 import BookingScheduleScreen from '@/components/HomeComponent/DetailSportComponent/BookingScheduleScreen';
 import BookingSummary from '@/components/HomeComponent/DetailSportComponent/BookingSummary';
 import HeaderUser from '@/components/ui/HeaderUser';
+import { useLocalSearchParams } from 'expo-router';
 import React from 'react';
 import { View } from 'react-native';
 import {
@@ -14,7 +15,7 @@ import {
 
 const bookingSchedule = () => {
   const insets = useSafeAreaInsets();
-
+  const { courtID } = useLocalSearchParams<{ courtID: string }>();
   return (
     <KeyboardProvider>
       <SafeAreaView className="flex-1 bg-white">

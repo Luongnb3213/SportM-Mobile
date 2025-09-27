@@ -15,6 +15,6 @@ export default function Index() {
   }
 
   return (
-    <Redirect href={status === 'authenticated' ? '/(tabs)/home/DetailSport/bookingSchedule' : '/authentication'} />
+    <Redirect href={status === 'authenticated' ? '/home' : '/authentication'} />
   );
 }

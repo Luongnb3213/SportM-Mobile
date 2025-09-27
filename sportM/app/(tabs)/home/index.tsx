@@ -63,7 +63,6 @@ export default function HomeScreen() {
             </View>
 
             <View className="gap-5 px-4 mt-4 flex-col">
-
               <GolfCourseCard
                 title="Bíc cờ bôn"
                 pricePerHour="1.000.000/ giờ"
@@ -73,7 +72,10 @@ export default function HomeScreen() {
                   // navigate to detail screen
                   // navigation.navigate('DetailSport');
                   // router.push('/home/booking');
-                  router.push('/(tabs)/home/DetailSport')
+                  router.push({
+                    pathname: '/(tabs)/home/DetailSport',
+                    params: { courtID: '12345' },
+                  });
                 }}
               />
               <GolfCourseCard

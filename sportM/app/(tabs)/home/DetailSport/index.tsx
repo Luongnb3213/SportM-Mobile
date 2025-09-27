@@ -2,6 +2,7 @@ import DetailInfoCard from '@/components/HomeComponent/DetailSportComponent/Deta
 import GolfDealCard from '@/components/HomeComponent/GolfDealCard';
 import HeaderUser from '@/components/ui/HeaderUser';
 import { Ionicons } from '@expo/vector-icons';
+import { useLocalSearchParams } from 'expo-router';
 import React from 'react';
 import { ImageBackground, Text, TouchableOpacity, View } from 'react-native';
 import {
@@ -15,7 +16,9 @@ import {
 
 const DetailSport = () => {
   const insets = useSafeAreaInsets();
-
+  const { courtID } = useLocalSearchParams<{
+    courtID: string;
+  }>();
   return (
     <KeyboardProvider>
       <SafeAreaView className="flex-1">
@@ -82,7 +85,7 @@ const DetailSport = () => {
             </ImageBackground>
           </View>
           <View className="shadow-2xl">
-            <DetailInfoCard />
+            <DetailInfoCard courtID={courtID} />
           </View>
         </KeyboardAwareScrollView>
       </SafeAreaView>
