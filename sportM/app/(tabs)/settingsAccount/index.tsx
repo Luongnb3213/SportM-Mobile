@@ -68,7 +68,11 @@ export default function ProfileScreen() {
           </Text>
         </TouchableOpacity>
 
-        <TouchableOpacity>
+        <TouchableOpacity
+          onPress={() => {
+            router.push('/(tabs)/settingsAccount/updateAccount');
+          }}
+        >
           <View className="w-12 h-12 rounded-full bg-white items-center justify-center shadow-2xl">
             <Ionicons name="create-outline" size={24} />
           </View>

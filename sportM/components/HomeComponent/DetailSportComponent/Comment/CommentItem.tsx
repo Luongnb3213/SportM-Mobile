@@ -7,6 +7,8 @@ import { Card } from '@/components/Card';
 import Button from '@/components/Button';
 import { Input } from '@/components/Input';
 import { cn } from '@/lib/utils';
+import { useAxios } from '@/lib/api';
+import Toast from 'react-native-toast-message';
 
 export type Comment = {
   id: string;
@@ -36,6 +38,7 @@ function timeFromNow(createdAt: Props['data']['createdAt']) {
 export const CommentItem: React.FC<Props> = ({ data, className }) => {
   const [open, setOpen] = useState(false);
   const [draft, setDraft] = useState(data.content);
+  const [ratingDraft, setRatingDraft] = useState<number>(3);
 
   const ago = useMemo(() => timeFromNow(data.createdAt), [data.createdAt]);
 
@@ -45,13 +48,55 @@ export const CommentItem: React.FC<Props> = ({ data, className }) => {
   }, [data.authorName]);
 
   const handleSave = () => {
-    handleUpdate();
-    setOpen(false);
+    (async () => {
+      try {
+        const { data: res } = await useAxios.patch(`/rating/${data.id}`, {
+          star: ratingDraft,
+          content: draft.trim(),
+        });
+        setOpen(false);
+        setRatingDraft(0);
+        setDraft('');
+        Toast.show({
+          type: 'success',
+          text1: 'Thành công',
+          text2: 'Chỉnh sửa bình luận thành công',
+        });
+      } catch (error) {
+        console.log('Update comment error', error);
+        Toast.show({
+          type: 'error',
+          text1: 'Lỗi',
+          text2:
+            'Không thể chỉnh sửa bình luận lúc này. Vui lòng thử lại sau.',
+        });
+      }
+    })();
   };
 
-  const handleDelete = () => {};
+  const handleDelete = () => {
+    (async () => {
+      try {
+        const { data: res } = await useAxios.delete(`/rating/${data.id}`);
+        Toast.show({
+          type: 'success',
+          text1: 'Thành công',
+          text2: 'Xoá bình luận thành công',
+        });
+      } catch (error) {
+        console.log('Delete comment error', error);
+        Toast.show({
+          type: 'error',
+          text1: 'Lỗi',
+          text2: 'Không thể xoá bình luận lúc này. Vui lòng thử lại sau.',
+        });
+      }
+    })();
+  };
 
-  const handleUpdate = () => {};
+  const handleRate = (n: number) => {
+    setRatingDraft(n);
+  };
 
   return (
     <View className={cn('flex-row gap-3 px-4 py-3', className)}>
@@ -124,6 +169,25 @@ export const CommentItem: React.FC<Props> = ({ data, className }) => {
             onPress={() => {}}
             className="mx-6 mt-auto mb-8 rounded-2xl bg-background p-4"
           >
+            <View className="mt-4 flex-row items-center gap-3">
+              {Array.from({ length: 5 }).map((_, i) => {
+                const idx = i + 1;
+                const active = idx <= ratingDraft;
+                return (
+                  <TouchableOpacity
+                    key={idx}
+                    onPress={() => handleRate(idx)}
+                    hitSlop={8}
+                  >
+                    <Ionicons
+                      name={active ? 'star' : 'star-outline'}
+                      size={28}
+                      color={active ? '#F59E0B' : '#94A3B8'}
+                    />
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
             <Text className="text-lg font-semibold text-primary mb-3">
               Sửa bình luận
             </Text>
