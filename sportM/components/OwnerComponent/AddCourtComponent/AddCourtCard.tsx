@@ -11,20 +11,16 @@ import { Ionicons } from '@expo/vector-icons';
 
 import { Card, CardHeader, CardContent, CardFooter } from '@/components/Card'; // :contentReference[oaicite:2]{index=2}
 import { Button } from '@/components/Button'; // :contentReference[oaicite:3]{index=3}
-import InfoSport from './InfoSport';
-import PriceTableCard from './TablePrice';
-import PolicyCard from './PolicyCard';
-import RatingCard from './RatingCard';
 import { router } from 'expo-router';
+import InfoSport from '@/components/HomeComponent/DetailSportComponent/InfoSport';
 
 type TabItem = { key: string; label: string };
 
 const TABS: TabItem[] = [
   { key: 'info', label: 'Thông tin' },
-  { key: 'review', label: 'Đánh giá' },
 ];
 
-export default function DetailInfoCard({ courtID }: { courtID: string }) {
+export default function AddCourtCard({ courtID }: { courtID: string }) {
   const [active, setActive] = useState('info');
 
   return (
@@ -57,7 +53,6 @@ export default function DetailInfoCard({ courtID }: { courtID: string }) {
 
       {/* BODY: nội dung cuộn dọc */}
       <CardContent className="px-3 py-4 bg-white">
-        {active === 'review' && <RatingCard courtID={courtID} />}
         {['info', 'price', 'policy'].includes(active) && (
           <ScrollView
             style={{ maxHeight: 400 }}
@@ -66,15 +61,13 @@ export default function DetailInfoCard({ courtID }: { courtID: string }) {
             showsVerticalScrollIndicator={false}
           >
             {active === 'info' && <InfoSport />}
-            {active === 'price' && <PriceTableCard />}
-            {active === 'policy' && <PolicyCard />}
           </ScrollView>
         )}
       </CardContent>
 
       {/* FOOTER: nút đặt lịch */}
       <CardFooter className="px-3 pb-4 bg-white">
-        {['info', 'price'].includes(active) && (
+        {['info'].includes(active) && (
           <View className="flex-col items-center gap-4 w-full">
             <View className="mt-5 w-full flex-row items-center justify-center gap-2">
               <Ionicons name="pricetag-outline" size={18} />
@@ -91,22 +84,6 @@ export default function DetailInfoCard({ courtID }: { courtID: string }) {
             >
               <Text className="text-base text-white font-semibold">
                 Đặt lịch
-              </Text>
-            </Button>
-          </View>
-        )}
-
-        {active === 'policy' && (
-          <View className="flex-row items-center gap-3 w-full">
-            <Button className="h-12 flex-1 w-full rounded-xl">
-              <Text className="text-base text-white font-semibold">Đồng ý</Text>
-            </Button>
-            <Button
-              className="h-12 flex-1 w-full rounded-xl border-primary border"
-              style={{ backgroundColor: '#FFF' }}
-            >
-              <Text className="text-base text-primary font-semibold">
-                Không đồng ý
               </Text>
             </Button>
           </View>

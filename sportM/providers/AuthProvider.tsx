@@ -9,7 +9,7 @@ import React, {
   useState,
 } from 'react';
 
-type AuthStatus = 'loading' | 'authenticated' | 'unauthenticated';
+type AuthStatus = 'loading' | 'authenticated' | 'unauthenticated' | 'log_client' | 'log_owner';
 
 type AuthContextValue = {
   status: AuthStatus;
@@ -30,8 +30,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const access = tokens;
     if (access) {
       const payload = decodeJwt(access);
+      console.log('Decoded JWT payload:', payload);
       setUser(payload);
-      setStatus('authenticated');
+      if (payload?.role == "CLIENT") {
+        setStatus('log_client');
+      }else{
+        setStatus('log_owner');
+      }
     } else {
       setUser(null);
       setStatus('unauthenticated');

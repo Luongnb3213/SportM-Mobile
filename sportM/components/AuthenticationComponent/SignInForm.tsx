@@ -75,7 +75,11 @@ export default function SignInForm() {
       const payload = decodeJwt(access);
       auth.setUser(payload);
       await saveTokens('accessToken', access);
-      router.replace('/home');
+      if (payload?.role == 'CLIENT') {
+        router.replace('/home');
+      } else {
+        router.replace('/owner');
+      }
     } catch (err: any) {
       Toast.show({
         type: 'error',
@@ -107,7 +111,11 @@ export default function SignInForm() {
         const payload = decodeJwt(access);
         auth.setUser(payload);
         await saveTokens('accessToken', access);
-        router.replace('/home');
+        if (payload?.role == 'CLIENT') {
+          router.replace('/home');
+        } else {
+          router.replace('/owner');
+        }
       }
     } catch (error) {
       Toast.show({

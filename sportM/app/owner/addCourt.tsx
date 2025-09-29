@@ -1,5 +1,4 @@
-import DetailInfoCard from '@/components/HomeComponent/DetailSportComponent/DetailInfoCard';
-import GolfDealCard from '@/components/HomeComponent/GolfDealCard';
+import AddCourtCard from '@/components/OwnerComponent/AddCourtComponent/AddCourtCard';
 import HeaderUser from '@/components/ui/HeaderUser';
 import { Ionicons } from '@expo/vector-icons';
 import { router, useLocalSearchParams } from 'expo-router';
@@ -14,7 +13,7 @@ import {
   useSafeAreaInsets,
 } from 'react-native-safe-area-context';
 
-const DetailSport = () => {
+const AddCourt = () => {
   const insets = useSafeAreaInsets();
   const { courtID } = useLocalSearchParams<{
     courtID: string;
@@ -38,7 +37,7 @@ const DetailSport = () => {
             <TouchableOpacity
               className="flex-row items-center gap-2 py-2"
               onPress={() => {
-                 router.back();
+                router.back();
               }}
             >
               <Ionicons name="chevron-back" size={20} />
@@ -84,7 +83,7 @@ const DetailSport = () => {
             </ImageBackground>
           </View>
           <View className="shadow-2xl">
-            <DetailInfoCard courtID={courtID} />
+            <AddCourtCard courtID={courtID} />
           </View>
         </KeyboardAwareScrollView>
       </SafeAreaView>
@@ -92,4 +91,4 @@ const DetailSport = () => {
   );
 };
 
-export default DetailSport;
+export default AddCourt;

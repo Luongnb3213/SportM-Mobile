@@ -14,7 +14,7 @@ import {
   useSafeAreaInsets,
 } from 'react-native-safe-area-context';
 
-const DetailSport = () => {
+const DetailCourt = () => {
   const insets = useSafeAreaInsets();
   const { courtID } = useLocalSearchParams<{
     courtID: string;
@@ -92,4 +92,4 @@ const DetailSport = () => {
   );
 };
 
-export default DetailSport;
+export default DetailCourt;
