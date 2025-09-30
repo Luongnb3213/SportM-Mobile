@@ -38,7 +38,7 @@ export default function HomeScreen() {
   const [guest, setGuest] = useState(2);
   const [loc, setLoc] = useState('');
   const insets = useSafeAreaInsets();
-  const [bookingCourt, setBookingCourt] = useState()
+  const [bookingCourt, setBookingCourt] = useState([])
 
   useEffect(() => {
     (async () => {
@@ -114,8 +114,6 @@ export default function HomeScreen() {
                   <GolfCourseCardSkeleton key={idx} />
                 ))
               )}
-
-
 
               <View className="items-center py-3">
                 <Button onPress={() => {

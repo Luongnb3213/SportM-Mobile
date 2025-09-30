@@ -125,7 +125,7 @@ export function UserInviteItem({
   return (
     <Card
       className={cn(
-        `flex-row items-center gap-3 px-3 py-2 rounded-2xl ${avatarUri ? 'bg-[#D0CFCF]' : 'bg-white'} shadow-sm`,
+        `flex-row items-center gap-3 px-3 py-3 rounded-2xl ${avatarUri ? 'bg-[#D0CFCF]' : 'bg-white'} shadow-sm`,
         className,
       )}
     >

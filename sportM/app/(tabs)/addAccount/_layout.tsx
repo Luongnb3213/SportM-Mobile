@@ -10,6 +10,7 @@ export default function SearchStack() {
       }}
     >
       <Stack.Screen name="index" options={{}} />
+      <Stack.Screen name="listFriendRequest" options={{}} />
     </Stack>
   );
 }
