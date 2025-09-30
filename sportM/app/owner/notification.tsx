@@ -15,18 +15,18 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/Avatar';
 import { Card } from '@/components/Card';
 type Noti =
   | {
-      id: string;
-      type: 'system';
-      text: string;
-      time: string;
-    }
+    id: string;
+    type: 'system';
+    text: string;
+    time: string;
+  }
   | {
-      id: string;
-      type: 'friend_request';
-      user: { name: string; avatar?: string };
-      text: string;
-      time: string;
-    };
+    id: string;
+    type: 'friend_request';
+    user: { name: string; avatar?: string };
+    text: string;
+    time: string;
+  };
 
 const NOTIFS: Noti[] = [
   {

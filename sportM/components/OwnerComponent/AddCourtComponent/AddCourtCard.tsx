@@ -23,6 +23,11 @@ const TABS: TabItem[] = [
 export default function AddCourtCard({ courtID }: { courtID: string }) {
   const [active, setActive] = useState('info');
 
+  const handleCreateCourt = () => {
+
+  }
+   
+
   return (
     <Card className="mx-3 my-3 overflow-hidden rounded-2xl ">
       {/* HEADER: tab scroll ngang bằng FlatList */}
@@ -38,9 +43,8 @@ export default function AddCourtCard({ courtID }: { courtID: string }) {
               >
                 <View className={`rounded-full ${focused ? 'text-white' : ''}`}>
                   <Text
-                    className={`text-lg ${
-                      focused ? 'font-semibold text-primary' : 'font-medium'
-                    }`}
+                    className={`text-lg ${focused ? 'font-semibold text-primary' : 'font-medium'
+                      }`}
                   >
                     {item.label}
                   </Text>
@@ -68,22 +72,25 @@ export default function AddCourtCard({ courtID }: { courtID: string }) {
       {/* FOOTER: nút đặt lịch */}
       <CardFooter className="px-3 pb-4 bg-white">
         {['info'].includes(active) && (
-          <View className="flex-col items-center gap-4 w-full">
-            <View className="mt-5 w-full flex-row items-center justify-center gap-2">
-              <Ionicons name="pricetag-outline" size={18} />
-              <Text className="text-[15px] text-primary">Mã khuyến mại</Text>
-            </View>
+          <View className="flex-row items-center gap-1 w-full">
             <Button
               onPress={() => {
                 router.push({
-                   pathname: '/home/DetailSport/bookingSchedule',
-                   params: { courtID },
+                  pathname: '/owner',
                 });
               }}
+              className="h-12 flex-1 bg-white border border-primary w-full rounded-xl"
+            >
+              <Text className="text-base text-primary font-semibold">
+                Huỷ
+              </Text>
+            </Button>
+            <Button
+              onPress={handleCreateCourt}
               className="h-12 flex-1 w-full rounded-xl"
             >
               <Text className="text-base text-white font-semibold">
-                Đặt lịch
+                Xác nhận
               </Text>
             </Button>
           </View>

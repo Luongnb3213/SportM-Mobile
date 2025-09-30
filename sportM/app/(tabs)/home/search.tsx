@@ -22,7 +22,7 @@ import {
 
 type Pill = { sportTypeId: string | null; typeName: string; status: boolean };
 
-const index = () => {
+const Search = () => {
   const insets = useSafeAreaInsets();
   const t = useAppTheme();
   const [sportTypeList, setSportTypeList] = React.useState<Pill[] | null>(null);
@@ -53,7 +53,7 @@ const index = () => {
     (async () => {
       try {
         setLoading(true);
-        const { data } = await useAxios.get(`/owner/courts?page=${page}&limit=5&${debouncedSearch ? `search=${debouncedSearch}` : ''}&${sportTypeSelected ? `sportTypeId=${sportTypeSelected}` : ''}`, { signal: ctrl.signal });
+        const { data } = await useAxios.get(`/courts?page=${page}&limit=5&${debouncedSearch ? `search=${debouncedSearch}` : ''}&${sportTypeSelected ? `sportTypeId=${sportTypeSelected}` : ''}`, { signal: ctrl.signal });
         await new Promise((resolve) => setTimeout(resolve, 2000));
         setListCourt(data.data.items);
         setTotalPage(data.data.meta.totalItems % 5 === 0 ? Math.floor(data.data.meta.totalItems / 5) : Math.floor(data.data.meta.totalItems / 5) + 1);
@@ -202,4 +202,4 @@ const index = () => {
   );
 };
 
-export default index;
+export default Search;

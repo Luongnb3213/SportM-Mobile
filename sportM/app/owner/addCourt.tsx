@@ -1,9 +1,10 @@
+import Button from '@/components/Button';
 import AddCourtCard from '@/components/OwnerComponent/AddCourtComponent/AddCourtCard';
 import HeaderUser from '@/components/ui/HeaderUser';
 import { Ionicons } from '@expo/vector-icons';
 import { router, useLocalSearchParams } from 'expo-router';
 import React from 'react';
-import { ImageBackground, Text, TouchableOpacity, View } from 'react-native';
+import { ImageBackground, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import {
   KeyboardAwareScrollView,
   KeyboardProvider,
@@ -12,12 +13,29 @@ import {
   SafeAreaView,
   useSafeAreaInsets,
 } from 'react-native-safe-area-context';
+import * as ImagePicker from 'expo-image-picker';
+
 
 const AddCourt = () => {
   const insets = useSafeAreaInsets();
   const { courtID } = useLocalSearchParams<{
     courtID: string;
   }>();
+  const [image, setImage] = React.useState<string | null>(null);
+
+ const pickImage = async () => {
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.8,
+    });
+    if (!result.canceled) {
+      setImage(result.assets[0].uri);
+    }
+  };
+
+
   return (
     <KeyboardProvider>
       <SafeAreaView className="flex-1">
@@ -50,7 +68,7 @@ const AddCourt = () => {
           <View className="">
             <ImageBackground
               source={{
-                uri: 'https://images.unsplash.com/photo-1502877338535-766e1452684a?q=80&w=1600',
+                uri: image || 'https://images.unsplash.com/photo-1506744038136-4627383b3fb?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80',
               }}
               resizeMode="cover"
               className="w-full"
@@ -59,26 +77,25 @@ const AddCourt = () => {
               {/* overlay làm tối ảnh một chút để chữ nổi bật */}
               <View className="absolute inset-0 bg-black/25" />
               {/* texts */}
-              <View className="px-4 mt-2">
-                <Text className="text-lg text-gray-200">Mai Lâm, Đông Anh</Text>
-
-                <Text
-                  // màu vàng tươi giống ảnh
-                  style={{ color: '#FFF200' }}
-                  className="mt-2 text-4xl font-medium leading-tight"
+              <View className="px-10 mt-14 flex flex-col gap-3">
+                <TextInput
+                  placeholder="Nhập địa điểm"
+                  className="text-lg px-4 border rounded-md h-12 border-[#BDBDBD]"
+                  placeholderTextColor="#DCDCDC"
+                />
+                <TextInput
+                  placeholder="Nhập tên sân"
+                  className="text-2xl px-4 border rounded-md h-14 border-[#BDBDBD]"
+                  placeholderTextColor="#DCDCDC"
+                />
+                <Button
+                  className="h-12 w-72 mx-auto rounded-xl"
+                  onPress={pickImage}
                 >
-                  SÂN GOLF NEM CHUA
-                </Text>
-
-                {/* rating pill */}
-                <View className="mt-3 flex-row items-center">
-                  <View className="flex-row items-center gap-1 rounded-full bg-black/60 px-3 py-1.5">
-                    <Text className="text-white text-base font-semibold">
-                      5.0
-                    </Text>
-                    <Ionicons name="star" size={14} color="#FFD54F" />
-                  </View>
-                </View>
+                  <Text className="text-base text-white font-semibold">
+                   Thêm ảnh
+                  </Text>
+                </Button>
               </View>
             </ImageBackground>
           </View>
