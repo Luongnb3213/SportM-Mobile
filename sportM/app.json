@@ -4,7 +4,7 @@
     "slug": "sportm",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
+    "icon": "./assets/images/sportM-icon.png",
     "scheme": "sportm",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
