@@ -118,7 +118,7 @@ export default function FeedScreen() {
                       </View>
                     </TouchableOpacity>
 
- <TouchableOpacity
+                    <TouchableOpacity
                       style={{
                         width: 70,
                         height: 70,
