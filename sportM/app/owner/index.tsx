@@ -160,15 +160,15 @@ const index = () => {
                     listCourt.map((court, index) => {
                       return (
                         <GolfCourseCard
-                          key={index}
-                          title={court.name || 'Sân bóng đá ABC'}
-                          pricePerHour={`${court.pricePerHour} đ/h`}
-                          rating={court.rating || 4.5}
-                          imageUri={court.courtImages[0] || "https://images.unsplash.com/photo-150287733853-766e1452684a?q=80&w=1600"}
+                          key={court?.courtId + index}
+                          title={court?.courtName || 'Sân bóng đá ABC'}
+                          pricePerHour={`${court?.pricePerHour} đ/h`}
+                          rating={court?.rating || 4.5}
+                          imageUri={court?.courtImages[0] || "https://images.unsplash.com/photo-150287733853-766e1452684a?q=80&w=1600"}
                           onPress={() => {
                             router.push({
                               pathname: '/owner/detailCourt',
-                              params: { courtID: court.courtId },
+                              params: { courtID: court?.courtId },
                             });
                           }}
                         />
