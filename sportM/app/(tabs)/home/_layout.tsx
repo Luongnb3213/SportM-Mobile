@@ -13,10 +13,10 @@ export default function HomeStack() {
       <Stack.Screen name="index" options={{}} />
       <Stack.Screen
         name="DetailSport"
-        options={{ animation: 'slide_from_right' }} // riêng màn detail dùng fade
+        options={{ animation: 'slide_from_right' }} 
       />
       <Stack.Screen name="booking" options={{}} />
-
+      <Stack.Screen name="search" options={{}} />
     </Stack>
   );
 }

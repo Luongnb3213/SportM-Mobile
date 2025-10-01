@@ -4,15 +4,25 @@ import { useAuth } from '../providers/AuthProvider';
 import { View, ActivityIndicator } from 'react-native';
 
 export default function Index() {
-  const { status } = useAuth();
+  const { status, user } = useAuth();
 
   if (status === 'loading') {
     return (
       <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-        <ActivityIndicator />
+        <ActivityIndicator size={'large'} />
       </View>
     );
   }
 
-  return <Redirect href={status === 'authenticated' ? '/home' : '/authentication'} />;
+  return (
+    <Redirect
+      href={
+        status === 'unauthenticated'
+          ? '/authentication'
+          : status === 'log_client'
+          ? '/home'
+          : '/owner'
+      }
+    />
+  );
 }

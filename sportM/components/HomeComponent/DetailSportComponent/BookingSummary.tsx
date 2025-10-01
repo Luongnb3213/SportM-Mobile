@@ -1,6 +1,13 @@
 import React from 'react';
-import { View, Text, TextInput, Pressable } from 'react-native';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
+import {
+  View,
+  Text,
+  TextInput,
+  Pressable,
+  TouchableOpacity,
+} from 'react-native';
+import { AntDesign, MaterialCommunityIcons } from '@expo/vector-icons';
+import InviteFriendsSheet from './InviteFriendsSheet';
 
 type Props = {
   totalHours: number;
@@ -23,9 +30,12 @@ export default function BookingSummary({
   note,
   onChangeNote,
 }: Props) {
+  const [open, setOpen] = React.useState(false);
   return (
     <View className="mx-3 mb-6">
-      <Text className="mb-2 text-[14px] font-bold text-gray-900">Ghi chú</Text>
+      <Text className="mb-2 text-[20px] font-medium text-[#292929]">
+        Ghi chú
+      </Text>
       <TextInput
         placeholder="Nhập ghi chú"
         value={note}
@@ -38,7 +48,18 @@ export default function BookingSummary({
 
       <View className="h-4" />
 
-      <Text className="mb-2 text-[14px] font-bold text-gray-900">
+      <TouchableOpacity
+        onPress={() => setOpen(true)}
+        className="flex-row items-center justify-between"
+      >
+        <Text className="text-[20px] font-medium text-[#292929]">
+          Mời bạn bè
+        </Text>
+        <AntDesign name="plus" size={24} color="black" />
+      </TouchableOpacity>
+
+      <View className="h-4" />
+      <Text className="mb-2 text-[20px] font-medium text-[#292929]">
         Thành tiền
       </Text>
       <View className="rounded-xl border border-gray-200 bg-white">
@@ -50,10 +71,10 @@ export default function BookingSummary({
         </View>
         <View className="mx-4 border-t border-gray-200" />
         <View className="flex-row items-center justify-between px-4 py-3">
-          <Text className="text-[16px] font-extrabold text-gray-900">
+          <Text className="text-[16px] font-extrabold text-[#292929]">
             TỔNG TIỀN
           </Text>
-          <Text className="text-[16px] font-semibold text-gray-900">
+          <Text className="text-[16px] font-semibold text-[#292929]">
             {formatVND(totalPrice)}
           </Text>
         </View>
@@ -73,6 +94,7 @@ export default function BookingSummary({
           <Text className="text-[16px] font-semibold text-white">Đặt lịch</Text>
         </Pressable>
       </View>
+      <InviteFriendsSheet open={open} onClose={() => setOpen(false)} />
     </View>
   );
 }

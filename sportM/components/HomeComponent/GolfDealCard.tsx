@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Image, View, Text, Dimensions } from 'react-native';
 import NearByYard from './NearByYard';
 import FlatPeekCarousel from './FlatPeekCarousel';
+import { NearByYardSkeleton } from '../Skeleton/NearByYardSkeleton';
 
 type GolfDealCardProps = {
   heading?: string; // “HÃY ĐẶT SÂN VỚI CHÚNG TÔI”
@@ -66,9 +67,16 @@ const data: NearByYardProps[] = [
 ];
 
 export default function GolfDealCard({
-  heading = 'CÁC ĐIỂM ĐẾN NỔI BẬT',
+  heading = 'Gợi ý cho bạn',
   title,
 }: GolfDealCardProps) {
+  const [listCourt, setListCourt] = React.useState<NearByYardProps[]>();
+  useEffect(() => {
+    (async () => {
+      // fetch data from API
+    })()
+  }, []);
+
   return (
     <View className="px-4 pr-0">
       {/* Heading nhỏ */}
@@ -84,7 +92,8 @@ export default function GolfDealCard({
       </Text>
 
       <View>
-        <FlatPeekCarousel
+
+        {listCourt ? (<FlatPeekCarousel
           data={data}
           itemsPerView={2.1}
           aspectRatio={16 / 9}
@@ -97,7 +106,17 @@ export default function GolfDealCard({
               location={item.location}
             />
           )}
-        />
+        />) :
+          <FlatPeekCarousel
+            data={data}
+            itemsPerView={2.1}
+            aspectRatio={16 / 9}
+            renderItem={({ item }) => (
+              <NearByYardSkeleton key={item.id} />
+            )}
+          />
+
+        }
       </View>
     </View>
   );

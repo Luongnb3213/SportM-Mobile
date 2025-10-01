@@ -1,157 +1,160 @@
-// app/friends/index.tsx
-import React, { useMemo, useState } from 'react';
-import { View, Text, TouchableOpacity } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import {
-  KeyboardAwareScrollView,
-  KeyboardProvider,
-} from 'react-native-keyboard-controller';
-import { UserInviteItem } from '@/components/AddFriendComponent/UserInviteItem';
-import HeaderUser from '@/components/ui/HeaderUser';
+// FeedScreen.tsx
+import React from "react";
+import { Dimensions, View, Text, Image, TouchableOpacity } from "react-native";
+import Carousel from "react-native-reanimated-carousel";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/Card";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/Avatar";
+import Button from "@/components/Button";
+import { Ionicons } from "@expo/vector-icons";
+import { KeyboardProvider } from "react-native-keyboard-controller";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { router } from "expo-router";
 
-type User = { id: string; name: string; subtitle?: string; avatar?: string };
-type SectionKey = 'suggest' | 'pending' | 'sent';
+const { height: SCREEN_HEIGHT, width: SCREEN_WIDTH } = Dimensions.get("window");
 
-const NAVY = '#202652';
+type FeedItem = {
+  id: string;
+  title: string;
+  description: string;
+  image: string;
+  user: { name: string; avatar?: string };
+};
 
-export default function FriendsScreen() {
-  const [suggest, setSuggest] = useState<User[]>([
-    { id: '1', name: 'Lại Gia Tùng', subtitle: 'Chủ sân' },
-    { id: '2', name: 'Nguyễn Hồng Phúc', subtitle: 'Thủ môn' },
-  ]);
-  const [pending, setPending] = useState<User[]>([
-    { id: '3', name: 'Trần Quang', subtitle: 'Đang chờ xác nhận' },
-  ]);
-  const [sent, setSent] = useState<User[]>([
-    { id: '4', name: 'Bùi Đức Anh', subtitle: 'Đã gửi lời mời' },
-  ]);
+const DATA: FeedItem[] = [
+  {
+    id: "1",
+    title: "Sân bóng mini Hòa Bình",
+    description: "Đặt sân nhanh chóng và tiện lợi",
+    image: "https://picsum.photos/800/1200",
+    user: { name: "Nguyễn Văn A", avatar: "" },
+  },
+  {
+    id: "2",
+    title: "Sân cỏ nhân tạo Quận 7",
+    description: "Chất lượng cao, giá tốt",
+    image: "https://picsum.photos/801/1200",
+    user: { name: "Trần Thị B" },
+  },
+];
 
-  const [section, setSection] = useState<SectionKey>('suggest');
-
-  const handleAdd = (u: User) => {
-    setSuggest((prev) => prev.filter((x) => x.id !== u.id));
-    setSent((prev) => [{ ...u, subtitle: 'Đã gửi lời mời' }, ...prev]);
-  };
-  const handleRemoveSuggest = (u: User) => {
-    setSuggest((prev) => prev.filter((x) => x.id !== u.id));
-  };
-  const handleConfirm = (u: User) => {
-    // accept -> bỏ khỏi pending (coi như đã thành bạn)
-    setPending((prev) => prev.filter((x) => x.id !== u.id));
-  };
-  const handleCancelPending = (u: User) => {
-    // từ chối -> bỏ khỏi pending
-    setPending((prev) => prev.filter((x) => x.id !== u.id));
-  };
-  const handleCancelSent = (u: User) => {
-    // thu hồi lời mời
-    setSent((prev) => prev.filter((x) => x.id !== u.id));
-  };
-
-  const handleChangeScreen = (screen: SectionKey) => {
-    setSection(screen);
-  };
-
+export default function FeedScreen() {
   return (
     <KeyboardProvider>
-      <SafeAreaView className="flex-1 bg-background">
-        <KeyboardAwareScrollView
-          keyboardShouldPersistTaps="handled"
-          contentContainerStyle={{ flexGrow: 1 }}
-        >
-          <View className="px-4 py-4">
-            <HeaderUser />
-            <View className="h-full bg-white py-6 rounded-2xl">
-              <Text className="text-xl font-bold mb-4">Bạn bè</Text>
-              <View className="flex-row items-center justify-start gap-3">
-                <TouchableOpacity
-                  onPress={() => {
-                    handleChangeScreen('suggest');
-                  }}
-                  className={`px-5 py-3 rounded-full min-w-20 items-center ${
-                    section === 'suggest' ? 'bg-primary' : 'bg-gray-400'
-                  }`}
+      <SafeAreaView className="flex-1">
+        <View className="px-4 pb-2 flex-row justify-start">
+          <TouchableOpacity
+            onPress={() => {
+              router.back();
+            }}
+            className="flex-row items-center gap-2 py-2"
+          >
+            <Ionicons name="chevron-back" size={22} />
+            <Text className="text-[15px] text-primary font-medium">
+              Trở về trang trước
+            </Text>
+          </TouchableOpacity>
+        </View>
+
+        <View className="mx-8 flex-1">
+          <Carousel
+            vertical
+            width={SCREEN_WIDTH}
+            height={SCREEN_HEIGHT}
+            data={DATA}
+            loop={false}
+            pagingEnabled
+            renderItem={({ item }) => (
+              <View className="w-full h-full relative bg-white">
+                <View
+                  style={{ marginHorizontal: 15, height: SCREEN_HEIGHT - 150 }}
+                  className="rounded-2xl relative"
                 >
-                  <Text className="text-white text-sm font-medium">Gợi ý</Text>
-                </TouchableOpacity>
+                  <Image
+                    source={{ uri: item.image }}
+                    resizeMode="cover"
+                    style={{ position: "absolute", inset: 0, width: "100%", height: "100%", borderRadius: 16 }}
+                  />
 
-                <TouchableOpacity
-                  onPress={() => {
-                    handleChangeScreen('pending');
-                  }}
-                  className={`px-5 py-3 rounded-full min-w-20 items-center ${
-                    section === 'pending' ? 'bg-primary' : 'bg-gray-400'
-                  }`}
-                >
-                  <Text className="text-white text-sm">Yêu cầu đang chờ</Text>
-                </TouchableOpacity>
 
-                <TouchableOpacity
-                  onPress={() => {
-                    handleChangeScreen('sent');
-                  }}
-                  className={`px-5 py-3 rounded-full min-w-20 items-center ${
-                    section === 'sent' ? 'bg-primary' : 'bg-gray-400'
-                  }`}
-                >
-                  <Text className="text-white text-sm">Lời mời đã gửi</Text>
-                </TouchableOpacity>
-              </View>
+                  <View style={{ position: "absolute", inset: 0, justifyContent: "flex-end", borderRadius: 16 }}>
+                    <View className="bg-black/60 border-0" style={{ padding: 16, paddingBottom: 120, borderRadius: 16 }}>
+                      <Text className="text-white text-2xl font-bold">{item.user.name}</Text>
+                      <Text className="text-gray-200 mt-1" numberOfLines={3}>
+                        {item.description}
+                      </Text>
+                    </View>
+                  </View>
 
-              <View className="">
-                <View className={'mt-3 flex flex-col gap-5'}>
-                  {section === 'suggest' &&
-                    suggest.map((u, idx) => {
-                      return (
-                        <UserInviteItem
-                          key={idx}
-                          name={u.name}
-                          subtitle={u.subtitle}
-                          avatarUri={u.avatar}
-                          status="suggestion"
-                          accentHex={NAVY}
-                          onAdd={() => handleAdd(u)}
-                          onRemove={() => handleRemoveSuggest(u)}
-                        />
-                      );
-                    })}
+                  <View
+                    style={{ position: "absolute", bottom: -30, left: 0, right: 0 }}
+                    className="flex-row justify-center gap-6"
+                  >
+                    <TouchableOpacity
+                      style={{
+                        width: 70,
+                        height: 70,
+                        borderRadius: 9999,
+                        backgroundColor: "#D8D8D8",
+                        shadowColor: "#000",
+                        shadowOffset: { width: 0, height: 2 },
+                        shadowOpacity: 0.3,
+                        shadowRadius: 3,
+                        elevation: 6,
+                        justifyContent: "center",
+                        alignItems: "center",
+                      }}
+                    >
+                      <View
+                        style={{
+                          width: 67,
+                          height: 67,
+                          borderRadius: 9999,
+                          backgroundColor: "#D8D8D8",
+                          justifyContent: "center",
+                          alignItems: "center",
+                        }}
+                      >
+                        <Ionicons name="close" size={28} color="white" />
+                      </View>
+                    </TouchableOpacity>
 
-                  {section === 'pending' &&
-                    pending.map((u, idx) => {
-                      return (
-                        <UserInviteItem
-                          key={idx}
-                          name={u.name}
-                          subtitle={u.subtitle}
-                          avatarUri={u.avatar}
-                          status="pending"
-                          accentHex={NAVY}
-                          onConfirm={() => handleConfirm(u)}
-                          onCancel={() => handleCancelPending(u)}
-                        />
-                      );
-                    })}
-
-                  {section === 'sent' &&
-                    sent.map((u, idx) => {
-                      return (
-                        <UserInviteItem
-                          key={idx}
-                          name={u.name}
-                          subtitle={u.subtitle}
-                          avatarUri={u.avatar}
-                          status="sent"
-                          accentHex={NAVY}
-                          onCancel={() => handleCancelSent(u)}
-                        />
-                      );
-                    })}
+                    <TouchableOpacity
+                      style={{
+                        width: 70,
+                        height: 70,
+                        borderRadius: 9999,
+                        backgroundColor: "#D8D8D8",
+                        shadowColor: "#000",
+                        shadowOffset: { width: 0, height: 2 },
+                        shadowOpacity: 0.3,
+                        shadowRadius: 3,
+                        elevation: 6,
+                        justifyContent: "center",
+                        alignItems: "center",
+                      }}
+                    >
+                      <View
+                        style={{
+                          width: 67,
+                          height: 67,
+                          borderRadius: 9999,
+                          backgroundColor: "#1F2257",
+                          justifyContent: "center",
+                          alignItems: "center",
+                        }}
+                      >
+                        <Ionicons name="add" size={28} color="white" />
+                      </View>
+                    </TouchableOpacity>
+                  </View>
                 </View>
               </View>
-            </View>
-          </View>
-        </KeyboardAwareScrollView>
+
+            )}
+          />
+        </View>
       </SafeAreaView>
     </KeyboardProvider>
+
   );
 }

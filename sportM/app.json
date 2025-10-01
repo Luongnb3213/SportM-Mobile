@@ -36,16 +36,16 @@
     },
     "plugins": [
       [
-        "expo-location",
-        {
-          "locationWhenInUsePermission": "Show current location on map."
-        }
-      ],
-      [
         "@rnmapbox/maps",
         {
           "RNMapboxMapsDownloadToken": "sk.eyJ1IjoibHVvbmdjaGFvaSIsImEiOiJjbWZnd2xxb3YwNXd5MmpzOTdwNjBudmJqIn0.2-D6KpXh0uJh6eIQIGsn7A",
           "RNMapboxMapsAccessToken": "pk.eyJ1IjoibHVvbmdjaGFvaSIsImEiOiJjbWZndzlwNHcwNW52MnJwdDJlaGViMDUxIn0.8D0hYvlEZdwx3GzONsOHpg"
+        }
+      ],
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "Show current location on map."
         }
       ],
       [

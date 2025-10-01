@@ -28,7 +28,7 @@ function Skeleton({
 
   return (
     <Animated.View
-      className={cn('bg-muted rounded-md', className)}
+      className={cn('bg-[#b7b9bc61]', className)}
       style={[{ opacity: fadeAnim }]}
       {...props}
     />

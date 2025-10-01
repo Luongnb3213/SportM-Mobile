@@ -2,25 +2,50 @@ import DetailInfoCard from '@/components/HomeComponent/DetailSportComponent/Deta
 import GolfDealCard from '@/components/HomeComponent/GolfDealCard';
 import HeaderUser from '@/components/ui/HeaderUser';
 import { Ionicons } from '@expo/vector-icons';
+import { router, useLocalSearchParams } from 'expo-router';
 import React from 'react';
 import { ImageBackground, Text, TouchableOpacity, View } from 'react-native';
 import {
   KeyboardAwareScrollView,
   KeyboardProvider,
 } from 'react-native-keyboard-controller';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import {
+  SafeAreaView,
+  useSafeAreaInsets,
+} from 'react-native-safe-area-context';
 
 const DetailSport = () => {
+  const insets = useSafeAreaInsets();
+  const { courtID } = useLocalSearchParams<{
+    courtID: string;
+  }>();
   return (
     <KeyboardProvider>
       <SafeAreaView className="flex-1">
         <KeyboardAwareScrollView
           keyboardShouldPersistTaps="handled"
           extraKeyboardSpace={0}
-          contentContainerStyle={{ flexGrow: 1 }}     
+          contentContainerStyle={{
+            paddingBottom: insets.bottom + 50,
+            flexGrow: 1,
+          }}
         >
           <View className="px-4">
             <HeaderUser />
+          </View>
+          {/* header back */}
+          <View className="px-4">
+            <TouchableOpacity
+              className="flex-row items-center gap-2 py-2"
+              onPress={() => {
+                 router.back();
+              }}
+            >
+              <Ionicons name="chevron-back" size={20} />
+              <Text className="text-base text-primary font-medium">
+                Trở về trang trước
+              </Text>
+            </TouchableOpacity>
           </View>
 
           <View className="">
@@ -34,23 +59,6 @@ const DetailSport = () => {
             >
               {/* overlay làm tối ảnh một chút để chữ nổi bật */}
               <View className="absolute inset-0 bg-black/25" />
-
-              {/* header back */}
-              <View className="px-4">
-                <TouchableOpacity
-                  className="flex-row items-center gap-2 py-2"
-                  onPress={() => {
-                    // router.back() nếu dùng expo-router
-                    // router.back();
-                  }}
-                >
-                  <Ionicons name="chevron-back" size={20} color="#E5E7EB" />
-                  <Text className="text-base text-gray-200">
-                    Trở về trang trước
-                  </Text>
-                </TouchableOpacity>
-              </View>
-
               {/* texts */}
               <View className="px-4 mt-2">
                 <Text className="text-lg text-gray-200">Mai Lâm, Đông Anh</Text>
@@ -76,7 +84,7 @@ const DetailSport = () => {
             </ImageBackground>
           </View>
           <View className="shadow-2xl">
-            <DetailInfoCard />
+            <DetailInfoCard courtID={courtID} />
           </View>
         </KeyboardAwareScrollView>
       </SafeAreaView>

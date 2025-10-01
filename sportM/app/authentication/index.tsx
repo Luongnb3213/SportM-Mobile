@@ -9,8 +9,16 @@ import {
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/Tabs'; // :contentReference[oaicite:6]{index=6}
 import SignInForm from '../../components/AuthenticationComponent/SignInForm';
 import SignUpForm from '../../components/AuthenticationComponent/SignUpForm';
+import { router, useLocalSearchParams } from 'expo-router';
 
 export default function AuthScreen() {
+  const { screenname, email } = useLocalSearchParams<{
+    screenname?: string;
+    email?: string;
+  }>();
+  const [screen, setScreen] = React.useState<'login' | 'signup' | string>(
+    screenname || 'login'
+  );
   return (
     <KeyboardProvider>
       <SafeAreaView className="flex-1 bg-background">
@@ -28,33 +36,23 @@ export default function AuthScreen() {
                   className="w-full h-full"
                 />
               </View>
-
-              <Tabs defaultValue="login">
-                <TabsList className="mb-4 gap-2">
-                  <TabsTrigger value="login" title="Đăng nhập" />
-                  <TabsTrigger value="signup" title="Đăng ký" />
-                </TabsList>
-
-                <TabsContent value="login" className="border-0 p-0">
-                  <SignInForm
-                    onSubmit={(email, pwd, remember) =>
-                      console.log('login:', { email, pwd, remember })
-                    }
-                    onGooglePress={() => console.log('google sign in')}
-                    onGoSignUp={() => console.log('switch to sign up')}
-                  />
-                </TabsContent>
-
-                <TabsContent value="signup" className="border-0 p-0">
-                  <SignUpForm
-                    onSubmit={(phone, name, pw1, pw2) =>
-                      console.log('signup:', { phone, name, pw1, pw2 })
-                    }
-                    onGooglePress={() => console.log('google sign up')}
-                    onGoSignIn={() => console.log('switch to sign in')}
-                  />
-                </TabsContent>
-              </Tabs>
+              <View className="flex-row justify-center mb-8">
+                <Text
+                  className={`w-1/2 text-2xl text-[#292929] text-center ${
+                    screen === 'login' ? 'font-bold underline' : ''
+                  }`}
+                >
+                  Đăng nhập
+                </Text>
+                <Text
+                  className={`w-1/2 text-2xl text-[#292929] text-center ${
+                    screen === 'signup' ? 'font-bold underline' : ''
+                  }`}
+                >
+                  Đăng ký
+                </Text>
+              </View>
+              {screen === 'login' ? <SignInForm  /> : <SignUpForm email={email} />}
             </View>
           </View>
         </KeyboardAwareScrollView>

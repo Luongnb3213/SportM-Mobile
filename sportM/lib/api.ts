@@ -7,7 +7,7 @@ const REFRESH_URL = '/auth/refresh';
 export type RefreshResponse = {
   accessToken: string;
   refreshToken?: string;
-  expiresAt?: string; 
+  expiresAt?: string;
 };
 
 let api: AxiosInstance | null = null;
@@ -48,14 +48,15 @@ async function callRefresh(refreshToken: string) {
 
 export function getApi(): AxiosInstance {
   if (api) return api;
-  api = axios.create({ baseURL: BASE_URL, timeout: 20000 });
+  api = axios.create({ baseURL: BASE_URL, timeout: 5000 });
 
   // --- Request: chỉ cần gắn access token hiện có ---
   api.interceptors.request.use(async (config) => {
     const tokens = await getTokens();
-    if (tokens?.accessToken) {
+    console.log(`Attaching token to request ${config.url}:`, tokens);
+    if (tokens) {
       if (config.headers) {
-        config.headers.set('Authorization', `Bearer ${tokens.accessToken}`);
+        config.headers.set('Authorization', `Bearer ${tokens}`);
       }
     }
     return config;
@@ -66,7 +67,9 @@ export function getApi(): AxiosInstance {
     (res) => res,
     async (error: AxiosError) => {
       const original = error.config!;
-      if (error.response?.status !== 401) throw error;
+      // if (error.response?.status !== 401) throw error;
+      if (true) throw error;
+
 
       // @ts-expect-error: tránh vòng lặp vô hạn
       if (original._retry) throw error;
@@ -87,11 +90,7 @@ export function getApi(): AxiosInstance {
       isRefreshing = true;
       try {
         const next = await callRefresh(refresh);
-        await saveTokens({
-          accessToken: next.accessToken,
-          refreshToken: next.refreshToken ?? refresh,
-          expiresAt: next.expiresAt ?? tokens?.expiresAt,
-        });
+        await saveTokens('accessToken', { accessToken: next.accessToken });
         const fresh = next.accessToken;
         if (original.headers) {
           original.headers.set('Authorization', `Bearer ${fresh}`);
@@ -110,6 +109,5 @@ export function getApi(): AxiosInstance {
 
   return api;
 }
-
 
 export const useAxios = getApi();

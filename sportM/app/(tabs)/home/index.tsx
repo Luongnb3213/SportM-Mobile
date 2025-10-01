@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   View,
   Text,
@@ -30,12 +30,23 @@ import GolfDealCard from '../../../components/HomeComponent/GolfDealCard';
 import GolfCourseCard from '@/components/HomeComponent/GolfCourseCard';
 import HeaderUser from '@/components/ui/HeaderUser';
 import { router } from 'expo-router';
+import { NearByYardSkeleton } from '@/components/Skeleton/NearByYardSkeleton';
+import { GolfCourseCardSkeleton } from '@/components/Skeleton/GolfCourseCardSkeleton';
 
 export default function HomeScreen() {
   const t = useAppTheme();
   const [guest, setGuest] = useState(2);
   const [loc, setLoc] = useState('');
   const insets = useSafeAreaInsets();
+  const [bookingCourt, setBookingCourt] = useState([])
+
+  useEffect(() => {
+    (async () => {
+      // fetch data from API
+    })()
+  }, [])
+
+
 
   return (
     <KeyboardProvider>
@@ -51,35 +62,67 @@ export default function HomeScreen() {
             </View>
 
             {/* Row 1: search input */}
-            <View className="flex-row px-4 items-center bg-[#EEEEEE] rounded-xl h-14 mx-4 mt-4">
+            <TouchableOpacity onPress={() => {
+              router.push('/(tabs)/home/search');
+            }} className="flex-row px-4 items-center bg-[#EEEEEE] rounded-xl h-14 mx-4 mt-4">
               <Feather name="search" size={25} color="#0a0a0a" />
-              <TextInput
-                value={loc}
-                onChangeText={setLoc}
-                placeholder="Nhập địa điểm"
-                placeholderTextColor="#000000"
+              <View
                 className="flex-1 text-lg text-black px-2"
-              />
-            </View>
+              >
+                <Text className="text-black text-lg">Nhập địa điểm</Text>
+              </View>
+            </TouchableOpacity>
 
             <View className="gap-5 px-4 mt-4 flex-col">
-              <GolfCourseCard
-                title="Bíc cờ bôn"
-                pricePerHour="1.000.000/ giờ"
-                rating={4.5}
-                imageUri="https://images.unsplash.com/photo-1502877338535-766e1452684a?q=80&w=1600"
-                onPress={() => {
-                  // navigate to detail screen
-                  // navigation.navigate('DetailSport');
-                  router.push('/home/booking');
-                }}
-              />
-              <GolfCourseCard
-                title="Bíc cờ bôn"
-                pricePerHour="1.000.000/ giờ"
-                rating={4.5}
-                imageUri="https://images.unsplash.com/photo-1502877338535-766e1452684a?q=80&w=1600"
-              />
+              <View className="flex-row items-center justify-between px-4 bg-white">
+                <Text className="text-3xl font-bold leading-snug text-primary">Sân đã đặt</Text>
+                <TouchableOpacity onPress={() => {
+                  router.push('/(tabs)/home/booking');
+                }} className="flex-row items-center">
+                  <Text className="text-base mr-1">Xem tất cả</Text>
+                  <Ionicons name="chevron-forward" size={18} color="black" />
+                </TouchableOpacity>
+              </View>
+
+
+              {bookingCourt ? (
+                <>
+                  <GolfCourseCard
+                    title="Bíc cờ bôn"
+                    pricePerHour="1.000.000/ giờ"
+                    rating={4.5}
+                    imageUri="https://images.unsplash.com/photo-1502877338535-766e1452684a?q=80&w=1600"
+                    onPress={() => {
+                      // navigate to detail screen
+                      // navigation.navigate('DetailSport');
+                      // router.push('/home/booking');
+                      router.push({
+                        pathname: '/(tabs)/home/DetailSport',
+                        params: { courtID: '12345' },
+                      });
+                    }}
+                  />
+                  <GolfCourseCard
+                    title="Bíc cờ bôn"
+                    pricePerHour="1.000.000/ giờ"
+                    rating={4.5}
+                    imageUri="https://images.unsplash.com/photo-1502877338535-766e1452684a?q=80&w=1600"
+                  />
+                </>
+              ) : (
+                Array.from({ length: 3 }).map((_, idx) => (
+                  <GolfCourseCardSkeleton key={idx} />
+                ))
+              )}
+
+              <View className="items-center py-3">
+                <Button onPress={() => {
+                  router.push('/(tabs)/home/booking');
+                }} variant="ghost" className="px-3 py-2">
+                  <Text className="mr-1">Xem thêm</Text>
+                  <Ionicons name="chevron-down" size={16} />
+                </Button>
+              </View>
             </View>
 
             {/* Golf deal card */}
