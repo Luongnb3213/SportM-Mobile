@@ -80,7 +80,7 @@ export default function ProfileScreen() {
       </View>
 
       <ScrollView
-        contentContainerStyle={{ paddingBottom: 150 }}
+        contentContainerStyle={{ paddingBottom: 200 }}
         showsVerticalScrollIndicator={false}
       >
         <View className="px-4">
@@ -210,11 +210,6 @@ export default function ProfileScreen() {
                   <ListItem
                     icon={<Ionicons name="document-text-outline" size={18} />}
                     label="Điều khoản và chính sách"
-                    onPress={() => {}}
-                  />
-                  <ListItem
-                    icon={<Ionicons name="list-outline" size={18} />}
-                    label="Danh sách lịch đã đặt"
                     onPress={() => {}}
                   />
                 </View>

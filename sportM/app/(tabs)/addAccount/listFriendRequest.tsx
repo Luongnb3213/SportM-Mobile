@@ -31,7 +31,7 @@ export default function listFriendRequest() {
           keyboardShouldPersistTaps="handled"
           contentContainerStyle={{
             flexGrow: 1,
-            paddingBottom: insets.bottom + 50,
+            paddingBottom: insets.bottom + 150,
           }}
         >
           <View className="px-4 py-4">

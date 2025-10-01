@@ -191,7 +191,7 @@ export default function Notification() {
       <SafeAreaView className="flex-1">
         <KeyboardAwareScrollView
           keyboardShouldPersistTaps="handled"
-          contentContainerStyle={{ paddingBottom: insets.bottom + 24 }}
+          contentContainerStyle={{ paddingBottom: insets.bottom + 150 }}
           extraKeyboardSpace={0}
         >
           <View className="bg-white">
@@ -209,8 +209,6 @@ export default function Notification() {
                 <Text className="text-base font-semibold text-primary">
                   Thông báo
                 </Text>
-                <Text className="text-muted-foreground">Tất cả</Text>
-                <Ionicons name="chevron-down" size={16} />
               </View>
 
               <View className="w-5" />

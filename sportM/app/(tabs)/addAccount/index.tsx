@@ -2,8 +2,6 @@
 import React from "react";
 import { Dimensions, View, Text, Image, TouchableOpacity } from "react-native";
 import Carousel from "react-native-reanimated-carousel";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/Card";
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/Avatar";
 import Button from "@/components/Button";
 import { Ionicons } from "@expo/vector-icons";
 import { KeyboardProvider } from "react-native-keyboard-controller";
@@ -55,7 +53,7 @@ export default function FeedScreen() {
           </TouchableOpacity>
         </View>
 
-        <View className="mx-8 flex-1">
+        <View className="flex-1">
           <Carousel
             vertical
             width={SCREEN_WIDTH}

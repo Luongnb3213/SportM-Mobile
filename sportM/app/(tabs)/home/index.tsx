@@ -53,7 +53,7 @@ export default function HomeScreen() {
       <SafeAreaView className="flex-1">
         <KeyboardAwareScrollView
           keyboardShouldPersistTaps="handled"
-          contentContainerStyle={{ paddingBottom: insets.bottom + 24 }}
+          contentContainerStyle={{ paddingBottom: insets.bottom + 150 }}
           extraKeyboardSpace={0}
         >
           <View style={{ backgroundColor: t.background }}>

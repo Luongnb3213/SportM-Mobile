@@ -23,7 +23,7 @@ const bookingSchedule = () => {
           keyboardShouldPersistTaps="handled"
           extraKeyboardSpace={0}
           contentContainerStyle={{
-            paddingBottom: insets.bottom + 50,
+            paddingBottom: insets.bottom + 150,
             flexGrow: 1,
           }}
         >

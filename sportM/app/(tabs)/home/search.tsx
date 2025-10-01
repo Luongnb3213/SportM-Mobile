@@ -90,7 +90,7 @@ const Search = () => {
         <KeyboardAwareScrollView
           keyboardShouldPersistTaps="handled"
           contentContainerStyle={{
-            paddingBottom: insets.bottom + 50,
+            paddingBottom: insets.bottom + 150,
             backgroundColor: t.background,
           }}
           extraKeyboardSpace={0}

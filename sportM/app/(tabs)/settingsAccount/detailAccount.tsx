@@ -69,7 +69,7 @@ export default function DetailAccount() {
           <KeyboardAwareScrollView
             keyboardShouldPersistTaps="handled"
             extraKeyboardSpace={0}
-            contentContainerStyle={{ paddingBottom: insets.bottom + 24 }}
+            contentContainerStyle={{ paddingBottom: insets.bottom + 150 }}
           >
             <ProfileSkeleton />
           </KeyboardAwareScrollView>
@@ -84,7 +84,7 @@ export default function DetailAccount() {
         <KeyboardAwareScrollView
           keyboardShouldPersistTaps="handled"
           extraKeyboardSpace={0}
-          contentContainerStyle={{ paddingBottom: insets.bottom + 24 }}
+          contentContainerStyle={{ paddingBottom: insets.bottom + 150 }}
         >
           <View className="m-3 rounded-2xl overflow-hidden">
             {/* Header */}

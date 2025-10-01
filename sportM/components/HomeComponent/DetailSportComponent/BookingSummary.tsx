@@ -8,6 +8,7 @@ import {
 } from 'react-native';
 import { AntDesign, MaterialCommunityIcons } from '@expo/vector-icons';
 import InviteFriendsSheet from './InviteFriendsSheet';
+import { router } from 'expo-router';
 
 type Props = {
   totalHours: number;
@@ -82,7 +83,9 @@ export default function BookingSummary({
 
       <View className="mt-4 flex-row gap-3">
         <Pressable
-          onPress={onCancel}
+          onPress={() => {
+             router.back();
+          }}
           className="flex-1 items-center justify-center rounded-2xl border border-[#1F2757] px-4 py-3"
         >
           <Text className="text-[16px] font-semibold text-[#1F2757]">Hủy</Text>

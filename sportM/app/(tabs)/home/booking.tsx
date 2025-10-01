@@ -163,7 +163,7 @@ export default function BookingsScreen() {
       <SafeAreaView className="flex-1 bg-background">
         <KeyboardAwareScrollView
           keyboardShouldPersistTaps="handled"
-          contentContainerStyle={{ paddingBottom: insets.bottom + 24 }}
+          contentContainerStyle={{ paddingBottom: insets.bottom + 150 }}
           extraKeyboardSpace={0}
         >
           <View className="px-4">
