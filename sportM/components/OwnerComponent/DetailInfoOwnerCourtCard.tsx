@@ -6,6 +6,7 @@ import { Card, CardHeader, CardContent, CardFooter } from '@/components/Card';
 import { Button } from '@/components/Button';
 import InfoSport from './InfoOwnerSport';
 import { router } from 'expo-router';
+import RatingCourtCard from './RatingCourtCard';
 
 type TabItem = { key: string; label: string };
 
@@ -70,7 +71,9 @@ export default function DetailInfoOwnerCourtCard({
       {/* BODY */}
       <CardContent className="px-3 py-4 bg-white">
         {active === 'review' && (
-          <View><Text>Đánh giá đang phát triển…</Text></View>
+          <View>
+            <RatingCourtCard courtID={courtID} /> 
+          </View>
         )}
 
         {['info', 'price', 'policy'].includes(active) && (

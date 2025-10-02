@@ -1,30 +1,68 @@
+// InfoOwnerSport.tsx
 import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
-import { Text } from 'react-native';
-import { View } from 'react-native';
+import { Text, View } from 'react-native';
 
-const InfoSport = () => {
+type CourtDTO = {
+  courtId: string;
+  courtName: string;
+  courtImages: string[];
+  address: string;
+  description: string;
+  subService: string;
+  isActive: boolean;
+  pricePerHour: number;
+  sportType?: { typeName?: string };
+  avgRating: number;
+  owner?: {
+    fullName?: string;
+    phoneNumber?: string;
+    avatarUrl?: string;
+  };
+};
+
+const InfoSport = ({ court }: { court?: CourtDTO }) => {
+  const priceText =
+    typeof court?.pricePerHour === 'number'
+      ? `${court.pricePerHour.toLocaleString('vi-VN')} VND`
+      : '—';
+
   return (
     <View>
-      {/* các hàng thông tin */}
       <InfoRow icon="location-outline">
-        Lộc Hà, Mai Lâm, Đông Anh, Hà Nội
+        {court?.address || '—'}
       </InfoRow>
 
-      <InfoRow icon="time-outline">3:00 - 6:00</InfoRow>
+      <InfoRow icon="wallet">{priceText}</InfoRow>
 
-      <InfoRow icon="person-outline">Chủ sân: Nguyễn Đỗ Lâm Anh</InfoRow>
+      <InfoRow icon="person-outline">
+        Chủ sân: {court?.owner?.fullName || '—'}
+      </InfoRow>
 
-      <InfoRow icon="call-outline">0321456688{'\n'}0321456688</InfoRow>
+      <InfoRow icon="call-outline">
+        {court?.owner?.phoneNumber || '—'}
+      </InfoRow>
 
-      {/* tiêu đề + mô tả */}
-      <Text className="mt-4 text-base font-semibold">Sân Golf Nem Chua</Text>
-      <Text className="mt-2 text-[13.5px] leading-5 text-muted-foreground">
-        Đây là sân golf với sử lâu đời vài lớn, rất nhiều người đã thuê sân này
-        và một đi không trở lại. Bạn có thể thuê ngay để tìm kho báu của những
-        người đi trước. Hơi lắm, thuê đi. Khi bạn tìm dc kho báu thì bạn 30
-        chúng tôi 70. Thẻ nhé. Peace out!
+      {court?.sportType?.typeName ? (
+        <InfoRow icon="fitness-outline">
+          Môn: {court.sportType.typeName}
+        </InfoRow>
+      ) : null}
+
+  
+      <Text className="mt-4 text-base font-semibold">
+        {court?.courtName || '—'}
       </Text>
+      <Text className="mt-2 text-[13.5px] leading-5 text-muted-foreground">
+        {court?.description || 'Chưa có mô tả.'}
+      </Text>
+
+
+      {court?.subService ? (
+        <Text className="mt-3 text-[13.5px] text-primary">
+          Dịch vụ: {court.subService}
+        </Text>
+      ) : null}
     </View>
   );
 };

@@ -21,6 +21,7 @@ export type Comment = {
 type Props = {
   data: Comment;
   className?: string;
+  hideButton?: boolean;
 };
 
 function timeFromNow(createdAt: Props['data']['createdAt']) {
@@ -35,7 +36,7 @@ function timeFromNow(createdAt: Props['data']['createdAt']) {
   return `${days} ngày`;
 }
 
-export const CommentItem: React.FC<Props> = ({ data, className }) => {
+export const CommentItem: React.FC<Props> = ({ data, className, hideButton = false }) => {
   const [open, setOpen] = useState(false);
   const [draft, setDraft] = useState(data.content);
   const [ratingDraft, setRatingDraft] = useState<number>(3);
@@ -99,7 +100,7 @@ export const CommentItem: React.FC<Props> = ({ data, className }) => {
   };
 
   return (
-    <View className={cn('flex-row gap-3 px-4 py-3', className)}>
+    <View className={cn('flex-row gap-3  py-3', className)}>
       {/* Avatar */}
       <Avatar className="h-10 w-10">
         {data.avatarUri ? (
@@ -126,30 +127,33 @@ export const CommentItem: React.FC<Props> = ({ data, className }) => {
         </Card>
 
         {/* Action row */}
-        <View className="mt-2 flex-row items-center gap-4">
-          <Text className="text-xs text-muted-foreground">{ago}</Text>
+        {!hideButton && (
+          <View className="mt-2 flex-row items-center gap-4">
+            <Text className="text-xs text-muted-foreground">{ago}</Text>
 
-          <TouchableOpacity
-            className="flex-row items-center gap-1"
-            onPress={handleDelete}
-            hitSlop={8}
-          >
-            <Ionicons name="trash-outline" size={14} />
-            <Text className="text-xs text-destructive font-medium">Delete</Text>
-          </TouchableOpacity>
+            <TouchableOpacity
+              className="flex-row items-center gap-1"
+              onPress={handleDelete}
+              hitSlop={8}
+            >
+              <Ionicons name="trash-outline" size={14} />
+              <Text className="text-xs text-destructive font-medium">Xoá</Text>
+            </TouchableOpacity>
 
-          <TouchableOpacity
-            className="flex-row items-center gap-1"
-            onPress={() => {
-              setDraft(data.content);
-              setOpen(true);
-            }}
-            hitSlop={8}
-          >
-            <Ionicons name="create-outline" size={14} />
-            <Text className="text-xs text-primary font-medium">Update</Text>
-          </TouchableOpacity>
-        </View>
+            <TouchableOpacity
+              className="flex-row items-center gap-1"
+              onPress={() => {
+                setDraft(data.content);
+                setOpen(true);
+              }}
+              hitSlop={8}
+            >
+              <Ionicons name="create-outline" size={14} />
+              <Text className="text-xs text-primary font-medium">Cập nhật</Text>
+            </TouchableOpacity>
+          </View>
+        )}
+
       </View>
 
       {/* Update modal (react-native Modal) */}
@@ -166,7 +170,7 @@ export const CommentItem: React.FC<Props> = ({ data, className }) => {
         >
           <TouchableOpacity
             activeOpacity={1}
-            onPress={() => {}}
+            onPress={() => { }}
             className="mx-6 mt-auto mb-8 rounded-2xl bg-background p-4"
           >
             <View className="mt-4 flex-row items-center gap-3">

@@ -162,13 +162,13 @@ const Search = () => {
                       return (
                         <GolfCourseCard
                           key={court?.courtId + index}
-                          title={court?.name || 'Sân bóng đá ABC'}
+                          title={court?.courtName || ''}
                           pricePerHour={`${formatPriceVND(court?.pricePerHour)} đ/h`}
-                          rating={court?.rating || 4.5}
+                          rating={court?.avgRating || "N/A"}
                           imageUri={court?.courtImages[0] || "https://images.unsplash.com/photo-150287733853-766e1452684a?q=80&w=1600"}
                           onPress={() => {
                             router.push({
-                              pathname: '/owner/detailCourt',
+                              pathname: '/(tabs)/home/DetailSport',
                               params: { courtID: court?.courtId },
                             });
                           }}
