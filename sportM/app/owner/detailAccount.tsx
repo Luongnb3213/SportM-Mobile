@@ -70,7 +70,7 @@ export default function ProfileScreen() {
 
         <TouchableOpacity
           onPress={() => {
-            router.push('/(tabs)/settingsAccount/updateAccount');
+            router.push('/owner/updateAccount');
           }}
         >
           <View className="w-12 h-12 rounded-full bg-white items-center justify-center shadow-2xl">

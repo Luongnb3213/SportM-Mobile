@@ -1,8 +1,7 @@
 // app/(owner)/add-court.tsx
-import React, { useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
-  Alert,
   Dimensions,
   ImageBackground,
   Modal,
@@ -21,7 +20,7 @@ import {
   useSafeAreaInsets,
 } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
-import { Ionicons, MaterialIcons, FontAwesome } from '@expo/vector-icons';
+import { Ionicons, MaterialIcons, FontAwesome, FontAwesome5, MaterialCommunityIcons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import Carousel from 'react-native-reanimated-carousel';
 import MapboxGL from '@rnmapbox/maps';
@@ -31,12 +30,15 @@ import Button from '@/components/Button';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/Card';
 import { uploadToCloudinary } from '@/lib/uploadToCloudinary';
 import { useAxios } from '@/lib/api';
+import Toast from 'react-native-toast-message';
+import { Skeleton } from '@/components/Skeleton';
+import { formatPriceVND } from '@/lib/utils';
 
 // ====== constants ======
 const DEFAULT_HERO =
   'https://images.unsplash.com/photo-1506744038136-4627383b3fb?auto=format&fit=crop&w=1470&q=80';
 const MAX_IMAGES = 4;
-const SPORT_TYPE_DEFAULT = '123e4567-e89b-12d3-a456-426614174000';
+
 
 // ====== tiny input-with-icon component (style như ảnh bạn gửi) ======
 const PillInput = ({
@@ -76,6 +78,8 @@ const PillInput = ({
   </View>
 );
 
+type Pill = { sportTypeId: string | null; typeName: string; status: boolean };
+
 // ====== main ======
 const AddCourt = () => {
   const insets = useSafeAreaInsets();
@@ -89,7 +93,8 @@ const AddCourt = () => {
   const [description, setDescription] = useState('');
   const [pricePerHour, setPricePerHour] = useState('');
   const [subService, setSubService] = useState('');
-  const [sportType] = useState<string>(SPORT_TYPE_DEFAULT);
+  const [sportTypeList, setSportTypeList] = React.useState<Pill[] | null>(null);
+  const [sportTypeSelected, setSportTypeSelected] = React.useState<string | null>(null);
 
   // images (local URIs to preview). Submit sẽ upload → imgUrls
   const [images, setImages] = useState<string[]>([]);
@@ -98,7 +103,6 @@ const AddCourt = () => {
   // UI state
   const [submitting, setSubmitting] = useState(false);
   const [mapVisible, setMapVisible] = useState(false);
-  console.log('Map visibility:', mapVisible);
   // errors
   const [errors, setErrors] = useState<{
     name?: string;
@@ -116,12 +120,20 @@ const AddCourt = () => {
     try {
       const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
       if (perm.status !== 'granted') {
-        Alert.alert('Quyền truy cập', 'Cần quyền truy cập thư viện ảnh để chọn ảnh.');
+        Toast.show({
+          type: 'error',
+          text1: 'Quyền truy cập',
+          text2: 'Cần quyền truy cập thư viện ảnh để chọn ảnh.'
+        })
         return;
       }
 
       if (images.length >= MAX_IMAGES) {
-        Alert.alert('Giới hạn ảnh', `Bạn chỉ có thể chọn tối đa ${MAX_IMAGES} ảnh.`);
+        Toast.show({
+          type: 'error',
+          text1: 'Giới hạn ảnh',
+          text2: `Bạn chỉ có thể chọn tối đa ${MAX_IMAGES} ảnh.`
+        })
         return;
       }
 
@@ -188,25 +200,28 @@ const AddCourt = () => {
         name: name.trim(),
         address: address.trim(),
         imgUrls,
-        sportType, // default
+        sportType: sportTypeSelected, // default
         lat: Number(lat),
         lng: Number(lng),
         description: description.trim(),
-        pricePerHour: Number(pricePerHour), // ép number
+        pricePerHour: Number(pricePerHour.replaceAll(',','')), // ép number
         subService: subService.trim(),
       };
 
       await axios.post('/owner/courts', body);
-      Alert.alert('Thành công', 'Tạo sân thành công!', [
-        { text: 'OK', onPress: () => router.push('/owner') },
-      ]);
+      Toast.show({
+        type: 'success',
+        text1: 'Thành công',
+        text2: 'Tạo sân thành công!'
+      });
+      router.push('/owner')
     } catch (err: any) {
       console.log('Create court error:', err?.response?.data || err?.message || err);
-      const msg =
-        err?.response?.data?.message ||
-        err?.response?.data?.error ||
-        'Có lỗi xảy ra khi tạo sân';
-      setErrors((e) => ({ ...e, general: msg }));
+      Toast.show({
+        type: 'error',
+        text1: 'Lỗi',
+        text2: 'Đã có lỗi khi tạo sân'
+      })
     } finally {
       setSubmitting(false);
     }
@@ -226,6 +241,23 @@ const AddCourt = () => {
     setMapVisible(false);
     // clear errors
     setErrors((e) => ({ ...e, address: undefined, latlng: undefined }));
+  };
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const { data } = await useAxios.get('/sport-type?page=1&limit=100');
+        setSportTypeList(data.data.items);
+        setSportTypeSelected(data.data.items[0].sportTypeId)
+      } catch (error) {
+        console.log('Error fetching sport types:', error);
+      }
+
+    })();
+  }, [])
+
+  const handleChoosePill = (pill: Pill) => {
+      setSportTypeSelected(pill.sportTypeId);
   };
 
   return (
@@ -341,12 +373,7 @@ const AddCourt = () => {
               </CardHeader>
 
               <CardContent className="px-3 py-4 bg-white">
-                <ScrollView
-                  style={{ maxHeight: 420 }}
-                  contentContainerStyle={{ paddingBottom: 16 }}
-                  nestedScrollEnabled
-                  showsVerticalScrollIndicator={false}
-                >
+                <View>
                   {/* input place */}
                   <View className="gap-3">
 
@@ -366,7 +393,7 @@ const AddCourt = () => {
                     <PillInput
                       icon={<FontAwesome name="hourglass-2" size={24} color="black" />}
                       placeholder="Giá/giờ (VND)"
-                      value={pricePerHour}
+                      value={formatPriceVND(pricePerHour)}
                       keyboardType="numeric"
                       onChangeText={(t) => {
                         setPricePerHour(t.replace(/[^\d]/g, ''));
@@ -387,8 +414,41 @@ const AddCourt = () => {
                     />
                     {errors.subService ? <Text className="text-red-500 text-sm">{errors.subService}</Text> : null}
 
+                    <View className="pt-1">
+                      <View className="flex-row flex-wrap gap-1">
+                        {
+                          sportTypeList ? (
+                            sportTypeList?.map((p) => (
+                              <TouchableOpacity
+                                onPress={() => handleChoosePill(p)}
+                                key={p.sportTypeId}
+                                className={`rounded-lg px-3 flex items-center flex-col shadow-xl py-3  ${sportTypeSelected === p.sportTypeId ? 'bg-slate-200' : 'bg-white'}`}
+                              >
+                                {p.typeName == "Bóng rổ" && (
+                                  <FontAwesome5 name="basketball-ball" size={14} color="black" />
+                                )}
+                                {p.typeName == "Bóng đá" && (
+                                  <MaterialCommunityIcons name="soccer" size={14} color="black" />
+                                )}
+                                <Text className="text-xs"> {p.typeName}</Text>
+                              </TouchableOpacity>
+                            ))
+                          ) : (
+                            Array.from({ length: 5 }).map((_, idx) => (
+                              <View
+                                key={idx}
+                                className="rounded-lg px-3 flex items-center flex-col shadow-xl py-3 mr-2 bg-white"
+                              >
+                                <Skeleton className="w-4 h-4 rounded-full" />
+                                <Skeleton className="w-10 h-3 rounded-md mt-2" />
+                              </View>
+                            ))
+                          )
+                        }
+                      </View>
+                    </View>
                   </View>
-                </ScrollView>
+                </View>
               </CardContent>
 
               <CardFooter className="px-3 pb-4 bg-white">
@@ -441,15 +501,21 @@ const AddCourt = () => {
           </View>
 
           <View className="flex-1">
-            <MapboxGL.MapView style={{ flex: 1 }} onPress={(e) => {
-              if (e.geometry && 'coordinates' in e.geometry) {
-                const [lngTap, latTap] = e.geometry.coordinates as [number, number];
-                setPickedCoord([lngTap, latTap]);
-              }
-            }}>
+            <MapboxGL.MapView
+              scaleBarEnabled={false}
+              styleURL="mapbox://styles/mapbox/streets-v9"   // ✅ dùng styleURL
+              zoomEnabled
+              scrollEnabled
+              pitchEnabled
+              rotateEnabled style={{ flex: 1 }} onPress={(e) => {
+                if (e.geometry && 'coordinates' in e.geometry) {
+                  const [lngTap, latTap] = e.geometry.coordinates as [number, number];
+                  setPickedCoord([lngTap, latTap]);
+                }
+              }}>
               <MapboxGL.Camera
                 zoomLevel={12}
-                centerCoordinate={pickedCoord ?? [106.660172, 10.762622]} // default SG
+                centerCoordinate={pickedCoord ?? [105.804817, 21.028511]} // default SG
               />
               {pickedCoord ? (
                 <MapboxGL.PointAnnotation id="picked" coordinate={pickedCoord}>
