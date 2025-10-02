@@ -29,6 +29,8 @@ type CourtDTO = {
   pricePerHour: number;
   sportType?: { typeName?: string };
   avgRating: number;
+  lat?: number;
+  lng?: number;
   owner?: {
     fullName?: string;
     phoneNumber?: string;
@@ -49,6 +51,7 @@ const DetailCourt = () => {
       try {
         const { data } = await useAxios.get(`courts/${courtID}`);
         setCourt(data.data);
+        console.log(data.data)
       } catch (error) {
         console.log('Fetch error', error);
       }

@@ -14,6 +14,8 @@ type CourtDTO = {
   pricePerHour: number;
   sportType?: { typeName?: string };
   avgRating: number;
+  lat?: number;
+  lng?: number;
   owner?: {
     fullName?: string;
     phoneNumber?: string;
@@ -49,7 +51,7 @@ const InfoOwnerSport = ({ court }: { court?: CourtDTO }) => {
         </InfoRow>
       ) : null}
 
-  
+
       <Text className="mt-4 text-base font-semibold">
         {court?.courtName || '—'}
       </Text>

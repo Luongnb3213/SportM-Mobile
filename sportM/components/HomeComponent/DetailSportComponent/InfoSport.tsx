@@ -1,7 +1,7 @@
 // InfoOwnerSport.tsx
 import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
-import { Text, View } from 'react-native';
+import { Linking, Text, TouchableOpacity, View } from 'react-native';
 
 type CourtDTO = {
   courtId: string;
@@ -14,6 +14,8 @@ type CourtDTO = {
   pricePerHour: number;
   sportType?: { typeName?: string };
   avgRating: number;
+  lat?: number;
+  lng?: number;
   owner?: {
     fullName?: string;
     phoneNumber?: string;
@@ -22,6 +24,18 @@ type CourtDTO = {
 };
 
 const InfoSport = ({ court }: { court?: CourtDTO }) => {
+const openInMaps = (address?: string, lat?: number, lng?: number) => {
+  let url = '';
+  if (lat != null && lng != null) {
+    url = `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
+  } else if (address) {
+    url = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`;
+  }
+
+  if (url) {
+    Linking.openURL(url).catch(err => console.error('Error opening maps', err));
+  }
+};
   const priceText =
     typeof court?.pricePerHour === 'number'
       ? `${court.pricePerHour.toLocaleString('vi-VN')} VND`
@@ -29,9 +43,13 @@ const InfoSport = ({ court }: { court?: CourtDTO }) => {
 
   return (
     <View>
-      <InfoRow icon="location-outline">
-        {court?.address || '—'}
-      </InfoRow>
+      <TouchableOpacity
+         onPress={() => openInMaps(court?.address, court?.lat, court?.lng)}
+      >
+        <InfoRow icon="location-outline">
+          {court?.address || '—'}
+        </InfoRow>
+      </TouchableOpacity>
 
       <InfoRow icon="wallet">{priceText}</InfoRow>
 
@@ -49,7 +67,7 @@ const InfoSport = ({ court }: { court?: CourtDTO }) => {
         </InfoRow>
       ) : null}
 
-  
+
       <Text className="mt-4 text-base font-semibold">
         {court?.courtName || '—'}
       </Text>

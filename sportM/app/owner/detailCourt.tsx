@@ -28,6 +28,8 @@ type CourtDTO = {
   pricePerHour: number;
   sportType?: { typeName?: string };
   avgRating: number;
+  lat?: number;
+  lng?: number;
   owner?: {
     fullName?: string;
     phoneNumber?: string;
