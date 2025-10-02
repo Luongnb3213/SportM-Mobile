@@ -57,13 +57,12 @@ const HeaderUser = () => {
     router.push('/owner/detailAccount');
   };
 
-
   return (
     <View className="py-4">
       <View className="flex-row items-center gap-3">
         <Avatar onTouchEnd={handleClickAvatar} className="w-12 h-12 rounded-full">
-          {user?.avatarUri ? (
-            <AvatarImage  source={{ uri: user.avatarUri }} />
+          {user?.avatarUrl ? (
+            <AvatarImage  source={{ uri:  user?.avatarUrl }} />
           ) : (
             <AvatarFallback textClassname="text-base">
               {user?.fullName

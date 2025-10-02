@@ -90,9 +90,9 @@ export default function ProfileScreen() {
               <CardContent className="p-0">
                 {/* Cover */}
                 <View className="relative">
-                  {userData?.avatarUri ? (
+                  {userData?.avatarUrl ? (
                     <Image
-                      source={{ uri: userData?.avatarUri }}
+                      source={{ uri: userData?.avatarUrl }}
                       className="w-full"
                       style={{ aspectRatio: 16 / 9 }}
                       resizeMode="cover"
@@ -144,8 +144,8 @@ export default function ProfileScreen() {
                   {/* Avatar overlap */}
                   <View className="absolute left-1/2 -translate-x-1/2 -bottom-10">
                     <Avatar className="w-28 h-28 border-4 border-white">
-                      {userData?.avatarUri ? (
-                        <AvatarImage source={{ uri: userData.avatarUri }} />
+                      {userData?.avatarUrl ? (
+                        <AvatarImage source={{ uri: userData.avatarUrl }} />
                       ) : (
                         <AvatarFallback textClassname="text-base">
                           {userData?.fullName

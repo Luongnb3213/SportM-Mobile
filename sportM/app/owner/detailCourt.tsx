@@ -1,9 +1,10 @@
-import DetailInfoCard from '@/components/HomeComponent/DetailSportComponent/DetailInfoCard';
-import GolfDealCard from '@/components/HomeComponent/GolfDealCard';
+
+import DetailInfoOwnerCourtCard from '@/components/OwnerComponent/DetailInfoOwnerCourtCard';
 import HeaderUser from '@/components/ui/HeaderUser';
+import { useAxios } from '@/lib/api';
 import { Ionicons } from '@expo/vector-icons';
 import { router, useLocalSearchParams } from 'expo-router';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { ImageBackground, Text, TouchableOpacity, View } from 'react-native';
 import {
   KeyboardAwareScrollView,
@@ -19,6 +20,24 @@ const DetailCourt = () => {
   const { courtID } = useLocalSearchParams<{
     courtID: string;
   }>();
+     
+  const [court, setCourt] = useState();
+
+  useEffect(() => {
+     (async() => {
+      if(!courtID)
+        return
+        try {
+          const {data} = await useAxios.get(`courts/${courtID}`)
+          setCourt(data.data)
+        } catch (error) {
+          console.log('Fetch error', error)
+        }
+     })()
+  },[])
+
+
+
   return (
     <KeyboardProvider>
       <SafeAreaView className="flex-1">
@@ -84,7 +103,7 @@ const DetailCourt = () => {
             </ImageBackground>
           </View>
           <View className="shadow-2xl">
-            <DetailInfoCard courtID={courtID} />
+            <DetailInfoOwnerCourtCard courtID={courtID} />
           </View>
         </KeyboardAwareScrollView>
       </SafeAreaView>

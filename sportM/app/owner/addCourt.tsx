@@ -1,9 +1,10 @@
-// app/(owner)/add-court.tsx
+
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Dimensions,
   ImageBackground,
+  Keyboard,
   Modal,
   ScrollView,
   Text,
@@ -33,14 +34,13 @@ import { useAxios } from '@/lib/api';
 import Toast from 'react-native-toast-message';
 import { Skeleton } from '@/components/Skeleton';
 import { formatPriceVND } from '@/lib/utils';
+import { useDebounce } from '@/hooks/useDebounce';
 
-// ====== constants ======
+
 const DEFAULT_HERO =
   'https://images.unsplash.com/photo-1506744038136-4627383b3fb?auto=format&fit=crop&w=1470&q=80';
 const MAX_IMAGES = 4;
 
-
-// ====== tiny input-with-icon component (style như ảnh bạn gửi) ======
 const PillInput = ({
   icon,
   placeholder,
@@ -80,14 +80,19 @@ const PillInput = ({
 
 type Pill = { sportTypeId: string | null; typeName: string; status: boolean };
 
-// ====== main ======
+type MapboxFeature = {
+  id: string;
+  place_name: string;
+  text: string;
+  center: [number, number];
+};
+
 const AddCourt = () => {
   const insets = useSafeAreaInsets();
   const { width } = Dimensions.get('window');
 
-  // form states
   const [name, setName] = useState('');
-  const [address, setAddress] = useState(''); // set khi chọn trên map
+  const [address, setAddress] = useState('');
   const [lat, setLat] = useState<number | null>(null);
   const [lng, setLng] = useState<number | null>(null);
   const [description, setDescription] = useState('');
@@ -96,14 +101,12 @@ const AddCourt = () => {
   const [sportTypeList, setSportTypeList] = React.useState<Pill[] | null>(null);
   const [sportTypeSelected, setSportTypeSelected] = React.useState<string | null>(null);
 
-  // images (local URIs to preview). Submit sẽ upload → imgUrls
   const [images, setImages] = useState<string[]>([]);
   const heroUri = useMemo(() => images[0] ?? DEFAULT_HERO, [images]);
 
-  // UI state
   const [submitting, setSubmitting] = useState(false);
   const [mapVisible, setMapVisible] = useState(false);
-  // errors
+
   const [errors, setErrors] = useState<{
     name?: string;
     address?: string;
@@ -115,7 +118,7 @@ const AddCourt = () => {
     general?: string;
   }>({});
 
-  // === pick up to 4 images (append one-by-one) ===
+
   const pickImage = async () => {
     try {
       const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -157,7 +160,6 @@ const AddCourt = () => {
     setImages((prev) => prev.filter((_, i) => i !== idx));
   };
 
-  // === validation ===
   const validate = () => {
     const next: typeof errors = {};
     if (!name.trim()) next.name = 'Vui lòng nhập tên sân';
@@ -170,7 +172,6 @@ const AddCourt = () => {
     return Object.keys(next).length === 0;
   };
 
-  // === submit ===
   const axios = useAxios;
   const onSubmit = async () => {
     if (!validate()) return;
@@ -179,7 +180,6 @@ const AddCourt = () => {
       setSubmitting(true);
       setErrors((e) => ({ ...e, general: undefined }));
 
-      // upload images to Cloudinary → imgUrls
       const imgUrls: string[] = [];
       for (const uri of images) {
         const isLocal = uri.startsWith('file://') || uri.startsWith('content://');
@@ -195,16 +195,15 @@ const AddCourt = () => {
         }
       }
 
-      // build body
       const body = {
         name: name.trim(),
         address: address.trim(),
         imgUrls,
-        sportType: sportTypeSelected, // default
+        sportType: sportTypeSelected, 
         lat: Number(lat),
         lng: Number(lng),
         description: description.trim(),
-        pricePerHour: Number(pricePerHour.replaceAll(',','')), // ép number
+        pricePerHour: Number(pricePerHour.replaceAll(',', '')),
         subService: subService.trim(),
       };
 
@@ -227,22 +226,69 @@ const AddCourt = () => {
     }
   };
 
-  // ====== Map modal (tap để chọn vị trí) ======
-  // Lưu ý: cần cấu hình Mapbox token trước (MapboxGL.setAccessToken(...)) ở bootstrap app.
   const [mapQuery, setMapQuery] = useState('');
-  const [pickedCoord, setPickedCoord] = useState<[number, number] | null>(null); // [lng, lat]
+  const debouncedQuery = useDebounce(mapQuery, 500);
+  const [suggestions, setSuggestions] = useState<MapboxFeature[]>([]);
+  const [pickingCenter, setPickingCenter] = useState<[number, number] | null>(null);
+  const [pickedCoord, setPickedCoord] = useState<[number, number] | null>(null);
+  const DEFAULT_CENTER: [number, number] = [106.660172, 10.762622];
+  const [suggestionsOpen, setSuggestionsOpen] = React.useState(false);
 
-  const confirmPick = () => {
-    if (!pickedCoord) return;
-    const [lngPicked, latPicked] = pickedCoord;
-    setLat(latPicked);
-    setLng(lngPicked);
-    setAddress(`(${latPicked.toFixed(6)}, ${lngPicked.toFixed(6)})`);
-    setMapVisible(false);
-    // clear errors
-    setErrors((e) => ({ ...e, address: undefined, latlng: undefined }));
+  React.useEffect(() => {
+    let alive = true;
+    (async () => {
+      if (!debouncedQuery) {
+        if (alive) setSuggestions([]);
+        return;
+      }
+      try {
+        const prox = pickedCoord ?? pickingCenter ?? DEFAULT_CENTER;
+        const feats = await forwardGeocode(debouncedQuery, prox);
+        if (alive) {
+          setSuggestions(feats);
+        }
+      } catch (e) {
+     
+      }
+    })();
+    return () => { alive = false; };
+  }, [debouncedQuery]);
+
+  const handleMapPress = (e: any) => {
+    const [lngTap, latTap] = e.geometry.coordinates as [number, number];
+    setPickedCoord([lngTap, latTap]);
   };
 
+  // chọn gợi ý: bay camera tới, set marker
+  const chooseSuggestion = (f: MapboxFeature) => {
+    setPickingCenter(f.center);
+    setPickedCoord(f.center);
+    setMapQuery(f.place_name); // hoặc f.place_name
+    setSuggestions([]);
+    setSuggestionsOpen(false);
+    Keyboard.dismiss();
+  };
+
+ 
+  const confirmPick = async () => {
+    if (!pickedCoord) return;
+    setSuggestions([]);
+    setSuggestionsOpen(false);
+    const [lngPicked, latPicked] = pickedCoord;
+    try {
+      const pretty = await reverseGeocode(lngPicked, latPicked);
+      setLat(latPicked);
+      setLng(lngPicked);
+      setAddress(pretty);
+      setErrors((e) => ({ ...e, address: undefined, latlng: undefined }));
+      setMapVisible(false);
+    } catch {
+      setLat(latPicked);
+      setLng(lngPicked);
+      setAddress(`(${latPicked.toFixed(6)}, ${lngPicked.toFixed(6)})`);
+      setMapVisible(false);
+    }
+  };
   useEffect(() => {
     (async () => {
       try {
@@ -257,8 +303,36 @@ const AddCourt = () => {
   }, [])
 
   const handleChoosePill = (pill: Pill) => {
-      setSportTypeSelected(pill.sportTypeId);
+    setSportTypeSelected(pill.sportTypeId);
   };
+
+  async function forwardGeocode(query: string, proximity?: [number, number]) {
+    if (!query.trim()) return [] as MapboxFeature[];
+    const url = new URL(`https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(query)}.json`);
+    url.searchParams.set('access_token', 'pk.eyJ1IjoibHVvbmdjaGFvaSIsImEiOiJjbWZndzlwNHcwNW52MnJwdDJlaGViMDUxIn0.8D0hYvlEZdwx3GzONsOHpg');
+    url.searchParams.set('autocomplete', 'true');
+    url.searchParams.set('limit', '6');
+    url.searchParams.set('language', 'vi');
+    if (proximity) url.searchParams.set('proximity', `${proximity[0]},${proximity[1]}`);
+
+    const res = await fetch(url.toString());
+    if (!res.ok) throw new Error('Geocoding failed');
+    const json = await res.json();
+    return (json.features || []) as MapboxFeature[];
+  }
+
+  async function reverseGeocode(lng: number, lat: number) {
+    const url = new URL(`https://api.mapbox.com/geocoding/v5/mapbox.places/${lng},${lat}.json`);
+    url.searchParams.set('access_token', 'pk.eyJ1IjoibHVvbmdjaGFvaSIsImEiOiJjbWZndzlwNHcwNW52MnJwdDJlaGViMDUxIn0.8D0hYvlEZdwx3GzONsOHpg');
+    url.searchParams.set('limit', '1');
+    url.searchParams.set('language', 'vi');
+
+    const res = await fetch(url.toString());
+    if (!res.ok) throw new Error('Reverse geocoding failed');
+    const json = await res.json();
+    const f = (json.features || [])[0];
+    return (f?.place_name as string) || `(${lat.toFixed(6)}, ${lng.toFixed(6)})`;
+  }
 
   return (
     <KeyboardProvider>
@@ -332,13 +406,11 @@ const AddCourt = () => {
                   placeholder="Nhập địa điểm"
                   value={address}
                   onPressIn={() => {
-                    console.log('Opening map modal');
                     setMapVisible(true)
                   }}
                   editable={false}
                 />
                 {errors.address ? <Text className="text-red-500 text-sm">{errors.address}</Text> : null}
-                {errors.latlng ? <Text className="text-red-500 text-sm">{errors.latlng}</Text> : null}
 
                 <PillInput
                   icon={<Ionicons name="pricetag" size={22} color="#1F2756" />}
@@ -483,6 +555,7 @@ const AddCourt = () => {
       {/* Map Modal */}
       <Modal visible={mapVisible} animationType="slide" onRequestClose={() => setMapVisible(false)}>
         <SafeAreaView className="flex-1 bg-white">
+          {/* Header */}
           <View className="flex-row items-center justify-between px-4 py-2 border-b border-[#eee]">
             <Text className="text-lg font-semibold">Chọn vị trí</Text>
             <TouchableOpacity onPress={() => setMapVisible(false)}>
@@ -490,41 +563,69 @@ const AddCourt = () => {
             </TouchableOpacity>
           </View>
 
-          {/* (Tuỳ chọn) thanh search — bạn có thể nối Mapbox Geocoding SDK tại đây */}
-          <View className="px-4 py-2">
-            <PillInput
-              icon={<Ionicons name="search" size={20} color="#1F2756" />}
-              placeholder="Tìm kiếm địa điểm (optional)"
-              value={mapQuery}
-              onChangeText={setMapQuery}
-            />
+          {/* Search box */}
+          <View className="px-4 pt-3 pb-2">
+            <View
+              className="flex-row items-center px-4 h-12 rounded-2xl border border-[#DADADA] bg-white"
+              style={{ shadowColor: '#000', shadowOpacity: 0.05, shadowOffset: { width: 0, height: 2 }, shadowRadius: 6 }}
+            >
+              <Ionicons name="search" size={20} color="#1F2756" />
+              <TextInput
+                placeholder="Tìm kiếm địa điểm"
+                placeholderTextColor="#9AA0A6"
+                value={mapQuery}
+                onChangeText={(t) => {
+                  setMapQuery(t);
+                  setSuggestionsOpen(!!t.trim());
+                }}
+                className="flex-1 text-base ml-3"
+                onFocus={() => setSuggestionsOpen(!!mapQuery.trim())}
+              />
+            </View>
+
+            {/* Suggestion list */}
+            {suggestions.length > 0 && suggestionsOpen && (
+              <View className="mt-2 rounded-xl border border-[#eee] bg-white">
+                {suggestions.map((s) => (
+                  <TouchableOpacity
+                    key={s.id}
+                    className="px-3 py-2 border-b border-[#f3f3f3]"
+                    onPress={() => chooseSuggestion(s)}
+                  >
+                    <Text className="text-[15px] font-medium">{s.text}</Text>
+                    <Text className="text-[13px] text-[#666]">{s.place_name}</Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            )}
           </View>
 
+          {/* Map */}
           <View className="flex-1">
             <MapboxGL.MapView
-              scaleBarEnabled={false}
-              styleURL="mapbox://styles/mapbox/streets-v9"   // ✅ dùng styleURL
+              styleURL="mapbox://styles/mapbox/streets-v9"
               zoomEnabled
               scrollEnabled
               pitchEnabled
-              rotateEnabled style={{ flex: 1 }} onPress={(e) => {
-                if (e.geometry && 'coordinates' in e.geometry) {
-                  const [lngTap, latTap] = e.geometry.coordinates as [number, number];
-                  setPickedCoord([lngTap, latTap]);
-                }
-              }}>
+              rotateEnabled
+              scaleBarEnabled={false}
+              style={{ flex: 1 }}
+              onPress={handleMapPress}>
               <MapboxGL.Camera
                 zoomLevel={12}
-                centerCoordinate={pickedCoord ?? [105.804817, 21.028511]} // default SG
+                centerCoordinate={pickingCenter ?? pickedCoord ?? DEFAULT_CENTER}
+                animationMode="flyTo"
+                animationDuration={900}
               />
               {pickedCoord ? (
-                <MapboxGL.PointAnnotation id="picked" coordinate={pickedCoord}>
+                <MapboxGL.PointAnnotation id="picked" coordinate={pickedCoord} >
                   <View style={{ width: 20, height: 20, backgroundColor: 'red', borderRadius: 10 }} />
                 </MapboxGL.PointAnnotation>
               ) : null}
             </MapboxGL.MapView>
           </View>
 
+          {/* Footer */}
           <View className="px-4 py-3 border-t border-[#eee]">
             <Button onPress={confirmPick} className="h-12 rounded-xl" disabled={!pickedCoord}>
               <Text className="text-base text-white font-semibold">

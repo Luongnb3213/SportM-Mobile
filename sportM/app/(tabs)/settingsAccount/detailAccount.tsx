@@ -100,8 +100,8 @@ export default function DetailAccount() {
 
                   <View className="flex-row items-center gap-3">
                     <Avatar className="w-12 h-12">
-                      {userData?.avatarUri ? (
-                        <AvatarImage source={{ uri: userData.avatarUri }} />
+                      {userData?.avatarUrl ? (
+                        <AvatarImage source={{ uri: userData.avatarUrl }} />
                       ) : (
                         <AvatarFallback textClassname="text-base">
                           {userData?.fullName
@@ -128,9 +128,9 @@ export default function DetailAccount() {
             {/* Ảnh chính */}
             <View className="pt-3">
               <View className="rounded-xl overflow-hidden">
-                {userData?.avatarUri ? (
+                {userData?.avatarUrl ? (
                   <Image
-                    source={{ uri: userData?.avatarUri }}
+                    source={{ uri: userData?.avatarUrl }}
                     className="w-full"
                     style={{ aspectRatio: 3 / 4 }}
                     resizeMode="cover"
