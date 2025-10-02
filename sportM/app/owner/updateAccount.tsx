@@ -404,7 +404,7 @@ const UpdateAccount = () => {
         </KeyboardAwareScrollView>
 
         {/* Footer cố định */}
-        <View className="absolute bottom-32 left-0 right-0 flex-row gap-4 p-4 bg-background border-t border-border">
+        <View className="absolute bottom-[40px] left-0 right-0 flex-row gap-4 p-4 bg-background border-t border-border">
           <Button className="flex-1" onPress={handleUpdate} disabled={submitting}>
             {submitting ? (
               <View className="flex-row items-center justify-center gap-2">
