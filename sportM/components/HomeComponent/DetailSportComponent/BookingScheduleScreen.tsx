@@ -1,82 +1,82 @@
-import React, { useMemo, useState } from 'react';
-import {
-  View,
-  Text,
-  FlatList,
-  ScrollView,
-} from 'react-native';
+// BookingScheduleScreen.tsx
+import React, { useMemo } from 'react';
+import { View, Text, FlatList, ScrollView } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { Court, Day, Slot } from './types';
 import { Card, CardContent } from '@/components/Card';
-import DayPill from './DayPill';
 import TimeColumn from './TimeColumn';
 import CourtsGrid from './CourtsGrid';
+import DayPill from './DayPill';
 
-export const SLOT_HEIGHT = 38;
+type DayItem = {
+  id: string;        // YYYY-MM-DD
+  date: Date;
+  day: string;       // "05"
+  month: number;     // 1..12
+  weekdayShort: string; // "T2".."T7" | "CN"
+};
 
-const DAYS: Day[] = Array.from({ length: 8 }, (_, i) => ({
-  id: `2025-09-${10 + i}`,
-  thu: 'TH 9',
-  day: String(36),
-  suffix: 'CN',
-  isActive: i === 3,
-}));
+type Slot = { id: string; label: string };
 
-const courts: Court[] = [
+const courts = [
   { id: 'am', name: 'AM' },
   { id: 'pm', name: 'PM' },
 ];
 
-export default function BookingScheduleScreen() {
-  const [activeDayId, setActiveDayId] = useState(
-    DAYS.find((d) => d.isActive)?.id ?? DAYS[0].id
-  );
+function formatVNDate(d: Date) {
+  const dd = String(d.getDate()).padStart(2, '0');
+  const mm = String(d.getMonth() + 1).padStart(2, '0');
+  const yyyy = d.getFullYear();
+  return `${dd}/${mm}/${yyyy}`;
+}
 
-  const slots: Slot[] = useMemo(() => {
-    const startHour = 5; // bắt đầu từ 5h
-    const rows = 7;
-    const fmt = (h: number) => `${String(h).padStart(2, '0')}:00`;
+export default function BookingScheduleScreen({
+  days,
+  activeDayId,
+  setActiveDayId,
+  slots,
+  selected,
+  onToggle,
+  pricePerHour,
+  sportType
+}: {
+  days: DayItem[];
+  activeDayId: string;
+  setActiveDayId: (id: string) => void;
+  slots: Slot[];
+  // selected chứa key dạng "am_t0" | "pm_t4"...
+  selected: Set<string>;
+  // toggle theo cột
+  onToggle: (courtId: 'am' | 'pm', slotId: string) => void;
+  pricePerHour: number;
+  sportType?: { typeName?: string };
+}) {
+  const locked = new Set<string>(); // map từ API nếu có
+  const activeDay = useMemo(() => days.find(d => d.id === activeDayId) || days[0], [days, activeDayId]);
 
-    return Array.from({ length: rows }, (_, i) => {
-      const s = startHour + i;
-      const e = s + 1;
-      return { id: `t${i}`, label: `${fmt(s)} - ${fmt(e)}` };
-    });
-  }, []);
-  // quản lý các ô được chọn (key = `${courtId}_${slotId}`)
-  const [selected, setSelected] = useState<Set<string>>(new Set());
-  const toggle = (courtId: string, slotId: string) => {
-    const k = `${courtId}_${slotId}`;
-    setSelected((prev) => {
-      const next = new Set(prev);
-      next.has(k) ? next.delete(k) : next.add(k);
-      return next;
-    });
-  };
-
-  // ví dụ ô khóa (slot 0 của sân 1)
-  const locked = new Set<string>(['am_t0']);
   return (
     <View className="flex-1 bg-white">
-      {/* Filters */}
+      {/* Header: Thứ (trái) & Ngày (phải) */}
       <View className="flex-row items-center justify-between px-6 mt-4 mb-2">
+        <Text className="text-[14px] font-bold text-gray-900">{activeDay.weekdayShort}</Text>
+        <Text className="text-[14px] font-semibold text-gray-500">{formatVNDate(activeDay.date)}</Text>
+      </View>
+      <View className="h-1 mx-6 bg-gray-200" />
+
+      {/* Giá/giờ */}
+      <View className="flex-row items-center justify-between px-6 mt-3 mb-2">
         <Text className="text-lg font-semibold text-gray-900">
-          Sân: <Text className='font-medium'>Pickleball</Text>
+          Sân: <Text className="font-medium">{sportType?.typeName}</Text>
+        </Text>
+        <Text className="text-sm text-gray-600">
+          {pricePerHour.toLocaleString('vi-VN')} / giờ
         </Text>
       </View>
-      <View className='h-1 mx-6 bg-gray-200'></View>
-      {/* Date selector */}
+
+      {/* Date selector – pill style cũ */}
       <Card className="mx-3 rounded-2xl" style={{ borderWidth: 0 }}>
         <CardContent className="px-3 py-3">
-          <View className="mb-2 flex-row items-center justify-between">
-            <Text className="text-[14px] font-bold text-gray-900">Thứ 7</Text>
-            <Text className="text-[14px] font-semibold text-gray-500">
-              13/9/2025
-            </Text>
-          </View>
-
           <FlatList
-            data={DAYS}
+            data={days}
             keyExtractor={(d) => d.id}
             horizontal
             contentContainerStyle={{ paddingVertical: 6 }}
@@ -84,9 +84,9 @@ export default function BookingScheduleScreen() {
             showsHorizontalScrollIndicator={false}
             renderItem={({ item }) => (
               <DayPill
-                thu={item.thu}
-                day={item.day}
-                suffix={item.suffix}
+                monthText={`TH ${item.month}`}
+                dayText={item.day}
+                weekdayText={item.weekdayShort}
                 active={item.id === activeDayId}
                 onPress={() => setActiveDayId(item.id)}
               />
@@ -95,14 +95,9 @@ export default function BookingScheduleScreen() {
         </CardContent>
       </Card>
 
-      {/* Grid */}
+      {/* Grid – chọn theo cột AM/PM */}
       <Card className="m-3 rounded-2xl" style={{ borderWidth: 0 }}>
         <CardContent className="px-3 py-3">
-          <ScrollView
-            className="flex-1"
-            contentContainerStyle={{ paddingBottom: 24 }}
-            showsVerticalScrollIndicator={false}
-          >
             <View className="px-4 pr-0">
               <View className="flex-row">
                 <TimeColumn slots={slots} />
@@ -111,12 +106,11 @@ export default function BookingScheduleScreen() {
                   slots={slots}
                   selected={selected}
                   locked={locked}
-                  onToggle={toggle}
+                  onToggle={(courtId, slotId) => onToggle(courtId as 'am'|'pm', slotId)}
                   iconPack={MaterialCommunityIcons}
                 />
               </View>
             </View>
-          </ScrollView>
         </CardContent>
       </Card>
     </View>

@@ -1,11 +1,10 @@
-// InviteFriendsSheet.tsx (ScrollView version)
+// InviteFriendsSheet.tsx
 import React from 'react';
 import { View, Text, TextInput, ActivityIndicator, ScrollView } from 'react-native';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/Avatar';
 import Button from '@/components/Button';
 import BottomSheet from '@/components/TabBarComponent/BottomSheet';
 import { Feather } from '@expo/vector-icons';
-import { useAxios } from '@/lib/api';
 import EmptyState from '@/components/ui/EmptyState';
 
 type Friend = { id: string; name: string; avatar?: string };
@@ -47,9 +46,11 @@ function useDebounce<T>(v: T, d = 400) {
 export default function InviteFriendsSheet({
   open,
   onClose,
+  onPick,
 }: {
   open: boolean;
   onClose: () => void;
+  onPick?: (f: Friend) => void;
 }) {
   const [query, setQuery] = React.useState('');
   const dq = useDebounce(query, 400);
@@ -63,15 +64,12 @@ export default function InviteFriendsSheet({
 
   const LIMIT = 10;
 
-  // load lần đầu + khi search đổi
   React.useEffect(() => {
     if (!open) return;
     (async () => {
       setLoadingInit(true);
       setPage(1);
       const { items, hasMore } = await mockFetchFriends({ search: dq, page: 1, limit: LIMIT });
-      // const {data} = await useAxios.get(`/friends?search=${dq}&page=1&limit=${LIMIT}`);
-      // setFriends(data.data.items);
       setFriends(items);
       setHasMore(hasMore);
       setLoadingInit(false);
@@ -83,8 +81,6 @@ export default function InviteFriendsSheet({
     setLoadingMore(true);
     const next = page + 1;
     const { items, hasMore: hm } = await mockFetchFriends({ search: dq, page: next, limit: LIMIT });
-    // const {data} = await useAxios.get(`/friends?search=${dq}&page=${next}&limit=${LIMIT}`);
-    // setFriends(data.data.items);
     if (items.length) {
       setFriends(prev => [...prev, ...items]);
       setPage(next);
@@ -133,58 +129,51 @@ export default function InviteFriendsSheet({
             nestedScrollEnabled
             keyboardShouldPersistTaps="handled"
           >
-
-            {
-              friends.length > 0 ?
-                (
-                  <View>
-                    {friends.map((item) => (
-                      <View
-                        key={item.id}
-                        className="flex-row items-center justify-between px-2 py-3 border-b border-gray-200"
-                      >
-                        <View className="flex-row items-center gap-3">
-                          <Avatar className="w-14 h-14">
-                            {item.avatar ? (
-                              <AvatarImage source={{ uri: item.avatar }} />
-                            ) : (
-                              <AvatarFallback textClassname="text-[12px]">
-                                {item.name.split(' ').map(w => w[0]).slice(0, 2).join('')}
-                              </AvatarFallback>
-                            )}
-                          </Avatar>
-                          <Text className="text-[15px]">{item.name}</Text>
-                        </View>
-
-                        <Button textClassName="text-base" className="px-5 rounded-full bg-[#2E2F68]">
-                          Mời bạn
-                        </Button>
-                      </View>
-                    ))}
-
-                    {/* Footer: Xem thêm */}
-                    {hasMore ? (
-                      <View className="items-center py-3">
-                        {loadingMore ? (
-                          <ActivityIndicator />
+            {friends.length > 0 ? (
+              <View>
+                {friends.map((item) => (
+                  <View
+                    key={item.id}
+                    className="flex-row items-center justify-between px-2 py-3 border-b border-gray-200"
+                  >
+                    <View className="flex-row items-center gap-3">
+                      <Avatar className="w-14 h-14">
+                        {item.avatar ? (
+                          <AvatarImage source={{ uri: item.avatar }} />
                         ) : (
-                          <Button className="px-4 py-2 rounded-full" onPress={onLoadMore}>
-                            Xem thêm
-                          </Button>
+                          <AvatarFallback textClassname="text-[12px]">
+                            {item.name.split(' ').map(w => w[0]).slice(0, 2).join('')}
+                          </AvatarFallback>
                         )}
-                      </View>
-                    ) : null}
-                  </View>
-                )
-                : (
-                  <EmptyState
-                    icon="golf-outline"
-                    title="Chưa có bạn nào"
-                    description="Hiện chưa có bạn nào."
-                  />
-                )
-            }
+                      </Avatar>
+                      <Text className="text-[15px]">{item.name}</Text>
+                    </View>
 
+                    <Button
+                      textClassName="text-base"
+                      className="px-5 rounded-full bg-[#2E2F68]"
+                      onPress={() => onPick?.(item)}
+                    >
+                      Mời bạn
+                    </Button>
+                  </View>
+                ))}
+
+                {hasMore ? (
+                  <View className="items-center py-3">
+                    {loadingMore ? (
+                      <ActivityIndicator />
+                    ) : (
+                      <Button className="px-4 py-2 rounded-full" onPress={onLoadMore}>
+                        Xem thêm
+                      </Button>
+                    )}
+                  </View>
+                ) : null}
+              </View>
+            ) : (
+              <EmptyState icon="golf-outline" title="Chưa có bạn nào" description="Hiện chưa có bạn nào." />
+            )}
           </ScrollView>
         )}
       </View>

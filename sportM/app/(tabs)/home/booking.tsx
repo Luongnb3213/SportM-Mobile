@@ -21,6 +21,7 @@ import {
 import HeaderUser from '@/components/ui/HeaderUser';
 import { useDebounce } from '@/hooks/useDebounce';
 import EmptyState from '@/components/ui/EmptyState';
+import { useAxios } from '@/lib/api';
 
 /** ------------------ Fake data & API ------------------ */
 type Booking = {
@@ -113,6 +114,7 @@ export default function BookingsScreen() {
           limit: LIMIT,
           signal: ctrl.signal,
         });
+        // const { data } = await useAxios.get(`/bookings/my-bookings?page=1&limit=${LIMIT}&search=${debouncedSearch}`, { signal: ctrl.signal });
         setItems(firstPage);
         setHasMore(hasMore);
       } catch (e) {
@@ -143,6 +145,7 @@ export default function BookingsScreen() {
           signal: ctrl.signal,
         }
       );
+      // const { data } = await useAxios.get(`/bookings/my-bookings?page=${page}&limit=${LIMIT}&search=${debouncedSearch}`, { signal: ctrl.signal });
       // nếu API trả về rỗng -> không cập nhật page, đồng thời ẩn nút
       if (nextItems.length > 0) {
         setItems((prev) => [...prev, ...nextItems]);
