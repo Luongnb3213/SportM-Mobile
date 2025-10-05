@@ -32,6 +32,7 @@ import HeaderUser from '@/components/ui/HeaderUser';
 import { router } from 'expo-router';
 import { NearByYardSkeleton } from '@/components/Skeleton/NearByYardSkeleton';
 import { GolfCourseCardSkeleton } from '@/components/Skeleton/GolfCourseCardSkeleton';
+import { socket } from '@/lib/socket';
 
 export default function HomeScreen() {
   const t = useAppTheme();
@@ -44,6 +45,18 @@ export default function HomeScreen() {
     (async () => {
       // fetch data from API
     })()
+  }, [])
+
+  useEffect(() => {
+(async () => {
+    await socket.connect();
+
+    const onConnect = () => console.log('✅ connected', socket.socket?.id);
+    const onDisconnect = (r:any) => console.log('🔌 disconnected', r);
+
+    socket.on('connect', onConnect);
+    socket.on('disconnect', onDisconnect);
+  })();
   }, [])
 
 
