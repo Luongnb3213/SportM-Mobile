@@ -38,7 +38,7 @@ const FriendSent = () => {
       setInitialLoading(true);
       try {
         const items = await mockFetch(1, 5);
-        // const { data } = await useAxios.get(`/friend-request?type=sent&page=1&limit=5`)
+        const { data } = await useAxios.get(`/friend-request?type=sent&page=1&limit=5`)
         // setSent(data.data.items);
         setSent(items);
         setHasMore(items.length > 0);
@@ -92,10 +92,11 @@ const FriendSent = () => {
             <View className='flex flex-col gap-5'>
               {sent.map((u, idx) => (
                 <UserInviteItem
+                  id={u.id}
                   key={idx}
-                  name={u.name}
-                  subtitle={u.subtitle}
-                  avatarUri={u.avatar}
+                  name={u?.name}
+                  subtitle={u?.subtitle}
+                  avatarUri={u?.avatar}
                   status="sent"
                   accentHex={NAVY}
                   onCancel={() => handleCancelSent(u)}

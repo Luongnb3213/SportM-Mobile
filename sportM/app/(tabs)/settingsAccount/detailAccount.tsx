@@ -7,7 +7,6 @@ import {
 } from '@expo/vector-icons';
 
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/Avatar';
-import { Button } from '@/components/Button';
 import {
   KeyboardAwareScrollView,
   KeyboardProvider,
@@ -16,11 +15,9 @@ import {
   SafeAreaView,
   useSafeAreaInsets,
 } from 'react-native-safe-area-context';
-import { clearTokens } from '@/lib/tokenStorage';
-import { router } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import { useAuth } from '@/providers/AuthProvider';
 import { useAxios } from '@/lib/api';
-import { Skeleton } from '@/components/Skeleton';
 import ProfileSkeleton from '@/components/Skeleton/ProfileSkeleton';
 
 type Pill = { id: string | number; label: string; icon?: React.ReactNode };
@@ -38,19 +35,13 @@ export default function DetailAccount() {
   const auth = useAuth();
   const [userData, setUserData] = React.useState(auth.user);
   const [loading, setLoading] = React.useState(false);
-  const handleLogout = () => {
-    clearTokens();
-    router.replace('/authentication');
-    auth.setUser(null);
-    console.log('Logging out...');
-  };
+  const { userId } = useLocalSearchParams<{ userId: string }>()
 
   useEffect(() => {
     async function fetchUserData() {
       setLoading(true);
       try {
         const { data } = await useAxios.get(`/users/${auth.user?.userId}`);
-        await new Promise((resolve) => setTimeout(resolve, 2000)); // giả lập delay
         console.log('Fetched user data in setting account:', data.data);
         setUserData(data.data);
       } catch (error) {
@@ -182,14 +173,6 @@ export default function DetailAccount() {
                 <Ionicons name="time-outline" size={14} />
                 <Text className="text-xl">Tất cả các ngày</Text>
               </View>
-            </View>
-            <View className="my-5">
-              <Button
-                onPress={handleLogout}
-                className="rounded-xl h-12 bg-[#1F2257]"
-              >
-                Logout
-              </Button>
             </View>
           </View>
         </KeyboardAwareScrollView>

@@ -1,33 +1,35 @@
 // components/UserInviteItem.tsx
 import React from 'react';
-import { View, Text } from 'react-native';
+import { View, Text, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
 import { Card } from '@/components/Card';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/Avatar';
 import { Button } from '@/components/Button';
 import { cn } from '@/lib/utils';
+import { router } from 'expo-router';
 
 type InviteStatus = 'suggestion' | 'pending' | 'sent';
 
 export interface UserInviteItemProps {
+  id: string
   name: string;
-  subtitle?: string;          // ví dụ: "Chủ sân"
+  subtitle?: string;
   avatarUri?: string;
   status: InviteStatus;
 
-  // handlers cho từng hành động
-  onAdd?: () => void;         // dùng cho "suggestion"
-  onRemove?: () => void;      // dùng cho "suggestion"
-  onConfirm?: () => void;     // dùng cho "pending"
-  onCancel?: () => void;      // dùng cho "pending" & "sent"
+  onAdd?: () => void;
+  onRemove?: () => void;
+  onConfirm?: () => void;
+  onCancel?: () => void;
 
-  // style tuỳ biến
   className?: string;
-  accentHex?: string;         // màu tròn đậm (mặc định xanh navy)
+  accentHex?: string;
+  loading?: boolean
 }
 
 export function UserInviteItem({
+  id,
   name,
   subtitle,
   avatarUri,
@@ -37,7 +39,8 @@ export function UserInviteItem({
   onConfirm,
   onCancel,
   className,
-  accentHex = '#202652', // xanh navy đậm giống mock
+  accentHex = '#202652',
+  loading
 }: UserInviteItemProps) {
   // button tròn tái sử dụng
   const Circle = ({
@@ -45,13 +48,16 @@ export function UserInviteItem({
     onPress,
     icon,
     accessibilityLabel,
+    loading
   }: {
     variant: 'solid' | 'light';
     onPress?: () => void;
     icon: React.ReactNode;
     accessibilityLabel: string;
+    loading?: boolean
   }) => (
     <Button
+      disabled={loading}
       accessibilityLabel={accessibilityLabel}
       onPress={onPress}
       size="icon"
@@ -76,12 +82,14 @@ export function UserInviteItem({
         return (
           <View className="flex-row gap-3">
             <Circle
+              loading={loading}
               variant="solid"
               onPress={onAdd}
               accessibilityLabel="Thêm"
               icon={<Ionicons name="add" size={20} color="#FFFFFF" />}
             />
             <Circle
+              loading={loading}
               variant="light"
               onPress={onRemove}
               accessibilityLabel="Bỏ gợi ý"
@@ -93,12 +101,14 @@ export function UserInviteItem({
         return (
           <View className="flex-row gap-3">
             <Circle
+              loading={loading}
               variant="solid"
               onPress={onConfirm}
               accessibilityLabel="Chấp nhận"
               icon={<Ionicons name="checkmark" size={20} color="#FFFFFF" />}
             />
             <Circle
+              loading={loading}
               variant="light"
               onPress={onCancel}
               accessibilityLabel="Huỷ yêu cầu"
@@ -130,13 +140,20 @@ export function UserInviteItem({
       )}
     >
       {/* Avatar */}
-      <Avatar className="w-20 h-20">
-        {avatarUri ? (
-          <AvatarImage source={{ uri: avatarUri }} />
-        ) : (
-          <AvatarFallback textClassname="text-base">{initials}</AvatarFallback>
-        )}
-      </Avatar>
+      <TouchableOpacity onPress={() => {
+         router.push({
+          pathname: '/(tabs)/settingsAccount/detailAccount',
+          params: { userId: id} 
+         })
+      }}>
+        <Avatar className="w-20 h-20">
+          {avatarUri ? (
+            <AvatarImage source={{ uri: avatarUri }} />
+          ) : (
+            <AvatarFallback textClassname="text-base">{initials}</AvatarFallback>
+          )}
+        </Avatar>
+      </TouchableOpacity>
 
       {/* Info */}
       <View className="flex-1">

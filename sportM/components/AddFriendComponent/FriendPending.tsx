@@ -5,6 +5,7 @@ import { UserInviteListSkeleton } from '../Skeleton/UserInviteItemSkeleton';
 import { Ionicons } from '@expo/vector-icons';
 import Toast from 'react-native-toast-message';
 import EmptyState from '../ui/EmptyState';
+import { useAxios } from '@/lib/api';
 
 type User = { id: string; name: string; subtitle?: string; avatar?: string };
 
@@ -32,14 +33,15 @@ const FriendPending = () => {
   const [loadingMore, setLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(true);
   const [pending, setPending] = useState<User[]>([]);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     (async () => {
       setInitialLoading(true);
       try {
         const items = await mockFetch(1, 5);
-        // const { data } = await useAxios.get(`/friend-request?type=received&page=1&limit=5`)
-        // setSent(data.data.items);
+        const { data } = await useAxios.get(`/friend-request?type=received&page=1&limit=5`)
+        console.log(data.data.items)
         setPending(items);
         setHasMore(items.length > 0);
       } catch (error) {
@@ -52,6 +54,10 @@ const FriendPending = () => {
 
   const handleConfirm = async (u: User) => {
     try {
+      setLoading(true)
+      await useAxios.patch(`/friend-request/${u.id}`, {
+        status: true
+      })
       setPending((prev) => prev.filter((x) => x.id !== u.id));
       Toast.show({
         type: 'success',
@@ -65,11 +71,17 @@ const FriendPending = () => {
         text1: 'Lỗi',
         text2: 'Không thể xác nhận lời mời lúc này. Vui lòng thử lại sau.',
       });
+    } finally {
+      setLoading(false)
     }
   };
 
   const handleCancelPending = async (u: User) => {
     try {
+      setLoading(true)
+      await useAxios.patch(`/friend-request/${u.id}`, {
+        status: false
+      })
       setPending((prev) => prev.filter((x) => x.id !== u.id));
       Toast.show({
         type: 'success',
@@ -83,6 +95,8 @@ const FriendPending = () => {
         text1: 'Lỗi',
         text2: 'Không thể từ chối lời mời lúc này. Vui lòng thử lại sau.',
       });
+    } finally {
+      setLoading(false)
     }
   };
 
@@ -129,10 +143,12 @@ const FriendPending = () => {
           <View className='flex flex-col gap-5'>
             {pending.map((u, idx) => (
               <UserInviteItem
+                id={u?.id}
+                loading={loading}
                 key={idx}
-                name={u.name}
-                subtitle={u.subtitle}
-                avatarUri={u.avatar}
+                name={u?.name}
+                subtitle={u?.subtitle}
+                avatarUri={u?.avatar}
                 status="pending"
                 accentHex={NAVY}
                 onConfirm={() => handleConfirm(u)}
