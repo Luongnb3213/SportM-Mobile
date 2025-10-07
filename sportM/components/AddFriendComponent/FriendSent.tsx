@@ -6,40 +6,23 @@ import { Ionicons } from '@expo/vector-icons';
 import EmptyState from '../ui/EmptyState';
 import { useAxios } from '@/lib/api';
 
-type User = { id: string; name: string; subtitle?: string; avatar?: string };
 
 const NAVY = '#202652';
-
-/** Fake dataset 15 users đã gửi */
-const FAKE_SENT: User[] = Array.from({ length: 15 }).map((_, i) => ({
-  id: String(i + 1),
-  name: `Người dùng ${i + 1}`,
-  subtitle: 'Đã gửi lời mời',
-  avatar: `https://i.pravatar.cc/150?img=${i + 30}`,
-}));
-
-// Fake API
-async function mockFetch(page: number, limit: number): Promise<User[]> {
-  await new Promise((r) => setTimeout(r, 800));
-  const start = (page - 1) * limit;
-  const end = start + limit;
-  return FAKE_SENT.slice(start, end);
-}
 
 const FriendSent = () => {
   const [initialLoading, setInitialLoading] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [loadingMore, setLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(true);
-  const [sent, setSent] = useState<User[]>([]);
+  const [sent, setSent] = useState<any[]>([]);
 
   useEffect(() => {
     (async () => {
       setInitialLoading(true);
       try {
-        const items = await mockFetch(1, 5);
         const { data } = await useAxios.get(`/friend-request?type=sent&page=1&limit=5`)
-        // setSent(data.data.items);
+        console.log(data.data.items)
+        let items = data.data.items
         setSent(items);
         setHasMore(items.length > 0);
       } catch (error) {
@@ -50,7 +33,7 @@ const FriendSent = () => {
     })();
   }, []);
 
-  const handleCancelSent = (u: User) => {
+  const handleCancelSent = (u: any) => {
     setSent((prev) => prev.filter((x) => x.id !== u.id));
   };
 
@@ -59,9 +42,8 @@ const FriendSent = () => {
     setLoadingMore(true);
     try {
       const nextPage = currentPage + 1;
-      const items = await mockFetch(nextPage, 5);
-      // const { data } = await useAxios.get(`/friend-request?type=sent&page=${nextPage}&limit=5`)
-      // setSent(data.data.items);
+       const { data } = await useAxios.get(`/friend-request?type=sent&page=${nextPage}&limit=5`)
+      let items = data.data.items
       if (items.length > 0) {
         setSent((prev) => [...prev, ...items]);
         setCurrentPage(nextPage);
@@ -92,11 +74,11 @@ const FriendSent = () => {
             <View className='flex flex-col gap-5'>
               {sent.map((u, idx) => (
                 <UserInviteItem
-                  id={u.id}
+                  id={u?.to.userId}
                   key={idx}
-                  name={u?.name}
-                  subtitle={u?.subtitle}
-                  avatarUri={u?.avatar}
+                  name={u?.to.fullName}
+                  subtitle={'Đã gửi lời mời kết bạn'}
+                  avatarUri={u?.to.avatarUrl}
                   status="sent"
                   accentHex={NAVY}
                   onCancel={() => handleCancelSent(u)}
