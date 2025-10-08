@@ -33,6 +33,7 @@ import { router } from 'expo-router';
 import { NearByYardSkeleton } from '@/components/Skeleton/NearByYardSkeleton';
 import { GolfCourseCardSkeleton } from '@/components/Skeleton/GolfCourseCardSkeleton';
 import { socket } from '@/lib/socket';
+import NotificationTester from '@/components/NotificationComponent/NotificationTester';
 
 export default function HomeScreen() {
   const t = useAppTheme();
@@ -70,6 +71,7 @@ export default function HomeScreen() {
           extraKeyboardSpace={0}
         >
           <View style={{ backgroundColor: t.background }}>
+            <NotificationTester />
             <View className="bg-background px-4">
               <HeaderUser />
             </View>

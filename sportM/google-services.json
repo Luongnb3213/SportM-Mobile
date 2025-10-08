@@ -1,44 +1,26 @@
 {
   "project_info": {
-    "project_number": "1013531353218",
-    "project_id": "sportm-eb72c",
-    "storage_bucket": "sportm-eb72c.firebasestorage.app"
+    "project_number": "306325042935",
+    "project_id": "sportm-34e6e",
+    "storage_bucket": "sportm-34e6e.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:1013531353218:android:d50f06570837464e52949b",
+        "mobilesdk_app_id": "1:306325042935:android:41c3f86d7bc00c3eef45f2",
         "android_client_info": {
-          "package_name": "com.choai.sportM"
+          "package_name": "com.sportm.app"
         }
       },
-      "oauth_client": [
-        {
-          "client_id": "1013531353218-j9e4md94kidg3pe89dtg4gg6e7s18vl9.apps.googleusercontent.com",
-          "client_type": 1,
-          "android_info": {
-            "package_name": "com.choai.sportM",
-            "certificate_hash": "b26150d3c3c74840d6dbcace06c97e1fabbeefd5"
-          }
-        },
-        {
-          "client_id": "1013531353218-ecdkpttpkjdah5a4bi40m942s4ljpmak.apps.googleusercontent.com",
-          "client_type": 3
-        }
-      ],
+      "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyBI9yuTOBqHG_jV2K6gwfvQTlWKqdc_T-s"
+          "current_key": "AIzaSyDjVktqm3iMkrFZswqWcIAKDmm3XwyUQW4"
         }
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": [
-            {
-              "client_id": "1013531353218-ecdkpttpkjdah5a4bi40m942s4ljpmak.apps.googleusercontent.com",
-              "client_type": 3
-            }
-          ]
+          "other_platform_oauth_client": []
         }
       }
     }
