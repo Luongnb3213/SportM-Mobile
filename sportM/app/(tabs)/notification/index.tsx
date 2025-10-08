@@ -20,6 +20,7 @@ import Button from '@/components/Button';
 import { Ionicons, Feather } from '@expo/vector-icons';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/Avatar';
 import { Card } from '@/components/Card';
+import NotificationTester from '@/components/NotificationComponent/NotificationTester';
 
 /* =========================
  * Types & Fake seed data
@@ -195,6 +196,7 @@ export default function Notification() {
           extraKeyboardSpace={0}
         >
           <View className="bg-white">
+            <NotificationTester />
             <View className="bg-background px-4">
               <HeaderUser />
             </View>
@@ -243,7 +245,7 @@ export default function Notification() {
 
                       return (
                         <View
-                          key={n.id}
+                          key={n.id  + idx }
                           className={[
                             'px-4 py-4 bg-white/0',
                             !isLast && 'border-b border-border',
