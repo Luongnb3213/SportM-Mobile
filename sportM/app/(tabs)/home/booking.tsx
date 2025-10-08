@@ -23,64 +23,15 @@ import { useDebounce } from '@/hooks/useDebounce';
 import EmptyState from '@/components/ui/EmptyState';
 import { useAxios } from '@/lib/api';
 
-/** ------------------ Fake data & API ------------------ */
-type Booking = {
-  id: string;
-  name: string;
-  bookingId: string;
-  dateLabel: string;
-  location: string;
-};
-
-const ALL_BOOKINGS: Booking[] = Array.from({ length: 37 }).map((_, idx) => ({
-  id: String(idx + 1),
-  name: 'Sân Gold Nem Chua',
-  bookingId: `#JQKA${(1000 + idx).toString()}`,
-  dateLabel: 'Thứ 5, ngày 3/6/2036',
-  location: idx % 2 === 0 ? 'Mai Lâm, Đông Anh' : 'Long Biên, Hà Nội',
-}));
-
-/**
- * Giả lập API: filter theo search (theo name/location),
- * phân trang theo page & limit, có delay.
- */
-function mockFetchBookings({
-  search = '',
-  page = 1,
-  limit = 8,
-  signal,
-}: {
-  search?: string;
-  page?: number;
-  limit?: number;
-  signal?: AbortSignal;
-}): Promise<{ items: Booking[]; hasMore: boolean }> {
-  return new Promise((resolve, reject) => {
-    const timer = setTimeout(() => {
-      const q = search.trim().toLowerCase();
-      const filtered = q
-        ? ALL_BOOKINGS.filter(
-          (b) =>
-            b.name.toLowerCase().includes(q) ||
-            b.location.toLowerCase().includes(q) ||
-            b.bookingId.toLowerCase().includes(q)
-        )
-        : ALL_BOOKINGS;
-
-      const start = (page - 1) * limit;
-      const end = start + limit;
-      const items = filtered.slice(start, end);
-      const hasMore = end < filtered.length;
-
-      resolve({ items, hasMore });
-    }, 800);
-
-    signal?.addEventListener('abort', () => {
-      clearTimeout(timer);
-    });
-  });
+const VI_WEEKDAYS = ['CN', 'Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ 7'];
+function formatViShortDate(input: string | number | Date) {
+  const d = new Date(input);
+  const weekday = VI_WEEKDAYS[d.getDay()];
+  const day = d.getDate();
+  const month = d.getMonth() + 1;
+  const year = d.getFullYear();
+  return `${weekday}, ngày ${day}/${month}/${year}`;
 }
-
 /** ------------------ Screen ------------------ */
 export default function BookingsScreen() {
   const insets = useSafeAreaInsets();
@@ -89,7 +40,7 @@ export default function BookingsScreen() {
   const [searchText, setSearchText] = React.useState('');
   const debouncedSearch = useDebounce(searchText, 500);
 
-  const [items, setItems] = React.useState<Booking[]>([]);
+  const [items, setItems] = React.useState<any[]>([]);
   const [page, setPage] = React.useState(1);
   const [hasMore, setHasMore] = React.useState(false);
 
@@ -108,15 +59,10 @@ export default function BookingsScreen() {
       try {
         setLoadingInitial(true);
         setPage(1);
-        const { items: firstPage, hasMore } = await mockFetchBookings({
-          search: debouncedSearch,
-          page: 1,
-          limit: LIMIT,
-          signal: ctrl.signal,
-        });
-        // const { data } = await useAxios.get(`/bookings/my-bookings?page=1&limit=${LIMIT}&search=${debouncedSearch}`, { signal: ctrl.signal });
-        setItems(firstPage);
-        setHasMore(hasMore);
+        const { data } = await useAxios.get(`/bookings/my-bookings?page=1&limit=${LIMIT}&search=${debouncedSearch}`, { signal: ctrl.signal });
+        console.log('Fetched bookings:', JSON.stringify(data.data?.items));
+        setItems(data.data?.items);
+        setHasMore(data.data?.items?.length > 0);
       } catch (e) {
         // bỏ qua nếu bị abort
       } finally {
@@ -137,20 +83,11 @@ export default function BookingsScreen() {
     try {
       setLoadingMore(true);
       const nextPage = page + 1;
-      const { items: nextItems, hasMore: nextHasMore } = await mockFetchBookings(
-        {
-          search: debouncedSearch,
-          page: nextPage,
-          limit: LIMIT,
-          signal: ctrl.signal,
-        }
-      );
-      // const { data } = await useAxios.get(`/bookings/my-bookings?page=${page}&limit=${LIMIT}&search=${debouncedSearch}`, { signal: ctrl.signal });
-      // nếu API trả về rỗng -> không cập nhật page, đồng thời ẩn nút
-      if (nextItems.length > 0) {
-        setItems((prev) => [...prev, ...nextItems]);
+      const { data } = await useAxios.get(`/bookings/my-bookings?page=${page}&limit=${LIMIT}&search=${debouncedSearch}`, { signal: ctrl.signal });
+      if (data.data?.items?.length > 0) {
+        setItems((prev) => [...prev, ...data.data.items]);
         setPage(nextPage);
-        setHasMore(nextHasMore);
+        setHasMore(data.data.items?.length > 0);
       } else {
         setHasMore(false);
       }
@@ -213,35 +150,45 @@ export default function BookingsScreen() {
               />
             ) : (
               <>
-                {items.map((item) => {
-                  return (
-                    <TouchableOpacity key={item.id} activeOpacity={0.8}>
-                      <View className="flex-row items-start justify-between py-4">
-                        {/* Left */}
-                        <View className="flex-1 pr-2">
-                          <Text className="text-lg font-medium text-[#292929]">
-                            {item.name}
-                          </Text>
-                          <Text className="text-[12px] mt-1 text-muted-foreground">
-                            Booking ID: {item.bookingId}
-                          </Text>
-                        </View>
+                {items.map((item, i) => (
+                  <View key={`group-${i}`}>
+                    {item?.bookings?.map((b: any, j: number) => (
+                      <React.Fragment key={b?.bookingId ?? `${i}-${j}`}>
+                        <TouchableOpacity activeOpacity={0.8}>
+                          <View className="flex-row items-start justify-between py-4 gap-3">
+                            {/* Left */}
+                            <View className="flex-1 pr-2">
+                              <Text className="text-lg font-semibold text-[#292929]">
+                                {b?.court?.courtName || '—'}
+                              </Text>
+                              <Text className="text-[12px] mt-1 text-muted-foreground">
+                                Booking ID: {b?.bookingId ? `#${b.bookingId}` : '—'}
+                              </Text>
+                            </View>
 
-                        {/* Right */}
-                        <View className="items-end">
-                          <Badge
-                            label={item.dateLabel}
-                            className="p-3 py-1 rounded-full bg-muted"
-                            labelClasses="text-[11px] text-foreground"
-                          />
-                          <Text className="mt-2 text-[12px] text-muted-foreground">
-                            {item.location}
-                          </Text>
-                        </View>
-                      </View>
-                    </TouchableOpacity>
-                  );
-                })}
+                            {/* Right */}
+                            <View className="items-end max-w-[48%]">
+                              <Badge
+                                label={formatViShortDate(b?.bookingDate)}
+                                className="px-3 py-1 rounded-full bg-transparent border border-[#1F2257]"
+                                labelClasses="text-[11px] text-[#1F2257] font-medium"
+                              />
+                              <Text
+                                numberOfLines={1}
+                                className="mt-2 text-[12px] text-muted-foreground text-right"
+                              >
+                                {b?.court?.address || '—'}
+                              </Text>
+                            </View>
+                          </View>
+                        </TouchableOpacity>
+
+                        {/* Divider giữa các booking */}
+                        <View className="h-[1px] bg-black/5" />
+                      </React.Fragment>
+                    ))}
+                  </View>
+                ))}
 
                 {/* Load more */}
                 {hasMore ? (

@@ -7,43 +7,25 @@ import Toast from 'react-native-toast-message';
 import EmptyState from '../ui/EmptyState';
 import { useAxios } from '@/lib/api';
 
-type User = { id: string; name: string; subtitle?: string; avatar?: string };
 
 const NAVY = '#202652';
 
-/** Fake dataset 20 users */
-const FAKE_USERS: User[] = Array.from({ length: 20 }).map((_, i) => ({
-  id: String(i + 1),
-  name: `Người dùng ${i + 1}`,
-  subtitle: 'Đang chờ xác nhận',
-  avatar: `https://i.pravatar.cc/150?img=${i + 10}`,
-}));
-
-// fake API (page, limit)
-async function mockFetch(page: number, limit: number): Promise<User[]> {
-  await new Promise((r) => setTimeout(r, 800)); // simulate delay
-  const start = (page - 1) * limit;
-  const end = start + limit;
-  return FAKE_USERS.slice(start, end);
-}
 
 const FriendPending = () => {
   const [initialLoading, setInitialLoading] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [loadingMore, setLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(true);
-  const [pending, setPending] = useState<User[]>([]);
+  const [pending, setPending] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     (async () => {
       setInitialLoading(true);
       try {
-        const items = await mockFetch(1, 5);
         const { data } = await useAxios.get(`/friend-request?type=received&page=1&limit=5`)
-        console.log(data.data.items)
-        setPending(items);
-        setHasMore(items.length > 0);
+        setPending(data.data.items);
+        setHasMore(data.data.items.length > 0);
       } catch (error) {
         console.error(error);
       } finally {
@@ -52,17 +34,19 @@ const FriendPending = () => {
     })();
   }, []);
 
-  const handleConfirm = async (u: User) => {
+  const handleConfirm = async (u: any) => {
     try {
       setLoading(true)
-      await useAxios.patch(`/friend-request/${u.id}`, {
+      console.log(u.userId)
+      await useAxios.patch(`/friend-request/${u.userId}`, {
         status: true
       })
-      setPending((prev) => prev.filter((x) => x.id !== u.id));
+
+      setPending((prev) => prev.filter((x) => x.from.userId !== u.userId));
       Toast.show({
         type: 'success',
         text1: 'Thành công',
-        text2: `Bạn và ${u.name} đã trở thành bạn bè.`,
+        text2: `Bạn và ${u.fullName} đã trở thành bạn bè.`,
       });
     } catch (error) {
       console.error(error);
@@ -76,17 +60,17 @@ const FriendPending = () => {
     }
   };
 
-  const handleCancelPending = async (u: User) => {
+  const handleCancelPending = async (u: any) => {
     try {
       setLoading(true)
-      await useAxios.patch(`/friend-request/${u.id}`, {
+      await useAxios.patch(`/friend-request/${u.userId}`, {
         status: false
       })
-      setPending((prev) => prev.filter((x) => x.id !== u.id));
+      setPending((prev) => prev.filter((x) => x.from.userId !== u.userId));
       Toast.show({
         type: 'success',
         text1: 'Thành công',
-        text2: `Bạn đã từ chối lời mời kết bạn từ ${u.name}.`,
+        text2: `Bạn đã từ chối lời mời kết bạn từ ${u.fullName}.`,
       });
     } catch (error) {
       console.error(error);
@@ -105,13 +89,11 @@ const FriendPending = () => {
     setLoadingMore(true);
     try {
       const nextPage = currentPage + 1;
-      const newItems = await mockFetch(nextPage, 5);
-      // const { data } = await useAxios.get(`/friend-request?type=received&page=${nextPage}&limit=5`)
-      // setSent(data.data.items);
-      if (newItems.length > 0) {
-        setPending((prev) => [...prev, ...newItems]);
+       const { data } = await useAxios.get(`/friend-request?type=received&page=${nextPage}&limit=5`)
+      if (data.data.items.length > 0) {
+        setPending((prev) => [...prev, ...data.data.items]);
         setCurrentPage(nextPage);
-        setHasMore(newItems.length > 0);
+        setHasMore(data.data.items.length > 0);
       } else {
         setHasMore(false);
       }
@@ -143,16 +125,16 @@ const FriendPending = () => {
           <View className='flex flex-col gap-5'>
             {pending.map((u, idx) => (
               <UserInviteItem
-                id={u?.id}
+                id={u.from?.userId}
                 loading={loading}
                 key={idx}
-                name={u?.name}
-                subtitle={u?.subtitle}
-                avatarUri={u?.avatar}
+                name={u.from?.fullName}
+                subtitle={'Đã gửi lời mời kết bạn'}
+                avatarUri={u?.from?.avatarUrl}
                 status="pending"
                 accentHex={NAVY}
-                onConfirm={() => handleConfirm(u)}
-                onCancel={() => handleCancelPending(u)}
+                onConfirm={() => handleConfirm(u.from)}
+                onCancel={() => handleCancelPending(u.from)}
               />
             ))}
             {hasMore && (

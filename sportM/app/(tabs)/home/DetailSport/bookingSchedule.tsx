@@ -77,9 +77,9 @@ export default function bookingSchedule() {
   const [selectedByDay, setSelectedByDay] = useState<Record<string, Set<string>>>({});
 
   // invited
-  type Friend = { id: string; name: string; avatar?: string };
+   type Friend = { userId: string; fullName: string; avatarUrl?: string };
   const [invited, setInvited] = useState<Friend[]>([]);
-  const invitedIds = useMemo(() => invited.map(f => f.id), [invited]);
+  const invitedIds = useMemo(() => invited.map(f => f.userId), [invited]);
 
   // note
   const [note, setNote] = useState('');
@@ -124,24 +124,9 @@ export default function bookingSchedule() {
 
   // fetch slots per day (mock or real)
   const fetchSlotsForDate = useCallback(async (date: string) => {
-    // TODO: nếu BE có endpoint thực:
-    // const { data } = await api.get(`/courts/${courtID}/slots`, { params: { date } });
-    // const slots: Slot[] = data.data.map((x:any) => ({ id: x.id, label: `${x.start} - ${x.end}` }));
-
-    // mock:
-    const base = [
-      { from: 1, rows: 11 },
-      { from: 1, rows: 11 },
-      { from: 1, rows: 11 },
-    ];
-    const seed = new Date(date).getDate() % base.length;
-    const { from, rows } = base[seed];
-    const fmt = (h: number) => `${String(h).padStart(2, '0')}:00`;
-    const slots: Slot[] = Array.from({ length: rows }, (_, i) => {
-      const s = from + i, e = s + 1;
-      return { id: `t${i}`, label: `${fmt(s)} - ${fmt(e)}` };
-    });
-
+    console.log('fetchSlotsForDate', date);
+    const { data } = await useAxios.get(`/courts/${courtID}/slots`, { params: { date } });
+    const slots: Slot[] = data.data.map((x:any) => ({ id: x.id, label: `${x.start} - ${x.end}` }));
     setSlotsByDay(prev => ({ ...prev, [date]: slots }));
     setSelectedByDay(prev => prev[date] ? prev : ({ ...prev, [date]: new Set() }));
   }, [useAxios, courtID]);
@@ -179,8 +164,8 @@ export default function bookingSchedule() {
   );
 
   // invite handlers
-  const onPickFriend = (f: Friend) => setInvited(prev => prev.find(x => x.id === f.id) ? prev : [...prev, f]);
-  const removeInvited = (id: string) => setInvited(prev => prev.filter(f => f.id !== id));
+  const onPickFriend = (f: Friend) => setInvited(prev => prev.find(x => x.userId === f.userId) ? prev : [...prev, f]);
+  const removeInvited = (id: string) => setInvited(prev => prev.filter(f => f.userId !== id));
 
   // submit
   const handleSubmit = async () => {
@@ -211,29 +196,26 @@ export default function bookingSchedule() {
             });
         return {
           date,
-          am: { slotIds: amIds, timeRanges: toRanges(amIds) },
-          pm: { slotIds: pmIds, timeRanges: toRanges(pmIds) },
+          am: { slotIds: amIds },
+          pm: { slotIds: pmIds },
         };
       });
 
     const body = {
       courtId: court?.courtId,
       selections,               // tách rõ AM/PM cho BE
-      invitedUserIds: invitedIds,
+      inviteeIds: invitedIds,
       note: note.trim(),
-      pricing: {
-        pricePerHour: court?.pricePerHour ?? 0,
-        totalHours,
-        totalPrice,
-        currency: 'VND',
-      },
     };
+
+    console.log('submitting booking:', JSON.stringify(body));
 
     try {
       await useAxios.post('/bookings', body);
       Toast.show({ type: 'success', text1: 'Đặt lịch thành công!' });
     } catch (e: any) {
-      Toast.show({ type: 'error', text1: 'Đặt lịch thất bại', text2: e?.message || 'Vui lòng thử lại' });
+      console.error('Booking error', e);
+      Toast.show({ type: 'error', text1: 'Đặt lịch thất bại', text2: 'Vui lòng thử lại' });
     }
   };
 

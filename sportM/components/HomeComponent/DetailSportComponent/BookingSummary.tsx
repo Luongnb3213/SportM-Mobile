@@ -5,7 +5,7 @@ import { AntDesign } from '@expo/vector-icons';
 import InviteFriendsSheet from './InviteFriendsSheet';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/Avatar';
 
-type Friend = { id: string; name: string; avatar?: string };
+type Friend = { userId: string; fullName: string; avatarUrl?: string };
 
 type Props = {
   totalHours: number;
@@ -64,26 +64,26 @@ export default function BookingSummary({
         ) : (
           <View className="flex-row flex-wrap gap-3">
             {invited.map((f) => (
-              <View key={f.id} className="items-center">
+              <View key={f?.userId} className="items-center">
                 <View className="relative">
                   <Avatar className="w-12 h-12">
-                    {f.avatar ? (
-                      <AvatarImage source={{ uri: f.avatar }} />
+                    {f?.avatarUrl ? (
+                      <AvatarImage source={{ uri: f.avatarUrl }} />
                     ) : (
                       <AvatarFallback textClassname="text-[12px]">
-                        {f.name.split(' ').map((w) => w[0]).slice(0, 2).join('')}
+                        {f?.fullName.split(' ').map((w) => w[0]).slice(0, 2).join('')}
                       </AvatarFallback>
                     )}
                   </Avatar>
                   <Pressable
-                    onPress={() => onRemoveInvited?.(f.id)}
+                    onPress={() => onRemoveInvited?.(f?.userId)}
                     className="absolute -top-1 -right-1 w-6 h-6 rounded-full bg-black/80 items-center justify-center"
                   >
                     <AntDesign name="close" size={14} color="white" />
                   </Pressable>
                 </View>
                 <Text className="text-xs mt-1 max-w-16 text-center" numberOfLines={1}>
-                  {f.name}
+                  {f?.fullName}
                 </Text>
               </View>
             ))}
@@ -120,6 +120,7 @@ export default function BookingSummary({
         onPick={(f) => {
           onPickFriend?.(f);
         }}
+        invited={invited}
       />
     </View>
   );
