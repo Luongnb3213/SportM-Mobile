@@ -9,6 +9,8 @@ export default function OwnerLayout() {
       <Stack.Screen name="notification" options={{ headerShown: false }} />
       <Stack.Screen name="addCourt" options={{ headerShown: false }} />
       <Stack.Screen name="detailCourt" options={{ headerShown: false }} />
+      <Stack.Screen name="updateAccount" options={{ headerShown: false }} />
+      <Stack.Screen name="updateCourt" options={{ headerShown: false }} />
     </Stack>
   );
 }

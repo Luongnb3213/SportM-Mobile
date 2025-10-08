@@ -6,6 +6,7 @@ import HeaderUser from '@/components/ui/HeaderUser';
 import Pagination from '@/components/ui/Pagination';
 import { useDebounce } from '@/hooks/useDebounce';
 import { useAxios } from '@/lib/api';
+import { formatPriceVND } from '@/lib/utils';
 import { useAppTheme } from '@/styles/theme';
 import { Feather, FontAwesome5, MaterialCommunityIcons } from '@expo/vector-icons';
 import { router } from 'expo-router';
@@ -90,7 +91,7 @@ const Search = () => {
         <KeyboardAwareScrollView
           keyboardShouldPersistTaps="handled"
           contentContainerStyle={{
-            paddingBottom: insets.bottom + 50,
+            paddingBottom: insets.bottom + 150,
             backgroundColor: t.background,
           }}
           extraKeyboardSpace={0}
@@ -161,13 +162,13 @@ const Search = () => {
                       return (
                         <GolfCourseCard
                           key={court?.courtId + index}
-                          title={court?.name || 'Sân bóng đá ABC'}
-                          pricePerHour={`${court?.pricePerHour} đ/h`}
-                          rating={court?.rating || 4.5}
+                          title={court?.courtName || ''}
+                          pricePerHour={`${formatPriceVND(court?.pricePerHour)} đ/h`}
+                          rating={court?.avgRating || "N/A"}
                           imageUri={court?.courtImages[0] || "https://images.unsplash.com/photo-150287733853-766e1452684a?q=80&w=1600"}
                           onPress={() => {
                             router.push({
-                              pathname: '/owner/detailCourt',
+                              pathname: '/(tabs)/home/DetailSport',
                               params: { courtID: court?.courtId },
                             });
                           }}

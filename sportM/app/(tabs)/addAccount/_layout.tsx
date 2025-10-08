@@ -6,7 +6,7 @@ export default function SearchStack() {
     <Stack
       screenOptions={{
         headerShown: false,
-        animation: 'simple_push', // mặc định trong tab Search
+        animation: 'slide_from_bottom', // mặc định trong tab Search
       }}
     >
       <Stack.Screen name="index" options={{}} />

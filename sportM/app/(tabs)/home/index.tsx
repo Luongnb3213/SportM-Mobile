@@ -32,6 +32,8 @@ import HeaderUser from '@/components/ui/HeaderUser';
 import { router } from 'expo-router';
 import { NearByYardSkeleton } from '@/components/Skeleton/NearByYardSkeleton';
 import { GolfCourseCardSkeleton } from '@/components/Skeleton/GolfCourseCardSkeleton';
+import { socket } from '@/lib/socket';
+import NotificationTester from '@/components/NotificationComponent/NotificationTester';
 
 export default function HomeScreen() {
   const t = useAppTheme();
@@ -46,6 +48,18 @@ export default function HomeScreen() {
     })()
   }, [])
 
+  useEffect(() => {
+(async () => {
+    await socket.connect();
+
+    const onConnect = () => console.log('✅ connected', socket.socket?.id);
+    const onDisconnect = (r:any) => console.log('🔌 disconnected', r);
+
+    socket.on('connect', onConnect);
+    socket.on('disconnect', onDisconnect);
+  })();
+  }, [])
+
 
 
   return (
@@ -53,10 +67,11 @@ export default function HomeScreen() {
       <SafeAreaView className="flex-1">
         <KeyboardAwareScrollView
           keyboardShouldPersistTaps="handled"
-          contentContainerStyle={{ paddingBottom: insets.bottom + 24 }}
+          contentContainerStyle={{ paddingBottom: insets.bottom + 150 }}
           extraKeyboardSpace={0}
         >
           <View style={{ backgroundColor: t.background }}>
+            <NotificationTester />
             <View className="bg-background px-4">
               <HeaderUser />
             </View>

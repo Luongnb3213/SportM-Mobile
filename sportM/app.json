@@ -20,7 +20,7 @@
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/sportM-splash.png",
         "backgroundColor": "#ffffff"
-      },
+      },  
       "edgeToEdgeEnabled": true,
       "package": "com.choai.sportM",
       "statusBar": {
@@ -65,7 +65,8 @@
         }
       ],
       "expo-build-properties",
-      "expo-secure-store"
+      "expo-secure-store",
+      "expo-notifications"
     ],
     "experiments": {
       "typedRoutes": true

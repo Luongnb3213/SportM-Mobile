@@ -4,9 +4,9 @@ import { View, Text, ScrollView, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Card, CardHeader, CardContent, CardFooter } from '@/components/Card';
 import { Button } from '@/components/Button';
+import InfoSport from './InfoOwnerSport';
 import { router } from 'expo-router';
-import RatingCourtCard from '@/components/OwnerComponent/RatingCourtCard';
-import InfoSport from './InfoSport';
+import RatingCourtCard from './RatingCourtCard';
 
 type TabItem = { key: string; label: string };
 
@@ -35,7 +35,7 @@ type CourtDTO = {
   };
 };
 
-export default function DetailInfoCard({
+export default function DetailInfoOwnerCourtCard({
   courtID,
   court,
 }: {
@@ -74,7 +74,7 @@ export default function DetailInfoCard({
       <CardContent className="px-3 py-4 bg-white">
         {active === 'review' && (
           <View>
-            <RatingCourtCard courtID={courtID} /> 
+            <RatingCourtCard courtID={courtID} />
           </View>
         )}
 
@@ -97,13 +97,13 @@ export default function DetailInfoCard({
             <Button
               onPress={() => {
                 router.push({
-                  pathname: '/(tabs)/home/DetailSport/bookingSchedule',
+                  pathname: '/owner/updateCourt',
                   params: { courtID },
                 });
               }}
               className="h-12 flex-1 w-full rounded-xl"
             >
-              <Text className="text-base text-white font-semibold">Đặt lịch</Text>
+              <Text className="text-base text-white font-semibold">Chỉnh sửa</Text>
             </Button>
           </View>
         )}

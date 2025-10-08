@@ -1,26 +1,21 @@
-
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
-  Dimensions,
   ImageBackground,
   Keyboard,
   Modal,
-  ScrollView,
   Text,
   TextInput,
   TouchableOpacity,
   View,
+  Dimensions,
 } from 'react-native';
 import {
   KeyboardAwareScrollView,
   KeyboardProvider,
 } from 'react-native-keyboard-controller';
-import {
-  SafeAreaView,
-  useSafeAreaInsets,
-} from 'react-native-safe-area-context';
-import { router } from 'expo-router';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { router, useLocalSearchParams } from 'expo-router';
 import { Ionicons, MaterialIcons, FontAwesome, FontAwesome5, MaterialCommunityIcons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import Carousel from 'react-native-reanimated-carousel';
@@ -35,12 +30,9 @@ import Toast from 'react-native-toast-message';
 import { Skeleton } from '@/components/Skeleton';
 import { formatPriceVND } from '@/lib/utils';
 import { useDebounce } from '@/hooks/useDebounce';
+import UpdateCourtSkeleton from '@/components/Skeleton/UpdateCourtSkeleton';
 
-
-const DEFAULT_HERO =
-  'https://images.unsplash.com/photo-1506744038136-4627383b3fb?auto=format&fit=crop&w=1470&q=80';
-const MAX_IMAGES = 4;
-
+// ===== small input with icon =====
 const PillInput = ({
   icon,
   placeholder,
@@ -79,34 +71,39 @@ const PillInput = ({
 );
 
 type Pill = { sportTypeId: string | null; typeName: string; status: boolean };
+type MapboxFeature = { id: string; place_name: string; text: string; center: [number, number] };
 
-type MapboxFeature = {
-  id: string;
-  place_name: string;
-  text: string;
-  center: [number, number];
-};
+const DEFAULT_HERO =
+  'https://images.unsplash.com/photo-1506744038136-4627383b3fb?auto=format&fit=crop&w=1470&q=80';
+const MAX_IMAGES = 4;
 
-const AddCourt = () => {
+const UpdateCourt = () => {
   const insets = useSafeAreaInsets();
   const { width } = Dimensions.get('window');
+  const { courtID } = useLocalSearchParams<{ courtID: string }>();
 
+  // form states
   const [name, setName] = useState('');
   const [address, setAddress] = useState('');
+  // lat/lng không gửi khi PATCH theo spec của bạn, nhưng vẫn dùng để pick & reverse
   const [lat, setLat] = useState<number | null>(null);
   const [lng, setLng] = useState<number | null>(null);
   const [description, setDescription] = useState('');
   const [pricePerHour, setPricePerHour] = useState('');
   const [subService, setSubService] = useState('');
-  const [sportTypeList, setSportTypeList] = React.useState<Pill[] | null>(null);
-  const [sportTypeSelected, setSportTypeSelected] = React.useState<string | null>(null);
+  const [sportTypeList, setSportTypeList] = useState<Pill[] | null>(null);
+  const [sportTypeSelected, setSportTypeSelected] = useState<string | null>(null);
 
+  // images
   const [images, setImages] = useState<string[]>([]);
   const heroUri = useMemo(() => images[0] ?? DEFAULT_HERO, [images]);
 
+  // ui
+  const [initialLoading, setInitialLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [mapVisible, setMapVisible] = useState(false);
 
+  // errors
   const [errors, setErrors] = useState<{
     name?: string;
     address?: string;
@@ -114,32 +111,82 @@ const AddCourt = () => {
     pricePerHour?: string;
     subService?: string;
     images?: string;
-    latlng?: string;
     general?: string;
   }>({});
 
+  // ===== sport types (để user chọn lại). Nếu detail không trả id, sẽ map theo typeName =====
+  useEffect(() => {
+    (async () => {
+      try {
+        const { data } = await useAxios.get('/sport-type?page=1&limit=100');
+        setSportTypeList(data.data.items);
+      } catch (e) {
+        console.log('Error fetching sport types:', e);
+      }
+    })();
+  }, []);
 
+  // ===== Prefill từ detail court =====
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      try {
+        setInitialLoading(true);
+        const { data } = await useAxios.get(`/courts/${courtID}`);
+        const c = data.data as {
+          courtName: string;
+          address: string;
+          courtImages: string[];
+          description: string;
+          subService: string;
+          pricePerHour: number;
+          sportType?: { typeName?: string };
+        };
+
+        if (!mounted) return;
+
+        setName(c.courtName ?? '');
+        setAddress(c.address ?? '');
+        setImages(Array.isArray(c.courtImages) ? c.courtImages.slice(0, MAX_IMAGES) : []);
+        setDescription(c.description ?? '');
+        setSubService(c.subService ?? '');
+        setPricePerHour(
+          typeof c.pricePerHour === 'number' ? String(c.pricePerHour) : (c.pricePerHour as any) ?? ''
+        );
+
+        // map sportType theo typeName nếu API không trả id
+        if (c.sportType?.typeName && Array.isArray(sportTypeList)) {
+          const found = sportTypeList.find((p) => p.typeName?.toLowerCase() === c.sportType!.typeName!.toLowerCase());
+          setSportTypeSelected(found?.sportTypeId ?? sportTypeList?.[0]?.sportTypeId ?? null);
+        } else {
+          // nếu chưa có list thì khi list có sẽ map sau
+          setSportTypeSelected((prev) => prev ?? null);
+        }
+      } catch (e) {
+        console.log('Load court detail error:', e);
+        setErrors((er) => ({ ...er, general: 'Không tải được dữ liệu sân.' }));
+      } finally {
+        mounted && setInitialLoading(false);
+      }
+    })();
+    return () => {
+      mounted = false;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [courtID, sportTypeList?.length]);
+
+  // ===== Images =====
   const pickImage = async () => {
     try {
       const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
       if (perm.status !== 'granted') {
-        Toast.show({
-          type: 'error',
-          text1: 'Quyền truy cập',
-          text2: 'Cần quyền truy cập thư viện ảnh để chọn ảnh.'
-        })
+        Toast.show({ type: 'error', text1: 'Quyền truy cập', text2: 'Cần quyền thư viện ảnh.' });
         return;
       }
-
       if (images.length >= MAX_IMAGES) {
-        Toast.show({
-          type: 'error',
-          text1: 'Giới hạn ảnh',
-          text2: `Bạn chỉ có thể chọn tối đa ${MAX_IMAGES} ảnh.`
-        })
+        Toast.show({ type: 'error', text1: 'Giới hạn ảnh', text2: `Tối đa ${MAX_IMAGES} ảnh.` });
         return;
       }
-
       const result = await ImagePicker.launchImageLibraryAsync({
         mediaTypes: ImagePicker.MediaTypeOptions.Images,
         allowsEditing: true,
@@ -155,16 +202,13 @@ const AddCourt = () => {
       console.log('pickImage error:', e?.message || e);
     }
   };
+  const removeImageAt = (idx: number) => setImages((prev) => prev.filter((_, i) => i !== idx));
 
-  const removeImageAt = (idx: number) => {
-    setImages((prev) => prev.filter((_, i) => i !== idx));
-  };
-
+  // ===== Validate =====
   const validate = () => {
     const next: typeof errors = {};
     if (!name.trim()) next.name = 'Vui lòng nhập tên sân';
     if (!address.trim()) next.address = 'Vui lòng chọn địa điểm';
-    if (lat == null || lng == null) next.latlng = 'Vui lòng chọn vị trí trên bản đồ';
     if (!description.trim()) next.description = 'Vui lòng nhập mô tả';
     if (!pricePerHour.trim()) next.pricePerHour = 'Vui lòng nhập giá/giờ';
     if (!subService.trim()) next.subService = 'Vui lòng nhập dịch vụ phụ';
@@ -172,6 +216,7 @@ const AddCourt = () => {
     return Object.keys(next).length === 0;
   };
 
+  // ===== Submit (PATCH) =====
   const axios = useAxios;
   const onSubmit = async () => {
     if (!validate()) return;
@@ -180,6 +225,7 @@ const AddCourt = () => {
       setSubmitting(true);
       setErrors((e) => ({ ...e, general: undefined }));
 
+      // upload ảnh local → url
       const imgUrls: string[] = [];
       for (const uri of images) {
         const isLocal = uri.startsWith('file://') || uri.startsWith('content://');
@@ -187,7 +233,7 @@ const AddCourt = () => {
           const up = await uploadToCloudinary(uri, {
             folder: 'courts',
             tags: ['court', 'gallery'],
-            context: { screen: 'AddCourt' },
+            context: { screen: 'UpdateCourt' },
           });
           imgUrls.push(up.secure_url || up.url);
         } else {
@@ -199,42 +245,35 @@ const AddCourt = () => {
         name: name.trim(),
         address: address.trim(),
         imgUrls,
-        sportType: sportTypeSelected, 
-        lat: Number(lat),
-        lng: Number(lng),
+        sportType: sportTypeSelected, // id
         description: description.trim(),
-        pricePerHour: Number(pricePerHour.replaceAll(',', '')),
+        pricePerHour: Number(String(pricePerHour).replaceAll(',', '')),
         subService: subService.trim(),
-      };
+      }; 
 
-      await axios.post('/owner/courts', body);
-      Toast.show({
-        type: 'success',
-        text1: 'Thành công',
-        text2: 'Tạo sân thành công!'
-      });
-      router.push('/owner')
+      await axios.patch(`/owner/courts/${courtID}`, body);
+        
+      console.log('Update court body:', body);
+      Toast.show({ type: 'success', text1: 'Thành công', text2: 'Cập nhật sân thành công!' });
+      router.push('/owner');
     } catch (err: any) {
-      console.log('Create court error:', err?.response?.data || err?.message || err);
-      Toast.show({
-        type: 'error',
-        text1: 'Lỗi',
-        text2: 'Đã có lỗi khi tạo sân'
-      })
+      console.log('Update court error:', err?.response?.data || err?.message || err);
+      Toast.show({ type: 'error', text1: 'Lỗi', text2: 'Đã có lỗi khi cập nhật sân' });
     } finally {
       setSubmitting(false);
     }
   };
 
+  // ===== Mapbox: search + reverse geocode để set address =====
   const [mapQuery, setMapQuery] = useState('');
   const debouncedQuery = useDebounce(mapQuery, 500);
   const [suggestions, setSuggestions] = useState<MapboxFeature[]>([]);
   const [pickingCenter, setPickingCenter] = useState<[number, number] | null>(null);
   const [pickedCoord, setPickedCoord] = useState<[number, number] | null>(null);
   const DEFAULT_CENTER: [number, number] = [106.660172, 10.762622];
-  const [suggestionsOpen, setSuggestionsOpen] = React.useState(false);
+  const [suggestionsOpen, setSuggestionsOpen] = useState(false);
 
-  React.useEffect(() => {
+  useEffect(() => {
     let alive = true;
     (async () => {
       if (!debouncedQuery) {
@@ -244,32 +283,31 @@ const AddCourt = () => {
       try {
         const prox = pickedCoord ?? pickingCenter ?? DEFAULT_CENTER;
         const feats = await forwardGeocode(debouncedQuery, prox);
-        if (alive) {
-          setSuggestions(feats);
-        }
-      } catch (e) {
-     
-      }
+        if (alive) setSuggestions(feats);
+      } catch {}
     })();
-    return () => { alive = false; };
+    return () => {
+      alive = false;
+    };
   }, [debouncedQuery]);
 
   const handleMapPress = (e: any) => {
-    const [lngTap, latTap] = e.geometry.coordinates as [number, number];
-    setPickedCoord([lngTap, latTap]);
+    if ('coordinates' in e.geometry && Array.isArray(e.geometry.coordinates)) {
+      if (e.geometry.type === 'Point' && 'coordinates' in e.geometry) {
+        const [lngTap, latTap] = e.geometry.coordinates as [number, number];
+        setPickedCoord([lngTap, latTap]);
+      }
+    }
   };
 
-  // chọn gợi ý: bay camera tới, set marker
   const chooseSuggestion = (f: MapboxFeature) => {
     setPickingCenter(f.center);
     setPickedCoord(f.center);
-    setMapQuery(f.place_name); // hoặc f.place_name
+    setMapQuery(f.place_name);
     setSuggestions([]);
     setSuggestionsOpen(false);
     Keyboard.dismiss();
   };
-
- 
   const confirmPick = async () => {
     if (!pickedCoord) return;
     setSuggestions([]);
@@ -280,7 +318,7 @@ const AddCourt = () => {
       setLat(latPicked);
       setLng(lngPicked);
       setAddress(pretty);
-      setErrors((e) => ({ ...e, address: undefined, latlng: undefined }));
+      setErrors((e) => ({ ...e, address: undefined }));
       setMapVisible(false);
     } catch {
       setLat(latPicked);
@@ -289,50 +327,42 @@ const AddCourt = () => {
       setMapVisible(false);
     }
   };
-  useEffect(() => {
-    (async () => {
-      try {
-        const { data } = await useAxios.get('/sport-type?page=1&limit=100');
-        setSportTypeList(data.data.items);
-        setSportTypeSelected(data.data.items[0].sportTypeId)
-      } catch (error) {
-        console.log('Error fetching sport types:', error);
-      }
-
-    })();
-  }, [])
-
-  const handleChoosePill = (pill: Pill) => {
-    setSportTypeSelected(pill.sportTypeId);
-  };
 
   async function forwardGeocode(query: string, proximity?: [number, number]) {
     if (!query.trim()) return [] as MapboxFeature[];
-    const url = new URL(`https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(query)}.json`);
-    url.searchParams.set('access_token', 'pk.eyJ1IjoibHVvbmdjaGFvaSIsImEiOiJjbWZndzlwNHcwNW52MnJwdDJlaGViMDUxIn0.8D0hYvlEZdwx3GzONsOHpg');
+    const url = new URL(
+      `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(query)}.json`
+    );
+    url.searchParams.set(
+      'access_token',
+      'pk.eyJ1IjoibHVvbmdjaGFvaSIsImEiOiJjbWZndzlwNHcwNW52MnJwdDJlaGViMDUxIn0.8D0hYvlEZdwx3GzONsOHpg'
+    );
     url.searchParams.set('autocomplete', 'true');
     url.searchParams.set('limit', '6');
     url.searchParams.set('language', 'vi');
     if (proximity) url.searchParams.set('proximity', `${proximity[0]},${proximity[1]}`);
-
     const res = await fetch(url.toString());
     if (!res.ok) throw new Error('Geocoding failed');
     const json = await res.json();
     return (json.features || []) as MapboxFeature[];
   }
-
   async function reverseGeocode(lng: number, lat: number) {
     const url = new URL(`https://api.mapbox.com/geocoding/v5/mapbox.places/${lng},${lat}.json`);
-    url.searchParams.set('access_token', 'pk.eyJ1IjoibHVvbmdjaGFvaSIsImEiOiJjbWZndzlwNHcwNW52MnJwdDJlaGViMDUxIn0.8D0hYvlEZdwx3GzONsOHpg');
+    url.searchParams.set(
+      'access_token',
+      'pk.eyJ1IjoibHVvbmdjaGFvaSIsImEiOiJjbWZndzlwNHcwNW52MnJwdDJlaGViMDUxIn0.8D0hYvlEZdwx3GzONsOHpg'
+    );
     url.searchParams.set('limit', '1');
     url.searchParams.set('language', 'vi');
-
     const res = await fetch(url.toString());
     if (!res.ok) throw new Error('Reverse geocoding failed');
     const json = await res.json();
     const f = (json.features || [])[0];
     return (f?.place_name as string) || `(${lat.toFixed(6)}, ${lng.toFixed(6)})`;
   }
+
+  // ===== UI =====
+  if (initialLoading) return <UpdateCourtSkeleton />;
 
   return (
     <KeyboardProvider>
@@ -346,7 +376,7 @@ const AddCourt = () => {
             <HeaderUser />
           </View>
 
-          {/* header back */}
+          {/* back */}
           <View className="px-4">
             <TouchableOpacity
               className="flex-row items-center gap-2 py-2"
@@ -370,11 +400,7 @@ const AddCourt = () => {
                   scrollAnimationDuration={600}
                   renderItem={({ item, index }) => (
                     <View className="w-full h-full">
-                      <ImageBackground
-                        source={{ uri: item }}
-                        resizeMode="cover"
-                        className="w-full h-full"
-                      >
+                      <ImageBackground source={{ uri: item }} resizeMode="cover" className="w-full h-full">
                         <View className="absolute inset-0 bg-black/20" />
                         <TouchableOpacity
                           onPress={() => removeImageAt(index)}
@@ -405,9 +431,7 @@ const AddCourt = () => {
                   icon={<Ionicons name="location" size={22} color="#1F2756" />}
                   placeholder="Nhập địa điểm"
                   value={address}
-                  onPressIn={() => {
-                    setMapVisible(true)
-                  }}
+                  onPressIn={() => setMapVisible(true)}
                   editable={false}
                 />
                 {errors.address ? <Text className="text-red-500 text-sm">{errors.address}</Text> : null}
@@ -428,7 +452,6 @@ const AddCourt = () => {
                     {images.length > 0 ? `Thêm ảnh (${images.length}/${MAX_IMAGES})` : 'Thêm ảnh'}
                   </Text>
                 </Button>
-                {errors.images ? <Text className="text-red-500 text-sm text-center">{errors.images}</Text> : null}
               </View>
             </View>
           </View>
@@ -439,97 +462,85 @@ const AddCourt = () => {
               <CardHeader className="p-0">
                 <View className="bg-yellow-300 py-3 flex-row px-3 justify-center gap-8">
                   <View className="rounded-full">
-                    <Text className="text-lg font-semibold text-primary">Thông tin</Text>
+                    <Text className="text-lg font-semibold text-primary">Chỉnh sửa thông tin</Text>
                   </View>
                 </View>
               </CardHeader>
 
               <CardContent className="px-3 py-4 bg-white">
-                <View>
-                  {/* input place */}
-                  <View className="gap-3">
+                <View className="gap-3">
+                  {/* description */}
+                  <PillInput
+                    icon={<MaterialIcons name="description" size={24} color="black" />}
+                    placeholder="Mô tả sân"
+                    value={description}
+                    onChangeText={(t) => {
+                      setDescription(t);
+                      if (errors.description) setErrors((e) => ({ ...e, description: undefined }));
+                    }}
+                  />
+                  {errors.description ? <Text className="text-red-500 text-sm">{errors.description}</Text> : null}
 
-                    {/* description */}
-                    <PillInput
-                      icon={<MaterialIcons name="description" size={24} color="black" />}
-                      placeholder="Mô tả sân"
-                      value={description}
-                      onChangeText={(t) => {
-                        setDescription(t);
-                        if (errors.description) setErrors((e) => ({ ...e, description: undefined }));
-                      }}
-                    />
-                    {errors.description ? <Text className="text-red-500 text-sm">{errors.description}</Text> : null}
+                  {/* pricePerHour */}
+                  <PillInput
+                    icon={<FontAwesome name="hourglass-2" size={24} color="black" />}
+                    placeholder="Giá/giờ (VND)"
+                    value={formatPriceVND(pricePerHour)}
+                    keyboardType="numeric"
+                    onChangeText={(t) => {
+                      setPricePerHour(t.replace(/[^\d]/g, ''));
+                      if (errors.pricePerHour) setErrors((e) => ({ ...e, pricePerHour: undefined }));
+                    }}
+                  />
+                  {errors.pricePerHour ? <Text className="text-red-500 text-sm">{errors.pricePerHour}</Text> : null}
 
-                    {/* pricePerHour */}
-                    <PillInput
-                      icon={<FontAwesome name="hourglass-2" size={24} color="black" />}
-                      placeholder="Giá/giờ (VND)"
-                      value={formatPriceVND(pricePerHour)}
-                      keyboardType="numeric"
-                      onChangeText={(t) => {
-                        setPricePerHour(t.replace(/[^\d]/g, ''));
-                        if (errors.pricePerHour) setErrors((e) => ({ ...e, pricePerHour: undefined }));
-                      }}
-                    />
-                    {errors.pricePerHour ? <Text className="text-red-500 text-sm">{errors.pricePerHour}</Text> : null}
+                  {/* subService */}
+                  <PillInput
+                    icon={<MaterialIcons name="miscellaneous-services" size={24} color="black" />}
+                    placeholder="Dịch vụ phụ (VD: Thuê vợt)"
+                    value={subService}
+                    onChangeText={(t) => {
+                      setSubService(t);
+                      if (errors.subService) setErrors((e) => ({ ...e, subService: undefined }));
+                    }}
+                  />
+                  {errors.subService ? <Text className="text-red-500 text-sm">{errors.subService}</Text> : null}
 
-                    {/* subService */}
-                    <PillInput
-                      icon={<MaterialIcons name="miscellaneous-services" size={24} color="black" />}
-                      placeholder="Dịch vụ phụ (VD: Thuê vợt)"
-                      value={subService}
-                      onChangeText={(t) => {
-                        setSubService(t);
-                        if (errors.subService) setErrors((e) => ({ ...e, subService: undefined }));
-                      }}
-                    />
-                    {errors.subService ? <Text className="text-red-500 text-sm">{errors.subService}</Text> : null}
-
-                    <View className="pt-1">
-                      <View className="flex-row flex-wrap gap-1">
-                        {
-                          sportTypeList ? (
-                            sportTypeList?.map((p) => (
-                              <TouchableOpacity
-                                onPress={() => handleChoosePill(p)}
-                                key={p.sportTypeId}
-                                className={`rounded-lg px-3 flex items-center flex-col shadow-xl py-3  ${sportTypeSelected === p.sportTypeId ? 'bg-slate-200' : 'bg-white'}`}
-                              >
-                                {p.typeName == "Bóng rổ" && (
-                                  <FontAwesome5 name="basketball-ball" size={14} color="black" />
-                                )}
-                                {p.typeName == "Bóng đá" && (
-                                  <MaterialCommunityIcons name="soccer" size={14} color="black" />
-                                )}
-                                <Text className="text-xs"> {p.typeName}</Text>
-                              </TouchableOpacity>
-                            ))
-                          ) : (
-                            Array.from({ length: 5 }).map((_, idx) => (
-                              <View
-                                key={idx}
-                                className="rounded-lg px-3 flex items-center flex-col shadow-xl py-3 mr-2 bg-white"
-                              >
-                                <Skeleton className="w-4 h-4 rounded-full" />
-                                <Skeleton className="w-10 h-3 rounded-md mt-2" />
-                              </View>
-                            ))
-                          )
-                        }
-                      </View>
+                  {/* sport type pills */}
+                  <View className="pt-1">
+                    <View className="flex-row flex-wrap gap-1">
+                      {sportTypeList ? (
+                        sportTypeList.map((p) => (
+                          <TouchableOpacity
+                            onPress={() => setSportTypeSelected(p.sportTypeId)}
+                            key={p.sportTypeId || p.typeName}
+                            className={`rounded-lg px-3 flex items-center flex-col shadow-xl py-3 ${
+                              sportTypeSelected === p.sportTypeId ? 'bg-slate-200' : 'bg-white'
+                            }`}
+                          >
+                            {p.typeName === 'Bóng rổ' && <FontAwesome5 name="basketball-ball" size={14} color="black" />}
+                            {p.typeName === 'Bóng đá' && <MaterialCommunityIcons name="soccer" size={14} color="black" />}
+                            <Text className="text-xs"> {p.typeName}</Text>
+                          </TouchableOpacity>
+                        ))
+                      ) : (
+                        Array.from({ length: 5 }).map((_, idx) => (
+                          <View key={idx} className="rounded-lg px-3 flex items-center flex-col shadow-xl py-3 mr-2 bg-white">
+                            <Skeleton className="w-4 h-4 rounded-full" />
+                            <Skeleton className="w-10 h-3 rounded-md mt-2" />
+                          </View>
+                        ))
+                      )}
                     </View>
                   </View>
                 </View>
               </CardContent>
 
               <CardFooter className="px-3 pb-4 bg-white">
-                {errors.general ? (
-                  <Text className="text-red-500 text-sm mb-2">{errors.general}</Text>
-                ) : null}
+                {errors.general ? <Text className="text-red-500 text-sm mb-2">{errors.general}</Text> : null}
                 <View className="flex-row items-center gap-1 w-full">
                   <Button
-                    onPress={() => router.push('/owner')}
+                    onPress={() => router.back()}
                     className="h-12 flex-1 bg-white border border-primary w-full rounded-xl"
                     disabled={submitting}
                   >
@@ -539,7 +550,7 @@ const AddCourt = () => {
                     {submitting ? (
                       <View className="flex-row items-center justify-center gap-2">
                         <ActivityIndicator size="small" />
-                        <Text className="text-base text-white font-semibold">Đang tạo...</Text>
+                        <Text className="text-base text-white font-semibold">Đang cập nhật...</Text>
                       </View>
                     ) : (
                       <Text className="text-base text-white font-semibold">Xác nhận</Text>
@@ -555,7 +566,7 @@ const AddCourt = () => {
       {/* Map Modal */}
       <Modal visible={mapVisible} animationType="slide" onRequestClose={() => setMapVisible(false)}>
         <SafeAreaView className="flex-1 bg-white">
-          {/* Header */}
+          {/* header */}
           <View className="flex-row items-center justify-between px-4 py-2 border-b border-[#eee]">
             <Text className="text-lg font-semibold">Chọn vị trí</Text>
             <TouchableOpacity onPress={() => setMapVisible(false)}>
@@ -563,7 +574,7 @@ const AddCourt = () => {
             </TouchableOpacity>
           </View>
 
-          {/* Search box */}
+          {/* search */}
           <View className="px-4 pt-3 pb-2">
             <View
               className="flex-row items-center px-4 h-12 rounded-2xl border border-[#DADADA] bg-white"
@@ -583,7 +594,6 @@ const AddCourt = () => {
               />
             </View>
 
-            {/* Suggestion list */}
             {suggestions.length > 0 && suggestionsOpen && (
               <View className="mt-2 rounded-xl border border-[#eee] bg-white">
                 {suggestions.map((s) => (
@@ -600,7 +610,7 @@ const AddCourt = () => {
             )}
           </View>
 
-          {/* Map */}
+          {/* map */}
           <View className="flex-1">
             <MapboxGL.MapView
               styleURL="mapbox://styles/mapbox/streets-v9"
@@ -610,22 +620,23 @@ const AddCourt = () => {
               rotateEnabled
               scaleBarEnabled={false}
               style={{ flex: 1 }}
-              onPress={handleMapPress}>
+              onPress={handleMapPress}
+            >
               <MapboxGL.Camera
                 zoomLevel={12}
-                centerCoordinate={pickingCenter ?? pickedCoord ?? DEFAULT_CENTER}
+                centerCoordinate={pickedCoord ?? [lng ?? DEFAULT_CENTER[0], lat ?? DEFAULT_CENTER[1]]}
                 animationMode="flyTo"
                 animationDuration={900}
               />
               {pickedCoord ? (
-                <MapboxGL.PointAnnotation id="picked" coordinate={pickedCoord} >
+                <MapboxGL.PointAnnotation id="picked" coordinate={pickedCoord}>
                   <View style={{ width: 20, height: 20, backgroundColor: 'red', borderRadius: 10 }} />
                 </MapboxGL.PointAnnotation>
               ) : null}
             </MapboxGL.MapView>
           </View>
 
-          {/* Footer */}
+          {/* footer */}
           <View className="px-4 py-3 border-t border-[#eee]">
             <Button onPress={confirmPick} className="h-12 rounded-xl" disabled={!pickedCoord}>
               <Text className="text-base text-white font-semibold">
@@ -639,4 +650,4 @@ const AddCourt = () => {
   );
 };
 
-export default AddCourt;
+export default UpdateCourt;

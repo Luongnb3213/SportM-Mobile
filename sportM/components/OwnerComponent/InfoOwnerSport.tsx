@@ -1,7 +1,7 @@
 // InfoOwnerSport.tsx
 import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
-import { Linking, Text, TouchableOpacity, View } from 'react-native';
+import { Text, View } from 'react-native';
 
 type CourtDTO = {
   courtId: string;
@@ -23,19 +23,7 @@ type CourtDTO = {
   };
 };
 
-const InfoSport = ({ court }: { court?: CourtDTO }) => {
-const openInMaps = (address?: string, lat?: number, lng?: number) => {
-  let url = '';
-  if (lat != null && lng != null) {
-    url = `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
-  } else if (address) {
-    url = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`;
-  }
-
-  if (url) {
-    Linking.openURL(url).catch(err => console.error('Error opening maps', err));
-  }
-};
+const InfoOwnerSport = ({ court }: { court?: CourtDTO }) => {
   const priceText =
     typeof court?.pricePerHour === 'number'
       ? `${court.pricePerHour.toLocaleString('vi-VN')} VND`
@@ -43,13 +31,9 @@ const openInMaps = (address?: string, lat?: number, lng?: number) => {
 
   return (
     <View>
-      <TouchableOpacity
-         onPress={() => openInMaps(court?.address, court?.lat, court?.lng)}
-      >
-        <InfoRow icon="location-outline">
-          {court?.address || '—'}
-        </InfoRow>
-      </TouchableOpacity>
+      <InfoRow icon="location-outline">
+        {court?.address || '—'}
+      </InfoRow>
 
       <InfoRow icon="wallet">{priceText}</InfoRow>
 
@@ -85,7 +69,7 @@ const openInMaps = (address?: string, lat?: number, lng?: number) => {
   );
 };
 
-export default InfoSport;
+export default InfoOwnerSport;
 
 function InfoRow({
   icon,

@@ -1,355 +1,384 @@
-// app/(tabs)/account/index.tsx
-import React from 'react';
-import {
-  Text,
-  TouchableOpacity,
-  View,
-  TextInput,
-  ActivityIndicator,
-} from 'react-native';
-import {
-  KeyboardAwareScrollView,
-  KeyboardProvider,
-} from 'react-native-keyboard-controller';
-import {
-  SafeAreaView,
-  useSafeAreaInsets,
-} from 'react-native-safe-area-context';
-import HeaderUser from '@/components/ui/HeaderUser';
-import Button from '@/components/Button';
-import { Ionicons, Feather } from '@expo/vector-icons';
+// app/(tabs)/notifications/index.tsx
+import React, { JSX } from 'react';
+import { View, Text, FlatList, TouchableOpacity, RefreshControl, ActivityIndicator } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { Ionicons, Feather, MaterialCommunityIcons, AntDesign } from '@expo/vector-icons';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/Avatar';
 import { Card } from '@/components/Card';
+import Button from '@/components/Button';
+import NotificationTester from '@/components/NotificationComponent/NotificationTester';
+// If you have a Header component, import it. Otherwise, keep the simple title bar below.
+// import HeaderUser from '@/components/ui/HeaderUser'
 
-/* =========================
- * Types & Fake seed data
- * ========================= */
-type Noti =
-  | {
-      id: string;
-      type: 'system';
-      text: string;
-      time: string;
-    }
-  | {
-      id: string;
-      type: 'friend_request';
-      user: { name: string; avatar?: string };
-      text: string;
-      time: string;
-    };
+// ===============
+// Types
+// ===============
+export type NotificationBase = {
+  id: string;
+  type: string; // value from NotificationType.ts
+  createdAt: string; // ISO string
+  read?: boolean;
+};
 
-// tạo ~60 thông báo trộn giữa system & friend_request
-const SEED_NOTIFS: Noti[] = Array.from({ length: 60 }).map((_, i) => {
-  const isFR = i % 3 === 1;
-  if (isFR) {
-    return {
-      id: `fr${i}`,
-      type: 'friend_request' as const,
-      user: {
-        name: ['Êm Fô', 'Long Vũ', 'Bảo Minh', 'Mi Mi'][i % 4],
-        avatar: `https://i.pravatar.cc/100?img=${(i % 70) + 1}`,
-      },
-      text: 'đã gửi cho bạn 1 lời kết bạn',
-      time: 'Hôm nay, lúc 9:36 AM',
-    };
-  }
-  return {
-    id: `sys${i}`,
-    type: 'system' as const,
-    text:
-      i % 2 === 0
-        ? 'Bạn đã đặt thành công sân Golf Nem Chua. Đừng quên hẹn của mình nhé'
-        : 'Thanh toán của bạn đã được xác nhận.',
-    time: 'Hôm nay, lúc 9:36 AM',
-  };
-});
+// A flexible payload that can carry different data based on type
+export type NotificationPayload = NotificationBase & {
+  title?: string;
+  message?: string;
+  actor?: { id: string; name: string; avatar?: string } | null;
+  target?: { id: string; name?: string } | null; // court, club, match, booking, etc.
+  meta?: Record<string, any>;
+};
 
-/* =========================
- * Fake API (filter + paginate)
- * ========================= */
-function mockFetchNotifs({
-  search = '',
-  page = 1,
-  limit = 10,
-  signal,
-}: {
-  search?: string;
-  page?: number;
-  limit?: number;
-  signal?: AbortSignal;
-}): Promise<{ items: Noti[]; hasMore: boolean }> {
-  return new Promise((resolve, reject) => {
-    const timer = setTimeout(() => {
-      const q = search.trim().toLowerCase();
-      const filtered = q
-        ? SEED_NOTIFS.filter((n) => {
-            if (n.type === 'system') {
-              return (
-                n.text.toLowerCase().includes(q) ||
-                n.time.toLowerCase().includes(q)
-              );
-            }
-            return (
-              n.text.toLowerCase().includes(q) ||
-              n.user.name.toLowerCase().includes(q) ||
-              n.time.toLowerCase().includes(q)
-            );
-          })
-        : SEED_NOTIFS;
+// ===============
+// Socket glue (plug-and-play)
+// ===============
+// Replace the body of subscribeToNotifications with your actual SocketService or socket.ts wiring.
+// It returns an unsubscribe function.
+function subscribeToNotifications(onEvent: (evt: NotificationPayload) => void) {
+  // --- EXAMPLE (pseudo) ---
+  // import { SocketService } from '@/services/SocketService'
+  // const off = SocketService.onAny((type, payload) => {
+  //   const evt: NotificationPayload = { id: payload.id ?? String(Date.now()), type, createdAt: new Date().toISOString(), ...payload };
+  //   onEvent(evt);
+  // });
+  // return off;
 
-      const start = (page - 1) * limit;
-      const end = start + limit;
-      const items = filtered.slice(start, end);
-      resolve({ items, hasMore: end < filtered.length });
-    }, 700);
-
-    signal?.addEventListener('abort', () => {
-      clearTimeout(timer);
-    });
-  });
+  // Fallback mocked listener (for demo): emit a random noti every 10s
+  // const timer = setInterval(() => {
+  //   const demo = MOCK_STREAM[Math.floor(Math.random() * MOCK_STREAM.length)];
+  //   onEvent({ ...demo, id: `${demo.type}-${Date.now()}`, createdAt: new Date().toISOString() });
+  // }, 10000);
+  // return () => clearInterval(timer);
 }
 
-/* =========================
- * Screen
- * ========================= */
-export default function Notification() {
-  const insets = useSafeAreaInsets();
+// ===============
+// Icons per type
+// ===============
+const TypeIcon: Record<string, (props: { size?: number }) => JSX.Element> = {
+  BOOKING_CONFIRMED: ({ size = 22 }) => <Ionicons name="checkmark-circle" size={size} />,
+  BOOKING_CANCELLED: ({ size = 22 }) => <Ionicons name="close-circle" size={size} />,
+  PAYMENT_SUCCESS: ({ size = 22 }) => <Feather name="credit-card" size={size} />,
+  PAYMENT_FAILED: ({ size = 22 }) => <MaterialCommunityIcons name="credit-card-off" size={size} />,
+  MATCH_INVITE: ({ size = 22 }) => <Ionicons name="tennisball" size={size} />,
+  FRIEND_REQUEST: ({ size = 22 }) => <Ionicons name="person-add" size={size} />,
+  FRIEND_ACCEPTED: ({ size = 22 }) => <Ionicons name="people" size={size} />,
+  SYSTEM: ({ size = 22 }) => <Ionicons name="notifications" size={size} />,
+  DEFAULT: ({ size = 22 }) => <AntDesign name="bells" size={size} />,
+};
 
-  // list state
-  const [data, setData] = React.useState<Noti[]>([]);
-  const [page, setPage] = React.useState(1);
-  const [hasMore, setHasMore] = React.useState(false);
+function getIcon(type: string) {
+  return TypeIcon[type] ?? TypeIcon.DEFAULT;
+}
 
-  // loading states
-  const [loadingInitial, setLoadingInitial] = React.useState(false);
-  const [loadingMore, setLoadingMore] = React.useState(false);
+// ===============
+// Item renderers (design)
+// ===============
+function Dot() {
+  return <View className="mt-1 h-2 w-2 rounded-full bg-[#90CDF4]" />;
+}
 
-  const LIMIT = 10;
-  const ctrlRef = React.useRef<AbortController | null>(null);
-
-  // first load + search change
-  React.useEffect(() => {
-    ctrlRef.current?.abort();
-    const ctrl = new AbortController();
-    ctrlRef.current = ctrl;
-
-    (async () => {
-      try {
-        setLoadingInitial(true);
-        setPage(1);
-        const { items, hasMore } = await mockFetchNotifs({
-          page: 1,
-          limit: LIMIT,
-          signal: ctrl.signal,
-        });
-        setData(items);
-        setHasMore(hasMore);
-      } catch (e) {
-        // ignore abort
-      } finally {
-        setLoadingInitial(false);
+function TimeAgo({ iso }: { iso: string }) {
+  const d = new Date(iso);
+  const diff = Math.max(1, Math.floor((Date.now() - d.getTime()) / 1000));
+  let text = `${diff} giây trước`;
+  if (diff > 59) {
+    const m = Math.floor(diff / 60);
+    text = `${m} phút trước`;
+    if (m > 59) {
+      const h = Math.floor(m / 60);
+      text = `${h} giờ trước`;
+      if (h > 24) {
+        const day = Math.floor(h / 24);
+        text = `${day} ngày trước`;
       }
-    })();
-
-    return () => ctrl.abort();
-  }, []);
-
-  // load more
-  const onLoadMore = React.useCallback(async () => {
-    if (loadingMore || !hasMore) return;
-
-    ctrlRef.current?.abort();
-    const ctrl = new AbortController();
-    ctrlRef.current = ctrl;
-
-    try {
-      setLoadingMore(true);
-      const nextPage = page + 1;
-      const { items, hasMore: nextHasMore } = await mockFetchNotifs({
-        page: nextPage,
-        limit: LIMIT,
-        signal: ctrl.signal,
-      });
-
-      if (items.length > 0) {
-        setData((prev) => [...prev, ...items]);
-        setPage(nextPage);
-        setHasMore(nextHasMore);
-      } else {
-        setHasMore(false);
-      }
-    } catch (e) {
-      // ignore abort
-    } finally {
-      setLoadingMore(false);
     }
-  }, [loadingMore, hasMore, page]);
+  }
+  return <Text className="text-[12px] text-muted-foreground">{text}</Text>;
+}
+
+function NotificationLine({ n, onAction }: { n: NotificationPayload; onAction?: (id: string, action: string) => void }) {
+  const Icon = getIcon(n.type);
+  const actorAvatar = n.actor?.avatar;
+  const title = n.title ?? humanizeType(n.type);
+  const message = n.message ?? '';
+  const unread = !n.read;
+
+  const container = ['px-4 py-4', unread ? 'bg-accent/30' : 'bg-white/0'].join(' ');
+
+  // Common CTA patterns per type
+  const ctas = getCTAs(n.type);
 
   return (
-    <KeyboardProvider>
-      <SafeAreaView className="flex-1">
-        <KeyboardAwareScrollView
-          keyboardShouldPersistTaps="handled"
-          contentContainerStyle={{ paddingBottom: insets.bottom + 24 }}
-          extraKeyboardSpace={0}
-        >
-          <View className="bg-white">
-            <View className="bg-background px-4">
-              <HeaderUser />
+    <View className={container}>
+      <View className="flex-row gap-3 items-start">
+        <Dot />
+        <View className="h-10 w-10 items-center justify-center rounded-xl bg-secondary">
+          <Icon size={20} />
+        </View>
+
+        <View className="flex-1">
+          <Text className="text-[13.5px] leading-5">
+            {n.actor ? (
+              <>
+                <Text className="font-medium">{n.actor.name}</Text>
+                {message ? ' ' + message : ''}
+              </>
+            ) : message ? (
+              message
+            ) : (
+              title
+            )}
+          </Text>
+
+          {n.target?.name ? (
+            <Text className="mt-1 text-[13px]">
+              <Text className="text-muted-foreground">Đối tượng: </Text>
+              <Text className="font-semibold text-primary">{n.target.name}</Text>
+            </Text>
+          ) : null}
+
+          {ctas.length > 0 ? (
+            <View className="mt-3 flex-row gap-3">
+              {ctas.map((cta) => (
+                <Button
+                  key={cta.key}
+                  variant={cta.variant}
+                  className="px-4 py-1 rounded-md"
+                  style={cta.variant === 'outline' ? { borderWidth: 0 } : undefined}
+                  onPress={() => onAction?.(n.id, cta.key)}
+                >
+                  {cta.label}
+                </Button>
+              ))}
             </View>
+          ) : null}
 
-            {/* Top bar */}
-            <View className="flex-row items-center justify-start px-4 py-3 border-b border-border">
-              <TouchableOpacity className="pr-2">
-                <Ionicons name="chevron-back" size={20} />
-              </TouchableOpacity>
-
-              <View className="flex-row items-center gap-2">
-                <Text className="text-base font-semibold text-primary">
-                  Thông báo
-                </Text>
-                <Text className="text-muted-foreground">Tất cả</Text>
-                <Ionicons name="chevron-down" size={16} />
-              </View>
-
-              <View className="w-5" />
-            </View>
-
-            <Card
-              className="m-4 mx-0 rounded-2xl overflow-hidden bg-background"
-              style={{ borderWidth: 0 }}
-            >
-              {/* loading initial */}
-              {loadingInitial ? (
-                Array.from({ length: 6 }).map((_, i) => (
-                  <View key={i} className="px-4 py-4 border-b border-border">
-                    <View className="h-4 w-40 bg-muted rounded mb-2" />
-                    <View className="h-3 w-28 bg-muted rounded" />
-                  </View>
-                ))
-              ) : data.length === 0 ? (
-                <View className="px-4 py-10 items-center">
-                  <Text className="text-muted-foreground">
-                    Không có thông báo
-                  </Text>
-                </View>
-              ) : (
-                <>
-                  {data.map((n, idx) => {
-                    const isLast = idx === data.length - 1;
-
-                    if (n.type === 'system') {
-                      const highlight = 'sân Golf Nem Chua';
-                      const parts = n.text.split(highlight);
-
-                      return (
-                        <View
-                          key={n.id}
-                          className={[
-                            'px-4 py-4 bg-white/0',
-                            !isLast && 'border-b border-border',
-                          ].join(' ')}
-                        >
-                          <View className="flex-row items-start gap-2">
-                            <View className="mt-1 h-2 w-2 rounded-full bg-[#90CDF4]" />
-                            <View className="h-10 w-10" />
-                            <View className="flex-1">
-                              <Text className="text-[13.5px] leading-5">
-                                {parts.length > 1 ? (
-                                  <>
-                                    {parts[0]}
-                                    <Text className="font-semibold text-primary">
-                                      {highlight}
-                                    </Text>
-                                    {parts[1]}
-                                  </>
-                                ) : (
-                                  n.text
-                                )}
-                              </Text>
-                              <Text className="mt-2 text-[12px] text-muted-foreground">
-                                {n.time}
-                              </Text>
-                            </View>
-                          </View>
-                        </View>
-                      );
-                    }
-
-                    // friend_request
-                    return (
-                      <View
-                        key={n.id}
-                        className={[
-                          'px-4 py-4',
-                          !isLast && 'border-b border-border',
-                        ].join(' ')}
-                      >
-                        <View className="flex-row gap-3 items-start">
-                          <View className="mt-1 h-2 w-2 rounded-full bg-[#90CDF4]" />
-                          <Avatar className="h-10 w-10">
-                            {n.user.avatar ? (
-                              <AvatarImage source={{ uri: n.user.avatar }} />
-                            ) : (
-                              <AvatarFallback>UF</AvatarFallback>
-                            )}
-                          </Avatar>
-
-                          <View className="flex-1">
-                            <Text className="text-[13.5px] leading-5">
-                              <Text className="font-medium">{n.user.name}</Text>{' '}
-                              {n.text}
-                            </Text>
-
-                            <View className="mt-3 flex-row gap-3">
-                              <Button className="px-4 py-1 rounded-md">
-                                Chấp nhận
-                              </Button>
-                              <Button
-                                variant="outline"
-                                className="px-4 py-2 rounded-md"
-                                style={{ borderWidth: 0 }}
-                              >
-                                Từ chối
-                              </Button>
-                            </View>
-
-                            <Text className="mt-3 text-[12px] text-muted-foreground">
-                              {n.time}
-                            </Text>
-                          </View>
-                        </View>
-                      </View>
-                    );
-                  })}
-
-                  {/* Footer: Xem thêm / Loading */}
-                  {hasMore ? (
-                    <View className="items-center py-3">
-                      {loadingMore ? (
-                        <View className="px-3 py-2 flex-row items-center">
-                          <ActivityIndicator />
-                          <Text className="ml-2">Đang tải...</Text>
-                        </View>
-                      ) : (
-                        <Button
-                          variant="ghost"
-                          className="px-3 py-2 flex-row items-center"
-                          onPress={onLoadMore}
-                        >
-                          <Text className="mr-1">Xem thêm</Text>
-                          <Ionicons name="chevron-down" size={16} />
-                        </Button>
-                      )}
-                    </View>
-                  ) : null}
-                </>
-              )}
-            </Card>
+          <View className="mt-2 flex-row items-center gap-2">
+            {actorAvatar ? (
+              <Avatar className="h-5 w-5">
+                <AvatarImage source={{ uri: actorAvatar }} />
+                <AvatarFallback>U</AvatarFallback>
+              </Avatar>
+            ) : null}
+            <TimeAgo iso={n.createdAt} />
           </View>
-        </KeyboardAwareScrollView>
-      </SafeAreaView>
-    </KeyboardProvider>
+        </View>
+      </View>
+    </View>
+  );
+}
+
+function humanizeType(type: string) {
+  const map: Record<string, string> = {
+    BOOKING_CONFIRMED: 'Đặt sân thành công',
+    BOOKING_CANCELLED: 'Hủy đặt sân',
+    PAYMENT_SUCCESS: 'Thanh toán thành công',
+    PAYMENT_FAILED: 'Thanh toán thất bại',
+    MATCH_INVITE: 'Lời mời thi đấu',
+    FRIEND_REQUEST: 'Lời mời kết bạn',
+    FRIEND_ACCEPTED: 'Đã chấp nhận kết bạn',
+    SYSTEM: 'Thông báo hệ thống',
+  };
+  return map[type] ?? type.replaceAll('_', ' ');
+}
+
+function getCTAs(type: string): Array<{ key: string; label: string; variant?: 'outline' | 'default' | 'destructive' }>
+{
+  switch (type) {
+    case 'FRIEND_REQUEST':
+      return [
+        { key: 'accept', label: 'Chấp nhận' },
+        { key: 'decline', label: 'Từ chối', variant: 'outline' },
+      ];
+    case 'MATCH_INVITE':
+      return [
+        { key: 'view', label: 'Xem chi tiết' },
+        { key: 'dismiss', label: 'Bỏ qua', variant: 'outline' },
+      ];
+    case 'PAYMENT_FAILED':
+      return [
+        { key: 'retry', label: 'Thử lại' },
+        { key: 'support', label: 'Hỗ trợ', variant: 'outline' },
+      ];
+    case 'BOOKING_CONFIRMED':
+      return [{ key: 'view_booking', label: 'Xem đặt sân' }];
+    default:
+      return [];
+  }
+}
+
+// ===============
+// Mock data (covering many NotificationTypes)
+// ===============
+export const MOCK_STREAM: NotificationPayload[] = [
+  {
+    id: '1',
+    type: 'BOOKING_CONFIRMED',
+    title: 'Đặt sân thành công',
+    message: 'đã đặt thành công sân Golf Nem Chua lúc 15:00',
+    actor: { id: 'u1', name: 'SportM', avatar: 'https://i.pravatar.cc/100?img=5' },
+    target: { id: 'c1', name: 'Sân Golf Nem Chua' },
+    createdAt: new Date(Date.now() - 5 * 60 * 1000).toISOString(),
+  },
+  {
+    id: '2',
+    type: 'PAYMENT_SUCCESS',
+    message: 'Thanh toán #INV-2309 đã được xác nhận',
+    actor: { id: 'u2', name: 'Thu ngân' },
+    target: { id: 'inv1', name: 'Hóa đơn INV-2309' },
+    createdAt: new Date(Date.now() - 12 * 60 * 1000).toISOString(),
+  },
+  {
+    id: '3',
+    type: 'PAYMENT_FAILED',
+    message: 'Thanh toán #INV-2310 thất bại. Vui lòng thử lại.',
+    actor: { id: 'u2', name: 'Thu ngân' },
+    createdAt: new Date(Date.now() - 45 * 60 * 1000).toISOString(),
+  },
+  {
+    id: '4',
+    type: 'FRIEND_REQUEST',
+    message: 'đã gửi lời mời kết bạn',
+    actor: { id: 'u3', name: 'Long Vũ', avatar: 'https://i.pravatar.cc/100?img=12' },
+    createdAt: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
+  },
+  {
+    id: '5',
+    type: 'FRIEND_ACCEPTED',
+    message: 'đã chấp nhận lời mời kết bạn',
+    actor: { id: 'u4', name: 'Bảo Minh', avatar: 'https://i.pravatar.cc/100?img=16' },
+    createdAt: new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString(),
+  },
+  {
+    id: '6',
+    type: 'MATCH_INVITE',
+    message: 'mời bạn tham gia trận đấu 7:00 AM - Thứ Bảy',
+    actor: { id: 'u5', name: 'Mi Mi', avatar: 'https://i.pravatar.cc/100?img=25' },
+    target: { id: 'm1', name: 'Trận friendly cuối tuần' },
+    createdAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
+  },
+  {
+    id: '7',
+    type: 'BOOKING_CANCELLED',
+    message: 'đặt sân #BK-9911 đã bị hủy',
+    actor: { id: 'u6', name: 'Hệ thống' },
+    createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+  },
+  {
+    id: '8',
+    type: 'SYSTEM',
+    title: 'Chính sách mới',
+    message: 'Chúng tôi vừa cập nhật điều khoản dịch vụ.',
+    actor: null,
+    createdAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
+  },
+];
+
+// ===============
+// Screen
+// ===============
+export default function NotificationsScreen() {
+  const [items, setItems] = React.useState<NotificationPayload[]>([]);
+  const [loading, setLoading] = React.useState(true);
+  const [refreshing, setRefreshing] = React.useState(false);
+  const [loadingMore, setLoadingMore] = React.useState(false);
+
+  // initial load: use mock
+  React.useEffect(() => {
+    setLoading(true);
+    setTimeout(() => {
+      setItems(MOCK_STREAM);
+      setLoading(false);
+    }, 500);
+  }, []);
+
+  // live events via socket / service
+  React.useEffect(() => {
+    const off = subscribeToNotifications((evt) => {
+      setItems((prev) => [evt, ...prev]);
+    });
+    return off;
+  }, []);
+
+  const onRefresh = React.useCallback(() => {
+    setRefreshing(true);
+    setTimeout(() => {
+      // simulate re-fetch
+      setItems(MOCK_STREAM);
+      setRefreshing(false);
+    }, 600);
+  }, []);
+
+  const onLoadMore = React.useCallback(() => {
+    if (loadingMore) return;
+    setLoadingMore(true);
+    setTimeout(() => {
+      // simulate pagination by duplicating with new ids
+      const more = MOCK_STREAM.map((x, i) => ({ ...x, id: x.id + '-p' + i }));
+      setItems((s) => [...s, ...more]);
+      setLoadingMore(false);
+    }, 600);
+  }, [loadingMore]);
+
+  const onAction = (id: string, action: string) => {
+    // TODO: call APIs for accept/decline/view/etc.
+    console.log('action', action, 'on', id);
+    // optimistically mark as read / remove if needed
+    if (action === 'dismiss' || action === 'decline') {
+      setItems((s) => s.filter((x) => x.id !== id));
+    }
+  };
+
+  return (
+    <SafeAreaView className="flex-1">
+      {/* Top bar */}
+      <View className="flex-row items-center justify-start px-4 py-3 border-b border-border bg-background">
+        <TouchableOpacity className="pr-2">
+          <Ionicons name="chevron-back" size={20} />
+        </TouchableOpacity>
+        <View className="flex-row items-center gap-2">
+          <Text className="text-base font-semibold text-primary">Thông báo</Text>
+        </View>
+        <View className="w-5" />
+      </View>
+
+      {/* List */}
+      <Card className="m-4 mx-0 rounded-2xl overflow-hidden bg-background" style={{ borderWidth: 0 }}>
+        {loading ? (
+          Array.from({ length: 6 }).map((_, i) => (
+            <View key={i} className="px-4 py-4 border-b border-border">
+              <View className="h-4 w-40 bg-muted rounded mb-2" />
+              <View className="h-3 w-28 bg-muted rounded" />
+            </View>
+          ))
+        ) : items.length === 0 ? (
+          <View className="px-4 py-10 items-center">
+            <Text className="text-muted-foreground">Không có thông báo</Text>
+          </View>
+        ) : (
+          <FlatList
+            data={items}
+            keyExtractor={(it) => it.id + Date.now().toString()}
+            renderItem={({ item }) => (
+              <NotificationLine n={item} onAction={onAction} />
+            )}
+            ItemSeparatorComponent={() => <View className="border-b border-border" />}
+            refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+            onEndReachedThreshold={0.3}
+            onEndReached={onLoadMore}
+            ListFooterComponent={
+              loadingMore ? (
+                <View className="items-center py-3">
+                  <View className="px-3 py-2 flex-row items-center">
+                    <ActivityIndicator />
+                    <Text className="ml-2">Đang tải...</Text>
+                  </View>
+                </View>
+              ) : null
+            }
+          />
+        )}
+      </Card>
+    </SafeAreaView>
   );
 }

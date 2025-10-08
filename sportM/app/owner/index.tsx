@@ -6,6 +6,7 @@ import HeaderUser from '@/components/ui/HeaderUser';
 import Pagination from '@/components/ui/Pagination';
 import { useDebounce } from '@/hooks/useDebounce';
 import { useAxios } from '@/lib/api';
+import { formatPriceVND } from '@/lib/utils';
 import { useAppTheme } from '@/styles/theme';
 import { Feather, FontAwesome5, MaterialCommunityIcons } from '@expo/vector-icons';
 import { router } from 'expo-router';
@@ -79,7 +80,6 @@ const index = () => {
   };
 
   const handleTextChange = (text: string) => {
-    console.log('Search text changed:', text);
     setSearchText(text);
     setPage(1);
   }
@@ -120,7 +120,7 @@ const index = () => {
                       <TouchableOpacity
                         onPress={() => handleChoosePill(p)}
                         key={p.sportTypeId}
-                        className={`rounded-lg px-3 flex items-center flex-col shadow-xl py-3 bg-white ${sportTypeSelected === p.sportTypeId ? 'bg-slate-200' : ''}`}
+                        className={`rounded-lg px-3 flex items-center flex-col shadow-xl py-3  ${sportTypeSelected === p.sportTypeId ? 'bg-slate-200' : 'bg-white'}`}
                       >
                         {p.typeName == "Bóng rổ" && (
                           <FontAwesome5 name="basketball-ball" size={14} color="black" />
@@ -161,9 +161,9 @@ const index = () => {
                       return (
                         <GolfCourseCard
                           key={court?.courtId + index}
-                          title={court?.courtName || 'Sân bóng đá ABC'}
-                          pricePerHour={`${court?.pricePerHour} đ/h`}
-                          rating={court?.rating || 4.5}
+                          title={court?.courtName || ''}
+                          pricePerHour={`${formatPriceVND(court?.pricePerHour)} đ/h`}
+                          rating={court?.avgRating || 'N/A'}
                           imageUri={court?.courtImages[0] || "https://images.unsplash.com/photo-150287733853-766e1452684a?q=80&w=1600"}
                           onPress={() => {
                             router.push({

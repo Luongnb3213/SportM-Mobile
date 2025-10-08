@@ -1,160 +1,384 @@
-// FeedScreen.tsx
-import React from "react";
-import { Dimensions, View, Text, Image, TouchableOpacity } from "react-native";
-import Carousel from "react-native-reanimated-carousel";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/Card";
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/Avatar";
-import Button from "@/components/Button";
-import { Ionicons } from "@expo/vector-icons";
-import { KeyboardProvider } from "react-native-keyboard-controller";
-import { SafeAreaView } from "react-native-safe-area-context";
-import { router } from "expo-router";
+// app/(tabs)/notifications/index.tsx
+import React, { JSX } from 'react';
+import { View, Text, FlatList, TouchableOpacity, RefreshControl, ActivityIndicator } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { Ionicons, Feather, MaterialCommunityIcons, AntDesign } from '@expo/vector-icons';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/Avatar';
+import { Card } from '@/components/Card';
+import Button from '@/components/Button';
+// If you have a Header component, import it. Otherwise, keep the simple title bar below.
+// import HeaderUser from '@/components/ui/HeaderUser'
 
-const { height: SCREEN_HEIGHT, width: SCREEN_WIDTH } = Dimensions.get("window");
-
-type FeedItem = {
+// ===============
+// Types
+// ===============
+export type NotificationBase = {
   id: string;
-  title: string;
-  description: string;
-  image: string;
-  user: { name: string; avatar?: string };
+  type: string; // value from NotificationType.ts
+  createdAt: string; // ISO string
+  read?: boolean;
 };
 
-const DATA: FeedItem[] = [
+// A flexible payload that can carry different data based on type
+export type NotificationPayload = NotificationBase & {
+  title?: string;
+  message?: string;
+  actor?: { id: string; name: string; avatar?: string } | null;
+  target?: { id: string; name?: string } | null; // court, club, match, booking, etc.
+  meta?: Record<string, any>;
+};
+
+// ===============
+// Socket glue (plug-and-play)
+// ===============
+// Replace the body of subscribeToNotifications with your actual SocketService or socket.ts wiring.
+// It returns an unsubscribe function.
+function subscribeToNotifications(onEvent: (evt: NotificationPayload) => void) {
+  // --- EXAMPLE (pseudo) ---
+  // import { SocketService } from '@/services/SocketService'
+  // const off = SocketService.onAny((type, payload) => {
+  //   const evt: NotificationPayload = { id: payload.id ?? String(Date.now()), type, createdAt: new Date().toISOString(), ...payload };
+  //   onEvent(evt);
+  // });
+  // return off;
+
+  // Fallback mocked listener (for demo): emit a random noti every 10s
+  const timer = setInterval(() => {
+    const demo = MOCK_STREAM[Math.floor(Math.random() * MOCK_STREAM.length)];
+    onEvent({ ...demo, id: `${demo.type}-${Date.now()}`, createdAt: new Date().toISOString() });
+  }, 10000);
+  return () => clearInterval(timer);
+}
+
+// ===============
+// Icons per type
+// ===============
+const TypeIcon: Record<string, (props: { size?: number }) => JSX.Element> = {
+  BOOKING_CONFIRMED: ({ size = 22 }) => <Ionicons name="checkmark-circle" size={size} />,
+  BOOKING_CANCELLED: ({ size = 22 }) => <Ionicons name="close-circle" size={size} />,
+  PAYMENT_SUCCESS: ({ size = 22 }) => <Feather name="credit-card" size={size} />,
+  PAYMENT_FAILED: ({ size = 22 }) => <MaterialCommunityIcons name="credit-card-off" size={size} />,
+  MATCH_INVITE: ({ size = 22 }) => <Ionicons name="tennisball" size={size} />,
+  FRIEND_REQUEST: ({ size = 22 }) => <Ionicons name="person-add" size={size} />,
+  FRIEND_ACCEPTED: ({ size = 22 }) => <Ionicons name="people" size={size} />,
+  SYSTEM: ({ size = 22 }) => <Ionicons name="notifications" size={size} />,
+  DEFAULT: ({ size = 22 }) => <AntDesign name="bells" size={size} />,
+};
+
+function getIcon(type: string) {
+  return TypeIcon[type] ?? TypeIcon.DEFAULT;
+}
+
+// ===============
+// Item renderers (design)
+// ===============
+function Dot() {
+  return <View className="mt-1 h-2 w-2 rounded-full bg-[#90CDF4]" />;
+}
+
+function TimeAgo({ iso }: { iso: string }) {
+  const d = new Date(iso);
+  const diff = Math.max(1, Math.floor((Date.now() - d.getTime()) / 1000));
+  let text = `${diff} giây trước`;
+  if (diff > 59) {
+    const m = Math.floor(diff / 60);
+    text = `${m} phút trước`;
+    if (m > 59) {
+      const h = Math.floor(m / 60);
+      text = `${h} giờ trước`;
+      if (h > 24) {
+        const day = Math.floor(h / 24);
+        text = `${day} ngày trước`;
+      }
+    }
+  }
+  return <Text className="text-[12px] text-muted-foreground">{text}</Text>;
+}
+
+function NotificationLine({ n, onAction }: { n: NotificationPayload; onAction?: (id: string, action: string) => void }) {
+  const Icon = getIcon(n.type);
+  const actorAvatar = n.actor?.avatar;
+  const title = n.title ?? humanizeType(n.type);
+  const message = n.message ?? '';
+  const unread = !n.read;
+
+  const container = ['px-4 py-4', unread ? 'bg-accent/30' : 'bg-white/0'].join(' ');
+
+  // Common CTA patterns per type
+  const ctas = getCTAs(n.type);
+
+  return (
+    <View className={container}>
+      <View className="flex-row gap-3 items-start">
+        <Dot />
+
+        <View className="h-10 w-10 items-center justify-center rounded-xl bg-secondary">
+          <Icon size={20} />
+        </View>
+
+        <View className="flex-1">
+          <Text className="text-[13.5px] leading-5">
+            {n.actor ? (
+              <>
+                <Text className="font-medium">{n.actor.name}</Text>
+                {message ? ' ' + message : ''}
+              </>
+            ) : message ? (
+              message
+            ) : (
+              title
+            )}
+          </Text>
+
+          {n.target?.name ? (
+            <Text className="mt-1 text-[13px]">
+              <Text className="text-muted-foreground">Đối tượng: </Text>
+              <Text className="font-semibold text-primary">{n.target.name}</Text>
+            </Text>
+          ) : null}
+
+          {ctas.length > 0 ? (
+            <View className="mt-3 flex-row gap-3">
+              {ctas.map((cta) => (
+                <Button
+                  key={cta.key}
+                  variant={cta.variant}
+                  className="px-4 py-1 rounded-md"
+                  style={cta.variant === 'outline' ? { borderWidth: 0 } : undefined}
+                  onPress={() => onAction?.(n.id, cta.key)}
+                >
+                  {cta.label}
+                </Button>
+              ))}
+            </View>
+          ) : null}
+
+          <View className="mt-2 flex-row items-center gap-2">
+            {actorAvatar ? (
+              <Avatar className="h-5 w-5">
+                <AvatarImage source={{ uri: actorAvatar }} />
+                <AvatarFallback>U</AvatarFallback>
+              </Avatar>
+            ) : null}
+            <TimeAgo iso={n.createdAt} />
+          </View>
+        </View>
+      </View>
+    </View>
+  );
+}
+
+function humanizeType(type: string) {
+  const map: Record<string, string> = {
+    BOOKING_CONFIRMED: 'Đặt sân thành công',
+    BOOKING_CANCELLED: 'Hủy đặt sân',
+    PAYMENT_SUCCESS: 'Thanh toán thành công',
+    PAYMENT_FAILED: 'Thanh toán thất bại',
+    MATCH_INVITE: 'Lời mời thi đấu',
+    FRIEND_REQUEST: 'Lời mời kết bạn',
+    FRIEND_ACCEPTED: 'Đã chấp nhận kết bạn',
+    SYSTEM: 'Thông báo hệ thống',
+  };
+  return map[type] ?? type.replaceAll('_', ' ');
+}
+
+function getCTAs(type: string): Array<{ key: string; label: string; variant?: 'outline' | 'default' | 'destructive' }>
+{
+  switch (type) {
+    case 'FRIEND_REQUEST':
+      return [
+        { key: 'accept', label: 'Chấp nhận' },
+        { key: 'decline', label: 'Từ chối', variant: 'outline' },
+      ];
+    case 'MATCH_INVITE':
+      return [
+        { key: 'view', label: 'Xem chi tiết' },
+        { key: 'dismiss', label: 'Bỏ qua', variant: 'outline' },
+      ];
+    case 'PAYMENT_FAILED':
+      return [
+        { key: 'retry', label: 'Thử lại' },
+        { key: 'support', label: 'Hỗ trợ', variant: 'outline' },
+      ];
+    case 'BOOKING_CONFIRMED':
+      return [{ key: 'view_booking', label: 'Xem đặt sân' }];
+    default:
+      return [];
+  }
+}
+
+// ===============
+// Mock data (covering many NotificationTypes)
+// ===============
+export const MOCK_STREAM: NotificationPayload[] = [
   {
-    id: "1",
-    title: "Sân bóng mini Hòa Bình",
-    description: "Đặt sân nhanh chóng và tiện lợi",
-    image: "https://picsum.photos/800/1200",
-    user: { name: "Nguyễn Văn A", avatar: "" },
+    id: '1',
+    type: 'BOOKING_CONFIRMED',
+    title: 'Đặt sân thành công',
+    message: 'đã đặt thành công sân Golf Nem Chua lúc 15:00',
+    actor: { id: 'u1', name: 'SportM', avatar: 'https://i.pravatar.cc/100?img=5' },
+    target: { id: 'c1', name: 'Sân Golf Nem Chua' },
+    createdAt: new Date(Date.now() - 5 * 60 * 1000).toISOString(),
   },
   {
-    id: "2",
-    title: "Sân cỏ nhân tạo Quận 7",
-    description: "Chất lượng cao, giá tốt",
-    image: "https://picsum.photos/801/1200",
-    user: { name: "Trần Thị B" },
+    id: '2',
+    type: 'PAYMENT_SUCCESS',
+    message: 'Thanh toán #INV-2309 đã được xác nhận',
+    actor: { id: 'u2', name: 'Thu ngân' },
+    target: { id: 'inv1', name: 'Hóa đơn INV-2309' },
+    createdAt: new Date(Date.now() - 12 * 60 * 1000).toISOString(),
+  },
+  {
+    id: '3',
+    type: 'PAYMENT_FAILED',
+    message: 'Thanh toán #INV-2310 thất bại. Vui lòng thử lại.',
+    actor: { id: 'u2', name: 'Thu ngân' },
+    createdAt: new Date(Date.now() - 45 * 60 * 1000).toISOString(),
+  },
+  {
+    id: '4',
+    type: 'FRIEND_REQUEST',
+    message: 'đã gửi lời mời kết bạn',
+    actor: { id: 'u3', name: 'Long Vũ', avatar: 'https://i.pravatar.cc/100?img=12' },
+    createdAt: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
+  },
+  {
+    id: '5',
+    type: 'FRIEND_ACCEPTED',
+    message: 'đã chấp nhận lời mời kết bạn',
+    actor: { id: 'u4', name: 'Bảo Minh', avatar: 'https://i.pravatar.cc/100?img=16' },
+    createdAt: new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString(),
+  },
+  {
+    id: '6',
+    type: 'MATCH_INVITE',
+    message: 'mời bạn tham gia trận đấu 7:00 AM - Thứ Bảy',
+    actor: { id: 'u5', name: 'Mi Mi', avatar: 'https://i.pravatar.cc/100?img=25' },
+    target: { id: 'm1', name: 'Trận friendly cuối tuần' },
+    createdAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
+  },
+  {
+    id: '7',
+    type: 'BOOKING_CANCELLED',
+    message: 'đặt sân #BK-9911 đã bị hủy',
+    actor: { id: 'u6', name: 'Hệ thống' },
+    createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+  },
+  {
+    id: '8',
+    type: 'SYSTEM',
+    title: 'Chính sách mới',
+    message: 'Chúng tôi vừa cập nhật điều khoản dịch vụ.',
+    actor: null,
+    createdAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
   },
 ];
 
-export default function FeedScreen() {
+// ===============
+// Screen
+// ===============
+export default function NotificationsScreen() {
+  const [items, setItems] = React.useState<NotificationPayload[]>([]);
+  const [loading, setLoading] = React.useState(true);
+  const [refreshing, setRefreshing] = React.useState(false);
+  const [loadingMore, setLoadingMore] = React.useState(false);
+
+  // initial load: use mock
+  React.useEffect(() => {
+    setLoading(true);
+    setTimeout(() => {
+      setItems(MOCK_STREAM);
+      setLoading(false);
+    }, 500);
+  }, []);
+
+  // live events via socket / service
+  React.useEffect(() => {
+    const off = subscribeToNotifications((evt) => {
+      setItems((prev) => [evt, ...prev]);
+    });
+    return off;
+  }, []);
+
+  const onRefresh = React.useCallback(() => {
+    setRefreshing(true);
+    setTimeout(() => {
+      // simulate re-fetch
+      setItems(MOCK_STREAM);
+      setRefreshing(false);
+    }, 600);
+  }, []);
+
+  const onLoadMore = React.useCallback(() => {
+    if (loadingMore) return;
+    setLoadingMore(true);
+    setTimeout(() => {
+      // simulate pagination by duplicating with new ids
+      const more = MOCK_STREAM.map((x, i) => ({ ...x, id: x.id + '-p' + i }));
+      setItems((s) => [...s, ...more]);
+      setLoadingMore(false);
+    }, 600);
+  }, [loadingMore]);
+
+  const onAction = (id: string, action: string) => {
+    // TODO: call APIs for accept/decline/view/etc.
+    console.log('action', action, 'on', id);
+    // optimistically mark as read / remove if needed
+    if (action === 'dismiss' || action === 'decline') {
+      setItems((s) => s.filter((x) => x.id !== id));
+    }
+  };
+
   return (
-    <KeyboardProvider>
-      <SafeAreaView className="flex-1">
-        <View className="px-4 pb-2 flex-row justify-start">
-          <TouchableOpacity
-            onPress={() => {
-              router.back();
-            }}
-            className="flex-row items-center gap-2 py-2"
-          >
-            <Ionicons name="chevron-back" size={22} />
-            <Text className="text-[15px] text-primary font-medium">
-              Trở về trang trước
-            </Text>
-          </TouchableOpacity>
+    <SafeAreaView className="flex-1">
+      {/* Top bar */}
+      <View className="flex-row items-center justify-start px-4 py-3 border-b border-border bg-background">
+        <TouchableOpacity className="pr-2">
+          <Ionicons name="chevron-back" size={20} />
+        </TouchableOpacity>
+        <View className="flex-row items-center gap-2">
+          <Text className="text-base font-semibold text-primary">Thông báo</Text>
         </View>
+        <View className="w-5" />
+      </View>
 
-        <View className="mx-8 flex-1">
-          <Carousel
-            vertical
-            width={SCREEN_WIDTH}
-            height={SCREEN_HEIGHT}
-            data={DATA}
-            loop={false}
-            pagingEnabled
+      {/* List */}
+      <Card className="m-4 mx-0 rounded-2xl overflow-hidden bg-background" style={{ borderWidth: 0 }}>
+        {loading ? (
+          Array.from({ length: 6 }).map((_, i) => (
+            <View key={i} className="px-4 py-4 border-b border-border">
+              <View className="h-4 w-40 bg-muted rounded mb-2" />
+              <View className="h-3 w-28 bg-muted rounded" />
+            </View>
+          ))
+        ) : items.length === 0 ? (
+          <View className="px-4 py-10 items-center">
+            <Text className="text-muted-foreground">Không có thông báo</Text>
+          </View>
+        ) : (
+          <FlatList
+            data={items}
+            keyExtractor={(it) => it.id}
             renderItem={({ item }) => (
-              <View className="w-full h-full relative bg-white">
-                <View
-                  style={{ marginHorizontal: 15, height: SCREEN_HEIGHT - 150 }}
-                  className="rounded-2xl relative"
-                >
-                  <Image
-                    source={{ uri: item.image }}
-                    resizeMode="cover"
-                    style={{ position: "absolute", inset: 0, width: "100%", height: "100%", borderRadius: 16 }}
-                  />
-
-
-                  <View style={{ position: "absolute", inset: 0, justifyContent: "flex-end", borderRadius: 16 }}>
-                    <View className="bg-black/60 border-0" style={{ padding: 16, paddingBottom: 120, borderRadius: 16 }}>
-                      <Text className="text-white text-2xl font-bold">{item.user.name}</Text>
-                      <Text className="text-gray-200 mt-1" numberOfLines={3}>
-                        {item.description}
-                      </Text>
-                    </View>
-                  </View>
-
-                  <View
-                    style={{ position: "absolute", bottom: -30, left: 0, right: 0 }}
-                    className="flex-row justify-center gap-6"
-                  >
-                    <TouchableOpacity
-                      style={{
-                        width: 70,
-                        height: 70,
-                        borderRadius: 9999,
-                        backgroundColor: "#D8D8D8",
-                        shadowColor: "#000",
-                        shadowOffset: { width: 0, height: 2 },
-                        shadowOpacity: 0.3,
-                        shadowRadius: 3,
-                        elevation: 6,
-                        justifyContent: "center",
-                        alignItems: "center",
-                      }}
-                    >
-                      <View
-                        style={{
-                          width: 67,
-                          height: 67,
-                          borderRadius: 9999,
-                          backgroundColor: "#D8D8D8",
-                          justifyContent: "center",
-                          alignItems: "center",
-                        }}
-                      >
-                        <Ionicons name="close" size={28} color="white" />
-                      </View>
-                    </TouchableOpacity>
-
-                    <TouchableOpacity
-                      style={{
-                        width: 70,
-                        height: 70,
-                        borderRadius: 9999,
-                        backgroundColor: "#D8D8D8",
-                        shadowColor: "#000",
-                        shadowOffset: { width: 0, height: 2 },
-                        shadowOpacity: 0.3,
-                        shadowRadius: 3,
-                        elevation: 6,
-                        justifyContent: "center",
-                        alignItems: "center",
-                      }}
-                    >
-                      <View
-                        style={{
-                          width: 67,
-                          height: 67,
-                          borderRadius: 9999,
-                          backgroundColor: "#1F2257",
-                          justifyContent: "center",
-                          alignItems: "center",
-                        }}
-                      >
-                        <Ionicons name="add" size={28} color="white" />
-                      </View>
-                    </TouchableOpacity>
+              <NotificationLine n={item} onAction={onAction} />
+            )}
+            ItemSeparatorComponent={() => <View className="border-b border-border" />}
+            refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+            onEndReachedThreshold={0.3}
+            onEndReached={onLoadMore}
+            ListFooterComponent={
+              loadingMore ? (
+                <View className="items-center py-3">
+                  <View className="px-3 py-2 flex-row items-center">
+                    <ActivityIndicator />
+                    <Text className="ml-2">Đang tải...</Text>
                   </View>
                 </View>
-              </View>
-
-            )}
+              ) : null
+            }
           />
-        </View>
-      </SafeAreaView>
-    </KeyboardProvider>
-
+        )}
+      </Card>
+    </SafeAreaView>
   );
 }

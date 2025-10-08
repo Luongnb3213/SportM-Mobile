@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import { View, Text, Image, TouchableOpacity } from 'react-native';
 import {
   AntDesign,
@@ -7,7 +7,6 @@ import {
 } from '@expo/vector-icons';
 
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/Avatar';
-import { Button } from '@/components/Button';
 import {
   KeyboardAwareScrollView,
   KeyboardProvider,
@@ -16,21 +15,19 @@ import {
   SafeAreaView,
   useSafeAreaInsets,
 } from 'react-native-safe-area-context';
-import { clearTokens } from '@/lib/tokenStorage';
-import { router } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import { useAuth } from '@/providers/AuthProvider';
 import { useAxios } from '@/lib/api';
-import { Skeleton } from '@/components/Skeleton';
 import ProfileSkeleton from '@/components/Skeleton/ProfileSkeleton';
 
 type Pill = { id: string | number; label: string; icon?: React.ReactNode };
 
 const pills: Pill[] = [
-  { id: 1, label: 'Cầu lông' },
-  { id: 2, label: 'Cầu lông' },
-  { id: 3, label: 'Cầu lông' },
-  { id: 4, label: 'Cầu lông' },
-  { id: 5, label: 'Cầu lông' },
+  { id: 1, label: 'Cầu lông', icon: 'badminton' },
+  { id: 2, label: 'Bóng đá', icon: 'soccer' },
+  { id: 3, label: 'Bóng bàn', icon: 'table-tennis' },
+  { id: 4, label: 'Tennis', icon: 'tennis' },
+  { id: 5, label: 'Pickleball', icon: 'tennis-ball' },
 ];
 
 export default function DetailAccount() {
@@ -38,19 +35,17 @@ export default function DetailAccount() {
   const auth = useAuth();
   const [userData, setUserData] = React.useState(auth.user);
   const [loading, setLoading] = React.useState(false);
-  const handleLogout = () => {
-    clearTokens();
-    router.replace('/authentication');
-    auth.setUser(null);
-    console.log('Logging out...');
-  };
-
+  const { userId } = useLocalSearchParams<{ userId: string }>()
+  function getRandomPills(arr: Pill[]) {
+    const shuffled = [...arr].sort(() => Math.random() - 0.5);
+    const count = Math.floor(Math.random() * 3) + 1; // từ 1–3
+    return shuffled.slice(0, count);
+  }
   useEffect(() => {
     async function fetchUserData() {
       setLoading(true);
       try {
         const { data } = await useAxios.get(`/users/${auth.user?.userId}`);
-        await new Promise((resolve) => setTimeout(resolve, 2000)); // giả lập delay
         console.log('Fetched user data in setting account:', data.data);
         setUserData(data.data);
       } catch (error) {
@@ -62,6 +57,7 @@ export default function DetailAccount() {
     fetchUserData();
   }, []);
 
+  const randomPills = useMemo(() => getRandomPills(pills), []);
   if (loading) {
     return (
       <KeyboardProvider>
@@ -69,7 +65,7 @@ export default function DetailAccount() {
           <KeyboardAwareScrollView
             keyboardShouldPersistTaps="handled"
             extraKeyboardSpace={0}
-            contentContainerStyle={{ paddingBottom: insets.bottom + 24 }}
+            contentContainerStyle={{ paddingBottom: insets.bottom + 150 }}
           >
             <ProfileSkeleton />
           </KeyboardAwareScrollView>
@@ -84,7 +80,7 @@ export default function DetailAccount() {
         <KeyboardAwareScrollView
           keyboardShouldPersistTaps="handled"
           extraKeyboardSpace={0}
-          contentContainerStyle={{ paddingBottom: insets.bottom + 24 }}
+          contentContainerStyle={{ paddingBottom: insets.bottom + 150 }}
         >
           <View className="m-3 rounded-2xl overflow-hidden">
             {/* Header */}
@@ -100,8 +96,8 @@ export default function DetailAccount() {
 
                   <View className="flex-row items-center gap-3">
                     <Avatar className="w-12 h-12">
-                      {userData?.avatarUri ? (
-                        <AvatarImage source={{ uri: userData.avatarUri }} />
+                      {userData?.avatarUrl ? (
+                        <AvatarImage source={{ uri: userData.avatarUrl }} />
                       ) : (
                         <AvatarFallback textClassname="text-base">
                           {userData?.fullName
@@ -117,7 +113,7 @@ export default function DetailAccount() {
                         {auth.user?.fullName || ''}
                       </Text>
                       <Text className="text-xs text-muted-foreground">
-                        Thành phố Hà Nội · 22t
+                        Thành phố Hà Nội · {new Date().getFullYear() - new Date(userData?.birthDate).getFullYear()} tuổi
                       </Text>
                     </View>
                   </View>
@@ -128,9 +124,9 @@ export default function DetailAccount() {
             {/* Ảnh chính */}
             <View className="pt-3">
               <View className="rounded-xl overflow-hidden">
-                {userData?.avatarUri ? (
+                {userData?.avatarUrl ? (
                   <Image
-                    source={{ uri: userData?.avatarUri }}
+                    source={{ uri: userData?.avatarUrl }}
                     className="w-full"
                     style={{ aspectRatio: 3 / 4 }}
                     resizeMode="cover"
@@ -155,12 +151,12 @@ export default function DetailAccount() {
             {/* Hàng pill */}
             <View className="pt-3">
               <View className="flex-row flex-wrap gap-2">
-                {pills.map((p) => (
+                {randomPills.map((p) => (
                   <View
                     key={p.id}
                     className="rounded-lg px-3 flex items-center flex-col shadow-xl py-3 bg-white"
                   >
-                    <MaterialCommunityIcons name="badminton" size={14} />
+                    <MaterialCommunityIcons name={p.icon as any} size={14} />
                     <Text className="text-xs"> {p.label}</Text>
                   </View>
                 ))}
@@ -175,21 +171,13 @@ export default function DetailAccount() {
                 <Text className="text-xl">Cầu Giấy, thành phố Hà Nội</Text>
               </View>
               <View className="flex-row items-center gap-2">
-                <Ionicons name="location-outline" size={14} />
-                <Text className="text-xl">1 kilometer away</Text>
-              </View>
-              <View className="flex-row items-center gap-2">
                 <Ionicons name="time-outline" size={14} />
                 <Text className="text-xl">Tất cả các ngày</Text>
               </View>
-            </View>
-            <View className="my-5">
-              <Button
-                onPress={handleLogout}
-                className="rounded-xl h-12 bg-[#1F2257]"
-              >
-                Logout
-              </Button>
+              <View className="flex-row items-center gap-2">
+                <MaterialCommunityIcons name="bio" size={14} color="black" />
+                <Text className="text-xl">{userData?.bio || ''}</Text>
+              </View>
             </View>
           </View>
         </KeyboardAwareScrollView>
