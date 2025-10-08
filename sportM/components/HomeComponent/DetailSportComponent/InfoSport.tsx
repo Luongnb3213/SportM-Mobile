@@ -1,30 +1,86 @@
+// InfoOwnerSport.tsx
 import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
-import { Text } from 'react-native';
-import { View } from 'react-native';
+import { Linking, Text, TouchableOpacity, View } from 'react-native';
 
-const InfoSport = () => {
+type CourtDTO = {
+  courtId: string;
+  courtName: string;
+  courtImages: string[];
+  address: string;
+  description: string;
+  subService: string;
+  isActive: boolean;
+  pricePerHour: number;
+  sportType?: { typeName?: string };
+  avgRating: number;
+  lat?: number;
+  lng?: number;
+  owner?: {
+    fullName?: string;
+    phoneNumber?: string;
+    avatarUrl?: string;
+  };
+};
+
+const InfoSport = ({ court }: { court?: CourtDTO }) => {
+const openInMaps = (address?: string, lat?: number, lng?: number) => {
+  let url = '';
+  if (lat != null && lng != null) {
+    url = `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
+  } else if (address) {
+    url = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`;
+  }
+
+  if (url) {
+    Linking.openURL(url).catch(err => console.error('Error opening maps', err));
+  }
+};
+  const priceText =
+    typeof court?.pricePerHour === 'number'
+      ? `${court.pricePerHour.toLocaleString('vi-VN')} VND`
+      : '—';
+
   return (
     <View>
-      {/* các hàng thông tin */}
-      <InfoRow icon="location-outline">
-        Lộc Hà, Mai Lâm, Đông Anh, Hà Nội
+      <TouchableOpacity
+         onPress={() => openInMaps(court?.address, court?.lat, court?.lng)}
+      >
+        <InfoRow icon="location-outline">
+          {court?.address || '—'}
+        </InfoRow>
+      </TouchableOpacity>
+
+      <InfoRow icon="wallet">{priceText}</InfoRow>
+
+      <InfoRow icon="person-outline">
+        Chủ sân: {court?.owner?.fullName || '—'}
       </InfoRow>
 
-      <InfoRow icon="time-outline">3:00 - 6:00</InfoRow>
+      <InfoRow icon="call-outline">
+        {court?.owner?.phoneNumber || '—'}
+      </InfoRow>
 
-      <InfoRow icon="person-outline">Chủ sân: Nguyễn Đỗ Lâm Anh</InfoRow>
+      {court?.sportType?.typeName ? (
+        <InfoRow icon="fitness-outline">
+          Môn: {court.sportType.typeName}
+        </InfoRow>
+      ) : null}
 
-      <InfoRow icon="call-outline">0321456688{'\n'}0321456688</InfoRow>
 
-      {/* tiêu đề + mô tả */}
-      <Text className="mt-4 text-base font-semibold">Sân Golf Nem Chua</Text>
-      <Text className="mt-2 text-[13.5px] leading-5 text-muted-foreground">
-        Đây là sân golf với sử lâu đời vài lớn, rất nhiều người đã thuê sân này
-        và một đi không trở lại. Bạn có thể thuê ngay để tìm kho báu của những
-        người đi trước. Hơi lắm, thuê đi. Khi bạn tìm dc kho báu thì bạn 30
-        chúng tôi 70. Thẻ nhé. Peace out!
+      <Text className="mt-4 text-base font-semibold">
+        {court?.courtName || '—'}
       </Text>
+      <Text className="mt-2 text-[13.5px] leading-5 text-muted-foreground">
+        {court?.description || 'Chưa có mô tả.'}
+      </Text>
+
+
+      {court?.subService ? (
+        <Text className="mt-3 text-[13.5px] text-primary">
+          Dịch vụ: {court.subService}
+        </Text>
+      ) : null}
     </View>
   );
 };

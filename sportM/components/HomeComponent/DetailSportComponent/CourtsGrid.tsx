@@ -17,6 +17,7 @@ export default function CourtsGrid({
   onToggle: (courtId: string, slotId: string) => void;
   iconPack: any;
 }) {
+
   return (
     <FlatList
       horizontal
@@ -24,6 +25,7 @@ export default function CourtsGrid({
       keyExtractor={c => c.id}
       showsHorizontalScrollIndicator={false}
       contentContainerStyle={{ paddingRight: 16 }}
+      extraData={{ selected, slots }}
       renderItem={({ item }) => (
         <CourtColumn
           courtName={item.name}

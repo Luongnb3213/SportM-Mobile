@@ -1,17 +1,24 @@
 import { useAxios } from '@/lib/api';
 import { useAuth } from '@/providers/AuthProvider';
 import { useAppTheme } from '@/styles/theme';
-import { Feather, Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
+import {
+  AntDesign,
+  Feather,
+  Ionicons,
+  MaterialCommunityIcons,
+} from '@expo/vector-icons';
 import React, { useEffect, useState } from 'react';
 import { TouchableOpacity } from 'react-native';
 import { Text } from 'react-native';
 import { Image, View } from 'react-native';
 import * as Location from 'expo-location';
 import { Avatar, AvatarFallback, AvatarImage } from '../Avatar';
+import { router, usePathname } from 'expo-router';
 const HeaderUser = () => {
   const t = useAppTheme();
   const { user } = useAuth();
   const [showLocation, setShowLocation] = useState(true);
+  const pathname = usePathname();
 
   useEffect(() => {
     (async () => {
@@ -36,12 +43,26 @@ const HeaderUser = () => {
     setShowLocation(false);
   };
 
+  const handleClickIconHeader = () => {
+    if (user?.role === 'CLIENT') return;
+    if (pathname === '/owner') {
+      router.push('/owner/addCourt');
+    } else {
+      router.push('/owner/notification');
+    }
+  };
+
+  const handleClickAvatar = () => {
+    if (user?.role === 'CLIENT') return;
+    router.push('/owner/detailAccount');
+  };
+
   return (
     <View className="py-4">
       <View className="flex-row items-center gap-3">
-        <Avatar className="w-12 h-12 rounded-full">
-          {user?.avatarUri ? (
-            <AvatarImage source={{ uri: user.avatarUri }} />
+        <Avatar onTouchEnd={handleClickAvatar} className="w-12 h-12 rounded-full">
+          {user?.avatarUrl ? (
+            <AvatarImage  source={{ uri:  user?.avatarUrl }} />
           ) : (
             <AvatarFallback textClassname="text-base">
               {user?.fullName
@@ -55,13 +76,25 @@ const HeaderUser = () => {
         <Text className="flex-1 text-base font-bold text-center">
           Xin chào, {user?.fullName || ''}
         </Text>
-        <TouchableOpacity>
+        <TouchableOpacity onPress={handleClickIconHeader}>
           <View className="w-12 h-12 rounded-full bg-white items-center justify-center shadow-2xl">
-            <MaterialCommunityIcons
-              name="account-outline"
-              size={24}
-              color={t.foreground}
-            />
+            {user?.role === 'OWNER' ? (
+              pathname === '/owner' ? (
+                <AntDesign name="plus" size={24} color={t.foreground} />
+              ) : (
+                <Ionicons
+                  name="notifications-outline"
+                  size={24}
+                  color={t.foreground}
+                />
+              )
+            ) : (
+              <MaterialCommunityIcons
+                name="account-outline"
+                size={24}
+                color={t.foreground}
+              />
+            )}
           </View>
         </TouchableOpacity>
       </View>

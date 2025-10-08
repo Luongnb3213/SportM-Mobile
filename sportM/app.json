@@ -4,7 +4,7 @@
     "slug": "sportm",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
+    "icon": "./assets/images/sportM-icon.png",
     "scheme": "sportm",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
@@ -18,7 +18,7 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/adaptive-icon.png",
+        "foregroundImage": "./assets/images/sportM-splash.png",
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,
@@ -36,6 +36,13 @@
     },
     "plugins": [
       [
+        "@rnmapbox/maps",
+        {
+          "RNMapboxMapsDownloadToken": "sk.eyJ1IjoibHVvbmdjaGFvaSIsImEiOiJjbWZnd2xxb3YwNXd5MmpzOTdwNjBudmJqIn0.2-D6KpXh0uJh6eIQIGsn7A",
+          "RNMapboxMapsAccessToken": "pk.eyJ1IjoibHVvbmdjaGFvaSIsImEiOiJjbWZndzlwNHcwNW52MnJwdDJlaGViMDUxIn0.8D0hYvlEZdwx3GzONsOHpg"
+        }
+      ],
+      [
         "expo-location",
         {
           "locationWhenInUsePermission": "Show current location on map."
@@ -51,7 +58,7 @@
       [
         "expo-splash-screen",
         {
-          "image": "./assets/images/splash-icon.png",
+          "image": "./assets/images/sportM-splash.png",
           "imageWidth": 200,
           "resizeMode": "contain",
           "backgroundColor": "#ffffff"

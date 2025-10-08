@@ -80,7 +80,7 @@ export default function ProfileScreen() {
       </View>
 
       <ScrollView
-        contentContainerStyle={{ paddingBottom: 150 }}
+        contentContainerStyle={{ paddingBottom: 200 }}
         showsVerticalScrollIndicator={false}
       >
         <View className="px-4">
@@ -90,9 +90,9 @@ export default function ProfileScreen() {
               <CardContent className="p-0">
                 {/* Cover */}
                 <View className="relative">
-                  {userData?.avatarUri ? (
+                  {userData?.avatarUrl ? (
                     <Image
-                      source={{ uri: userData?.avatarUri }}
+                      source={{ uri: userData?.avatarUrl }}
                       className="w-full"
                       style={{ aspectRatio: 16 / 9 }}
                       resizeMode="cover"
@@ -144,8 +144,8 @@ export default function ProfileScreen() {
                   {/* Avatar overlap */}
                   <View className="absolute left-1/2 -translate-x-1/2 -bottom-10">
                     <Avatar className="w-28 h-28 border-4 border-white">
-                      {userData?.avatarUri ? (
-                        <AvatarImage source={{ uri: userData.avatarUri }} />
+                      {userData?.avatarUrl ? (
+                        <AvatarImage source={{ uri: userData.avatarUrl }} />
                       ) : (
                         <AvatarFallback textClassname="text-base">
                           {userData?.fullName
@@ -210,11 +210,6 @@ export default function ProfileScreen() {
                   <ListItem
                     icon={<Ionicons name="document-text-outline" size={18} />}
                     label="Điều khoản và chính sách"
-                    onPress={() => {}}
-                  />
-                  <ListItem
-                    icon={<Ionicons name="list-outline" size={18} />}
-                    label="Danh sách lịch đã đặt"
                     onPress={() => {}}
                   />
                 </View>

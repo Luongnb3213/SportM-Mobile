@@ -1,49 +1,33 @@
+// DayPill.tsx
 import React from 'react';
-import { View, Text, TouchableOpacity } from 'react-native';
+import { Text, TouchableOpacity } from 'react-native';
 
-type Props = {
-  thu: string;
-  day: string;
-  suffix: string;
+export default function DayPill({
+  monthText,
+  dayText,
+  weekdayText,
+  active,
+  onPress,
+}: {
+  monthText: string;   // "TH 9"
+  dayText: string;     // "05"
+  weekdayText: string; // "T5" | "CN"
   active?: boolean;
   onPress?: () => void;
-};
-export default function DayPill({ thu, day, suffix, active, onPress }: Props) {
+}) {
   return (
-    <TouchableOpacity onPress={onPress} activeOpacity={0.85}>
-      <View
-        className={
-          'h-[86px] w-[74px] items-center justify-between rounded-[14px] border px-0 py-2 ' +
-          (active
-            ? 'border-[#1F2757] bg-[#1F2757]'
-            : 'border-[#DFE5F1] bg-white')
-        }
-      >
-        <Text
-          className={
-            'text-[12px] font-semibold ' +
-            (active ? 'text-[#DDE3FF]' : 'text-gray-500')
-          }
-        >
-          {thu}
-        </Text>
-        <Text
-          className={
-            'text-[20px] font-extrabold ' +
-            (active ? 'text-white' : 'text-gray-900')
-          }
-        >
-          {day}
-        </Text>
-        <Text
-          className={
-            'text-[12px] font-semibold ' +
-            (active ? 'text-[#DDE3FF]' : 'text-gray-500')
-          }
-        >
-          {suffix}
-        </Text>
-      </View>
+    <TouchableOpacity
+      onPress={onPress}
+      activeOpacity={0.85}
+      className={`w-[64px] h-[92px] rounded-2xl border items-center justify-between py-2
+        ${active ? 'bg-[#E9EDFF] border-[#1F2757]' : 'bg-white border-gray-300'}`}
+      style={{ shadowColor: '#000', shadowOpacity: 0.06, shadowRadius: 6 }}
+    >
+      <Text className="text-[12px] text-[#1F2757]">{monthText}</Text>
+      <Text className="text-[20px] font-extrabold text-[#1F2757]">
+        {dayText}
+      </Text>
+      <Text className="text-[12px] text-[#1F2757]">{weekdayText}</Text>
     </TouchableOpacity>
   );
 }
