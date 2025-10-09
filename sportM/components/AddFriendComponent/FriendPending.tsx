@@ -37,16 +37,15 @@ const FriendPending = () => {
   const handleConfirm = async (u: any) => {
     try {
       setLoading(true)
-      console.log(u.userId)
-      await useAxios.patch(`/friend-request/${u.userId}`, {
+      await useAxios.patch(`/friend-request/${u.friendRequestId}`, {
         status: true
       })
 
-      setPending((prev) => prev.filter((x) => x.from.userId !== u.userId));
+      setPending((prev) => prev.filter((x) => x.from.userId !== u.from.userId));
       Toast.show({
         type: 'success',
         text1: 'Thành công',
-        text2: `Bạn và ${u.fullName} đã trở thành bạn bè.`,
+        text2: `Bạn và ${u.from.fullName} đã trở thành bạn bè.`,
       });
     } catch (error) {
       console.error(error);
@@ -63,14 +62,14 @@ const FriendPending = () => {
   const handleCancelPending = async (u: any) => {
     try {
       setLoading(true)
-      await useAxios.patch(`/friend-request/${u.userId}`, {
+      await useAxios.patch(`/friend-request/${u.friendRequestId}`, {
         status: false
       })
-      setPending((prev) => prev.filter((x) => x.from.userId !== u.userId));
+      setPending((prev) => prev.filter((x) => x.from.userId !== u.from.userId));
       Toast.show({
         type: 'success',
         text1: 'Thành công',
-        text2: `Bạn đã từ chối lời mời kết bạn từ ${u.fullName}.`,
+        text2: `Bạn đã từ chối lời mời kết bạn từ ${u.from.fullName}.`,
       });
     } catch (error) {
       console.error(error);
@@ -133,8 +132,8 @@ const FriendPending = () => {
                 avatarUri={u?.from?.avatarUrl}
                 status="pending"
                 accentHex={NAVY}
-                onConfirm={() => handleConfirm(u.from)}
-                onCancel={() => handleCancelPending(u.from)}
+                onConfirm={() => handleConfirm(u)}
+                onCancel={() => handleCancelPending(u)}
               />
             ))}
             {hasMore && (
