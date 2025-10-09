@@ -31,6 +31,7 @@ export default function RootLayout() {
           fontSize: 16,
         }}
         text2Style={{ fontSize: 14 }}
+        text2NumberOfLines={3}
       />
     ),
     /*

@@ -26,7 +26,7 @@ const FriendSent = () => {
         setSent(items);
         setHasMore(items.length > 0);
       } catch (error) {
-        console.error(error);
+        console.log(error);
       } finally {
         setInitialLoading(false);
       }
@@ -52,7 +52,7 @@ const FriendSent = () => {
         setHasMore(false);
       }
     } catch (e) {
-      console.error(e);
+      console.log(e);
     } finally {
       setLoadingMore(false);
     }

@@ -16,6 +16,7 @@ import Toast from 'react-native-toast-message';
 import { useAxios } from '@/lib/api';
 import { Comment } from './Comment/CommentItem';
 import { CommentsList } from './Comment/CommentsList';
+import { getErrorMessage } from '@/lib/utils';
 
 const fakeComments: Comment[] = [
   {
@@ -72,11 +73,11 @@ export default function RatingCard({
 
   useEffect(() => {
     (async () => {
-      return;
       try {
         const { data } = await useAxios.get(`/rating/${courtID}`);
+        console.log(data.data)
       } catch (error) {
-        console.error('Error fetching ratings:', error);
+        console.log('Error fetching ratings:', error);
       }
     })();
   }, []);
@@ -86,26 +87,35 @@ export default function RatingCard({
       const { data } = await useAxios.post('/rating', {
         courtId: courtID,
         star: rating,
-        content: note.trim(),
       });
+      console.log(data)
       Toast.show({
         type: 'success',
         text1: 'Thành công',
         text2: 'Cảm ơn bạn đã gửi đánh giá!',
       });
-    } catch (error) {
-      console.error('Error submitting rating:', error);
-      Toast.show({
-        type: 'error',
-        text1: 'Lỗi',
-        text2: 'Đã có lỗi xảy ra khi gửi đánh giá. Vui lòng thử lại.',
-      });
+    } catch (error: any) {
+      console.log('Error submitting rating:', getErrorMessage(error));
+      if (error.status == 400) {
+        Toast.show({
+          type: 'error',
+          text1: 'Lỗi',
+          text2: getErrorMessage(error),
+        });
+      } else {
+        Toast.show({
+          type: 'error',
+          text1: 'Lỗi',
+          text2: 'Đã có lỗi xảy ra khi gửi đánh giá. Vui lòng thử lại.',
+        });
+      }
+
     }
   };
 
   return (
     <View>
-      {ratingArray?.length > 0 ? (
+      {ratingArray?.length < 0 ? (
         <ScrollView
           className="mx-3 rounded-2xl p-4 bg-[#EEE] overflow-hidden"
           style={{ maxHeight: 400 }}

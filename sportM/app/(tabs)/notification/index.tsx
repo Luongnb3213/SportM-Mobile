@@ -1,12 +1,16 @@
 // app/(tabs)/notifications/index.tsx
 import React, { JSX } from 'react';
 import { View, Text, FlatList, TouchableOpacity, RefreshControl, ActivityIndicator } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons, Feather, MaterialCommunityIcons, AntDesign } from '@expo/vector-icons';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/Avatar';
 import { Card } from '@/components/Card';
 import Button from '@/components/Button';
 import NotificationTester from '@/components/NotificationComponent/NotificationTester';
+import EmptyState from '@/components/ui/EmptyState';
+import HeaderUser from '@/components/ui/HeaderUser';
+import { KeyboardAwareScrollView, KeyboardProvider } from 'react-native-keyboard-controller';
+import { useAppTheme } from '@/styles/theme';
 // If you have a Header component, import it. Otherwise, keep the simple title bar below.
 // import HeaderUser from '@/components/ui/HeaderUser'
 
@@ -25,7 +29,6 @@ export type NotificationPayload = NotificationBase & {
   title?: string;
   message?: string;
   actor?: { id: string; name: string; avatar?: string } | null;
-  target?: { id: string; name?: string } | null; // court, club, match, booking, etc.
   meta?: Record<string, any>;
 };
 
@@ -130,13 +133,6 @@ function NotificationLine({ n, onAction }: { n: NotificationPayload; onAction?: 
             )}
           </Text>
 
-          {n.target?.name ? (
-            <Text className="mt-1 text-[13px]">
-              <Text className="text-muted-foreground">Đối tượng: </Text>
-              <Text className="font-semibold text-primary">{n.target.name}</Text>
-            </Text>
-          ) : null}
-
           {ctas.length > 0 ? (
             <View className="mt-3 flex-row gap-3">
               {ctas.map((cta) => (
@@ -182,8 +178,7 @@ function humanizeType(type: string) {
   return map[type] ?? type.replaceAll('_', ' ');
 }
 
-function getCTAs(type: string): Array<{ key: string; label: string; variant?: 'outline' | 'default' | 'destructive' }>
-{
+function getCTAs(type: string): Array<{ key: string; label?: string; variant?: 'outline' | 'default' | 'destructive' }> {
   switch (type) {
     case 'FRIEND_REQUEST':
       return [
@@ -196,10 +191,7 @@ function getCTAs(type: string): Array<{ key: string; label: string; variant?: 'o
         { key: 'dismiss', label: 'Bỏ qua', variant: 'outline' },
       ];
     case 'PAYMENT_FAILED':
-      return [
-        { key: 'retry', label: 'Thử lại' },
-        { key: 'support', label: 'Hỗ trợ', variant: 'outline' },
-      ];
+      return [];
     case 'BOOKING_CONFIRMED':
       return [{ key: 'view_booking', label: 'Xem đặt sân' }];
     default:
@@ -217,7 +209,6 @@ export const MOCK_STREAM: NotificationPayload[] = [
     title: 'Đặt sân thành công',
     message: 'đã đặt thành công sân Golf Nem Chua lúc 15:00',
     actor: { id: 'u1', name: 'SportM', avatar: 'https://i.pravatar.cc/100?img=5' },
-    target: { id: 'c1', name: 'Sân Golf Nem Chua' },
     createdAt: new Date(Date.now() - 5 * 60 * 1000).toISOString(),
   },
   {
@@ -225,7 +216,6 @@ export const MOCK_STREAM: NotificationPayload[] = [
     type: 'PAYMENT_SUCCESS',
     message: 'Thanh toán #INV-2309 đã được xác nhận',
     actor: { id: 'u2', name: 'Thu ngân' },
-    target: { id: 'inv1', name: 'Hóa đơn INV-2309' },
     createdAt: new Date(Date.now() - 12 * 60 * 1000).toISOString(),
   },
   {
@@ -254,7 +244,6 @@ export const MOCK_STREAM: NotificationPayload[] = [
     type: 'MATCH_INVITE',
     message: 'mời bạn tham gia trận đấu 7:00 AM - Thứ Bảy',
     actor: { id: 'u5', name: 'Mi Mi', avatar: 'https://i.pravatar.cc/100?img=25' },
-    target: { id: 'm1', name: 'Trận friendly cuối tuần' },
     createdAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
   },
   {
@@ -278,6 +267,8 @@ export const MOCK_STREAM: NotificationPayload[] = [
 // Screen
 // ===============
 export default function NotificationsScreen() {
+  const insets = useSafeAreaInsets();
+  const t = useAppTheme();
   const [items, setItems] = React.useState<NotificationPayload[]>([]);
   const [loading, setLoading] = React.useState(true);
   const [refreshing, setRefreshing] = React.useState(false);
@@ -310,6 +301,7 @@ export default function NotificationsScreen() {
   }, []);
 
   const onLoadMore = React.useCallback(() => {
+    return;
     if (loadingMore) return;
     setLoadingMore(true);
     setTimeout(() => {
@@ -330,55 +322,61 @@ export default function NotificationsScreen() {
   };
 
   return (
-    <SafeAreaView className="flex-1">
-      {/* Top bar */}
-      <View className="flex-row items-center justify-start px-4 py-3 border-b border-border bg-background">
-        <TouchableOpacity className="pr-2">
-          <Ionicons name="chevron-back" size={20} />
-        </TouchableOpacity>
-        <View className="flex-row items-center gap-2">
-          <Text className="text-base font-semibold text-primary">Thông báo</Text>
-        </View>
-        <View className="w-5" />
-      </View>
-
-      {/* List */}
-      <Card className="m-4 mx-0 rounded-2xl overflow-hidden bg-background" style={{ borderWidth: 0 }}>
-        {loading ? (
-          Array.from({ length: 6 }).map((_, i) => (
-            <View key={i} className="px-4 py-4 border-b border-border">
-              <View className="h-4 w-40 bg-muted rounded mb-2" />
-              <View className="h-3 w-28 bg-muted rounded" />
+    <KeyboardProvider>
+      <SafeAreaView className="flex-1 mb">
+          {/* Top bar */}
+          <HeaderUser />
+          <View className="flex-row items-center justify-start px-4 py-3 border-b border-border bg-background">
+            <TouchableOpacity className="pr-2">
+              <Ionicons name="chevron-back" size={20} />
+            </TouchableOpacity>
+            <View className="flex-row items-center gap-2">
+              <Text className="text-base font-semibold text-primary">Thông báo</Text>
             </View>
-          ))
-        ) : items.length === 0 ? (
-          <View className="px-4 py-10 items-center">
-            <Text className="text-muted-foreground">Không có thông báo</Text>
           </View>
-        ) : (
-          <FlatList
-            data={items}
-            keyExtractor={(it) => it.id + Date.now().toString()}
-            renderItem={({ item }) => (
-              <NotificationLine n={item} onAction={onAction} />
-            )}
-            ItemSeparatorComponent={() => <View className="border-b border-border" />}
-            refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
-            onEndReachedThreshold={0.3}
-            onEndReached={onLoadMore}
-            ListFooterComponent={
-              loadingMore ? (
-                <View className="items-center py-3">
-                  <View className="px-3 py-2 flex-row items-center">
-                    <ActivityIndicator />
-                    <Text className="ml-2">Đang tải...</Text>
-                  </View>
+
+          {/* List */}
+          <Card className="m-4 mx-0 rounded-2xl overflow-hidden bg-background" style={{ borderWidth: 0 }}>
+            {loading ? (
+              Array.from({ length: 6 }).map((_, i) => (
+                <View key={i} className="px-4 py-4 border-b border-border">
+                  <View className="h-4 w-40 bg-muted rounded mb-2" />
+                  <View className="h-3 w-28 bg-muted rounded" />
                 </View>
-              ) : null
-            }
-          />
-        )}
-      </Card>
-    </SafeAreaView>
+              ))
+            ) : items.length === 0 ? (
+              <View className="px-4 py-10 items-center">
+                <EmptyState
+                  icon="golf-outline"
+                  title="Chưa có thông báo nào"
+                  description="Hiện chưa có thông báo nào."
+                />
+              </View>
+            ) : (
+              <FlatList
+                data={items}
+                keyExtractor={(it) => it.id + Date.now().toString()}
+                renderItem={({ item }) => (
+                  <NotificationLine n={item} onAction={onAction} />
+                )}
+                ItemSeparatorComponent={() => <View className="border-b border-border" />}
+                refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+                onEndReachedThreshold={0.3}
+                onEndReached={onLoadMore}
+                ListFooterComponent={
+                  loadingMore ? (
+                    <View className="items-center py-3">
+                      <View className="px-3 py-2 flex-row items-center">
+                        <ActivityIndicator />
+                        <Text className="ml-2">Đang tải...</Text>
+                      </View>
+                    </View>
+                  ) : null
+                }
+              />
+            )}
+          </Card>
+      </SafeAreaView>
+    </KeyboardProvider>
   );
 }

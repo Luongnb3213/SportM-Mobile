@@ -27,7 +27,7 @@ const FriendPending = () => {
         setPending(data.data.items);
         setHasMore(data.data.items.length > 0);
       } catch (error) {
-        console.error(error);
+        console.log(error);
       } finally {
         setInitialLoading(false);
       }
@@ -48,7 +48,7 @@ const FriendPending = () => {
         text2: `Bạn và ${u.from.fullName} đã trở thành bạn bè.`,
       });
     } catch (error) {
-      console.error(error);
+      console.log(error);
       Toast.show({
         type: 'error',
         text1: 'Lỗi',
@@ -72,7 +72,7 @@ const FriendPending = () => {
         text2: `Bạn đã từ chối lời mời kết bạn từ ${u.from.fullName}.`,
       });
     } catch (error) {
-      console.error(error);
+      console.log(error);
       Toast.show({
         type: 'error',
         text1: 'Lỗi',
@@ -97,7 +97,7 @@ const FriendPending = () => {
         setHasMore(false);
       }
     } catch (error) {
-      console.error(error);
+      console.log(error);
       Toast.show({
         type: 'error',
         text1: 'Lỗi',

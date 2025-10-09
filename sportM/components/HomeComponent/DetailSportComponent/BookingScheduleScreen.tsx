@@ -13,6 +13,7 @@ type DayItem = {
   day: string;       // "05"
   month: number;     // 1..12
   weekdayShort: string; // "T2".."T7" | "CN"
+
 };
 
 type Slot = { id: string; label: string };
@@ -37,7 +38,8 @@ export default function BookingScheduleScreen({
   selected,
   onToggle,
   pricePerHour,
-  sportType
+  sportType,
+  lockedSlot
 }: {
   days: DayItem[];
   activeDayId: string;
@@ -49,8 +51,8 @@ export default function BookingScheduleScreen({
   onToggle: (courtId: 'am' | 'pm', slotId: string) => void;
   pricePerHour: number;
   sportType?: { typeName?: string };
+  lockedSlot: Set<string>
 }) {
-  const locked = new Set<string>(); // map từ API nếu có
   const activeDay = useMemo(() => days.find(d => d.id === activeDayId) || days[0], [days, activeDayId]);
 
   return (
@@ -98,19 +100,19 @@ export default function BookingScheduleScreen({
       {/* Grid – chọn theo cột AM/PM */}
       <Card className="m-3 rounded-2xl" style={{ borderWidth: 0 }}>
         <CardContent className="px-3 py-3">
-            <View className="px-4 pr-0">
-              <View className="flex-row">
-                <TimeColumn slots={slots} />
-                <CourtsGrid
-                  courts={courts}
-                  slots={slots}
-                  selected={selected}
-                  locked={locked}
-                  onToggle={(courtId, slotId) => onToggle(courtId as 'am'|'pm', slotId)}
-                  iconPack={MaterialCommunityIcons}
-                />
-              </View>
+          <View className="px-4 pr-0">
+            <View className="flex-row">
+              <TimeColumn slots={slots} />
+              <CourtsGrid
+                courts={courts}
+                slots={slots}
+                selected={selected}
+                locked={lockedSlot}
+                onToggle={(courtId, slotId) => onToggle(courtId as 'am' | 'pm', slotId)}
+                iconPack={MaterialCommunityIcons}
+              />
             </View>
+          </View>
         </CardContent>
       </Card>
     </View>

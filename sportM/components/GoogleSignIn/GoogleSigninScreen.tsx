@@ -23,7 +23,7 @@ export default function GoogleSigninScreen() {
       await GoogleSignin.signOut();
       console.log("User signed out!");
     } catch (error) {
-      console.error("Sign out error:", error);
+      console.log("Sign out error:", error);
     }
   };
 

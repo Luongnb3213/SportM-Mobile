@@ -5,8 +5,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { Card, CardHeader, CardContent, CardFooter } from '@/components/Card';
 import { Button } from '@/components/Button';
 import { router } from 'expo-router';
-import RatingCourtCard from '@/components/OwnerComponent/RatingCourtCard';
 import InfoSport from './InfoSport';
+import RatingCard from './RatingCard';
 
 type TabItem = { key: string; label: string };
 
@@ -74,7 +74,7 @@ export default function DetailInfoCard({
       <CardContent className="px-3 py-4 bg-white">
         {active === 'review' && (
           <View>
-            <RatingCourtCard courtID={courtID} /> 
+            <RatingCard courtID={courtID} /> 
           </View>
         )}
 

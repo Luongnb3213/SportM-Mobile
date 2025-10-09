@@ -71,7 +71,6 @@ export default function HomeScreen() {
           extraKeyboardSpace={0}
         >
           <View style={{ backgroundColor: t.background }}>
-            <NotificationTester />
             <View className="bg-background px-4">
               <HeaderUser />
             </View>

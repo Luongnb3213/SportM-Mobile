@@ -36,7 +36,7 @@ type CourtDetail = {
   };
 };
 
-type Slot = { id: string; label: string };
+type Slot = { id: string; label: string, locked: boolean };
 
 const fmtDateISO = (d: Date) => d.toISOString().slice(0, 10);
 
@@ -77,7 +77,7 @@ export default function bookingSchedule() {
   const [selectedByDay, setSelectedByDay] = useState<Record<string, Set<string>>>({});
 
   // invited
-   type Friend = { userId: string; fullName: string; avatarUrl?: string };
+  type Friend = { userId: string; fullName: string; avatarUrl?: string };
   const [invited, setInvited] = useState<Friend[]>([]);
   const invitedIds = useMemo(() => invited.map(f => f.userId), [invited]);
 
@@ -124,9 +124,8 @@ export default function bookingSchedule() {
 
   // fetch slots per day (mock or real)
   const fetchSlotsForDate = useCallback(async (date: string) => {
-    console.log('fetchSlotsForDate', date);
     const { data } = await useAxios.get(`/courts/${courtID}/slots`, { params: { date } });
-    const slots: Slot[] = data.data.map((x:any) => ({ id: x.id, label: `${x.start} - ${x.end}` }));
+    const slots: Slot[] = data.data.map((x: any) => ({ id: x.id, label: `${x.start} - ${x.end}`, locked: x.locked, }));
     setSlotsByDay(prev => ({ ...prev, [date]: slots }));
     setSelectedByDay(prev => prev[date] ? prev : ({ ...prev, [date]: new Set() }));
   }, [useAxios, courtID]);
@@ -205,17 +204,28 @@ export default function bookingSchedule() {
       courtId: court?.courtId,
       selections,               // tách rõ AM/PM cho BE
       inviteeIds: invitedIds,
-      note: note.trim(),
+      notes: note.trim(),
     };
 
     console.log('submitting booking:', JSON.stringify(body));
 
     try {
-      await useAxios.post('/bookings', body);
+     const {data } =  await useAxios.post('/bookings', body);
+      router.push({
+         pathname: '/(tabs)/home/DetailSport/BookingSuccessScreen',
+         params: {
+           orderId: data.data.orderId,
+           createdAt: data.data.createdAt
+         }
+      })
       Toast.show({ type: 'success', text1: 'Đặt lịch thành công!' });
     } catch (e: any) {
-      console.error('Booking error', e);
-      Toast.show({ type: 'error', text1: 'Đặt lịch thất bại', text2: 'Vui lòng thử lại' });
+      console.log('Booking error', JSON.stringify(e));
+      if (e.status == 409) {
+        Toast.show({ type: 'error', text1: 'Đặt lịch thất bại', text2: 'Một hoặc nhiều khung giờ bạn chọn đã được đặt.' });
+      } else {
+        Toast.show({ type: 'error', text1: 'Đặt lịch thất bại', text2: 'Vui lòng thử lại' });
+      }
     }
   };
 
@@ -313,6 +323,12 @@ export default function bookingSchedule() {
             onToggle={onToggleSlot}
             pricePerHour={court?.pricePerHour ?? 0}
             sportType={court?.sportType}
+            lockedSlot={new Set(
+              (slotsByDay[activeDayId] || [])
+                .filter(x => x.locked)
+                .map(x => [`am_${x.id}`, `pm_${x.id}`])
+                .flat()
+            )}
           />
 
           {/* Chi tiết giờ đã chọn: nhóm AM/PM */}
