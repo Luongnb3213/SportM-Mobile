@@ -7,9 +7,9 @@
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:306325042935:android:41c3f86d7bc00c3eef45f2",
+        "mobilesdk_app_id": "1:306325042935:android:030e7d08039cd3faef45f2",
         "android_client_info": {
-          "package_name": "com.sportm.app"
+          "package_name": "com.choai.sportM"
         }
       },
       "oauth_client": [],
