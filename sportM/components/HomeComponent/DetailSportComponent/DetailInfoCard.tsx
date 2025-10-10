@@ -7,6 +7,7 @@ import { Button } from '@/components/Button';
 import { router } from 'expo-router';
 import InfoSport from './InfoSport';
 import RatingCard from './RatingCard';
+import { useAuth } from '@/providers/AuthProvider';
 
 type TabItem = { key: string; label: string };
 
@@ -43,7 +44,7 @@ export default function DetailInfoCard({
   court?: CourtDTO;
 }) {
   const [active, setActive] = useState('info');
-
+  const { user } = useAuth();
   return (
     <Card className="mx-3 my-3 overflow-hidden rounded-2xl ">
       {/* HEADER tabs */}
@@ -74,7 +75,7 @@ export default function DetailInfoCard({
       <CardContent className="px-3 py-4 bg-white">
         {active === 'review' && (
           <View>
-            <RatingCard courtID={courtID} /> 
+            <RatingCard courtID={courtID} title={court?.courtName} currentUserId={user?.userId} />
           </View>
         )}
 

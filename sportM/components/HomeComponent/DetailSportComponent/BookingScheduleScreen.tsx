@@ -1,6 +1,6 @@
 // BookingScheduleScreen.tsx
 import React, { useMemo } from 'react';
-import { View, Text, FlatList, ScrollView } from 'react-native';
+import { View, Text, FlatList, ScrollView, ActivityIndicator } from 'react-native'; // Import ActivityIndicator
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Card, CardContent } from '@/components/Card';
 import TimeColumn from './TimeColumn';
@@ -16,7 +16,8 @@ type DayItem = {
 
 };
 
-type Slot = { id: string; label: string };
+// Slot now has an ID like '0100-0200'
+type Slot = { id: string; label: string }; 
 
 const courts = [
   { id: 'am', name: 'AM' },
@@ -34,24 +35,26 @@ export default function BookingScheduleScreen({
   days,
   activeDayId,
   setActiveDayId,
-  slots,
+  timeSlots, // Now receives a single set of generic time slots
   selected,
   onToggle,
   pricePerHour,
   sportType,
-  lockedSlot
+  lockedSlots,
+  loadingLockedSlots // Receive loading state
 }: {
   days: DayItem[];
   activeDayId: string;
   setActiveDayId: (id: string) => void;
-  slots: Slot[];
-  // selected chứa key dạng "am_t0" | "pm_t4"...
+    timeSlots: Slot[]; // Generic time slots for display
+    // selected chứa key dạng "am_slot-0700-0800" | "pm_slot-0700-0800"...
   selected: Set<string>;
   // toggle theo cột
-  onToggle: (courtId: 'am' | 'pm', slotId: string) => void;
+    onToggle: (courtId: 'am' | 'pm', timeSlotId: string) => void; // timeSlotId is like '0700-0800'
   pricePerHour: number;
   sportType?: { typeName?: string };
-  lockedSlot: Set<string>
+    lockedSlots: Set<string>;
+    loadingLockedSlots: boolean; // Added
 }) {
   const activeDay = useMemo(() => days.find(d => d.id === activeDayId) || days[0], [days, activeDayId]);
 
@@ -101,17 +104,25 @@ export default function BookingScheduleScreen({
       <Card className="m-3 rounded-2xl" style={{ borderWidth: 0 }}>
         <CardContent className="px-3 py-3">
           <View className="px-4 pr-0">
-            <View className="flex-row">
-              <TimeColumn slots={slots} />
-              <CourtsGrid
-                courts={courts}
-                slots={slots}
-                selected={selected}
-                locked={lockedSlot}
-                onToggle={(courtId, slotId) => onToggle(courtId as 'am' | 'pm', slotId)}
-                iconPack={MaterialCommunityIcons}
-              />
-            </View>
+            {loadingLockedSlots ? (
+              <View className="items-center justify-center py-10">
+                <ActivityIndicator size="large" color="#0000ff" />
+                <Text className="mt-2 text-gray-500">Đang tải lịch trống...</Text>
+              </View>
+            ) : (
+                <View className="flex-row">
+                  {/* TimeColumn now only needs the generic time slots */}
+                  <TimeColumn timeSlots={timeSlots} />
+                  <CourtsGrid
+                    courts={courts}
+                    timeSlots={timeSlots} // Pass generic time slots to CourtsGrid
+                    selected={selected}
+                    locked={lockedSlots}
+                    onToggle={(courtId, timeSlotId) => onToggle(courtId as 'am' | 'pm', timeSlotId)}
+                    iconPack={MaterialCommunityIcons}
+                  />
+                </View>
+            )}
           </View>
         </CardContent>
       </Card>

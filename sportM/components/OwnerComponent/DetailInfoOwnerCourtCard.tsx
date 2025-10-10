@@ -74,7 +74,7 @@ export default function DetailInfoOwnerCourtCard({
       <CardContent className="px-3 py-4 bg-white">
         {active === 'review' && (
           <View>
-            <RatingCourtCard courtID={courtID} />
+            <RatingCourtCard courtID={courtID} title={court?.courtName} />
           </View>
         )}
 

@@ -34,30 +34,39 @@ import { NearByYardSkeleton } from '@/components/Skeleton/NearByYardSkeleton';
 import { GolfCourseCardSkeleton } from '@/components/Skeleton/GolfCourseCardSkeleton';
 import { socket } from '@/lib/socket';
 import NotificationTester from '@/components/NotificationComponent/NotificationTester';
+import { useAxios } from '@/lib/api';
+import EmptyState from '@/components/ui/EmptyState';
+import { formatPriceVND } from '@/lib/utils';
 
 export default function HomeScreen() {
   const t = useAppTheme();
   const [guest, setGuest] = useState(2);
   const [loc, setLoc] = useState('');
   const insets = useSafeAreaInsets();
-  const [bookingCourt, setBookingCourt] = useState([])
+  const [bookingCourt, setBookingCourt] = useState<any[]>();
 
   useEffect(() => {
     (async () => {
       // fetch data from API
+      try {
+        const { data } = await useAxios.get('/courts/my-booked-courts?page=1&limit=12')
+        setBookingCourt(data.data.items);
+      } catch (error) {
+        console.log('Error fetching booked courts:', error);
+      }
     })()
   }, [])
 
   useEffect(() => {
-(async () => {
-    await socket.connect();
+    (async () => {
+      await socket.connect();
 
-    const onConnect = () => console.log('✅ connected', socket.socket?.id);
-    const onDisconnect = (r:any) => console.log('🔌 disconnected', r);
+      const onConnect = () => console.log('✅ connected', socket.socket?.id);
+      const onDisconnect = (r: any) => console.log('🔌 disconnected', r);
 
-    socket.on('connect', onConnect);
-    socket.on('disconnect', onDisconnect);
-  })();
+      socket.on('connect', onConnect);
+      socket.on('disconnect', onDisconnect);
+    })();
   }, [])
 
 
@@ -98,37 +107,33 @@ export default function HomeScreen() {
                 </TouchableOpacity>
               </View>
 
-
-              {bookingCourt ? (
-                <>
-                  <GolfCourseCard
-                    title="Bíc cờ bôn"
-                    pricePerHour="1.000.000/ giờ"
-                    rating={4.5}
-                    imageUri="https://images.unsplash.com/photo-1502877338535-766e1452684a?q=80&w=1600"
-                    onPress={() => {
-                      // navigate to detail screen
-                      // navigation.navigate('DetailSport');
-                      // router.push('/home/booking');
-                      router.push({
-                        pathname: '/(tabs)/home/DetailSport',
-                        params: { courtID: '12345' },
-                      });
-                    }}
+              {Array.isArray(bookingCourt) ? (
+                bookingCourt?.length === 0 ? (
+                  <EmptyState
+                    icon="people-outline"
+                    title="Không có sân nào được đặt"
+                    description="Hiện chưa có sân nào được đặt."
                   />
-                  <GolfCourseCard
-                    title="Bíc cờ bôn"
-                    pricePerHour="1.000.000/ giờ"
-                    rating={4.5}
-                    imageUri="https://images.unsplash.com/photo-1502877338535-766e1452684a?q=80&w=1600"
-                  />
-                </>
+                ) : (
+                  bookingCourt?.map((court: any) => (
+                    <GolfCourseCard
+                      key={court?.courtId}
+                      title={court?.courtName}
+                      pricePerHour={formatPriceVND(court?.pricePerHour)}
+                      rating={court?.avgRating || 0}
+                      imageUri={court?.courtImages[0] || 'https://sportm.vn/static/meda/san1.2f6f5f5f.jpg'}
+                      onPress={() =>
+                        router.push({
+                          pathname: '/(tabs)/home/DetailSport',
+                          params: { courtID: court?.courtId },
+                        })
+                      }
+                    />
+                  ))
+                  )
               ) : (
-                Array.from({ length: 3 }).map((_, idx) => (
-                  <GolfCourseCardSkeleton key={idx} />
-                ))
+                  Array.from({ length: 3 }).map((_, idx) => <GolfCourseCardSkeleton key={idx} />)
               )}
-
               <View className="items-center py-3">
                 <Button onPress={() => {
                   router.push('/(tabs)/home/booking');

@@ -172,7 +172,7 @@ export default function BookingOwnerScreen() {
     const handleCompleteBookingWithPayment = React.useCallback(async (bookingId: string, paymentMethod: 'CASH' | 'BANK_TRANSFER') => {
         setProcessingBookingId(bookingId);
         try {
-            await useAxios.patch(`/owner/bookings/${bookingId}/complete`, { PaymentMethod: paymentMethod });
+            await useAxios.patch(`/owner/bookings/${bookingId}/complete`, { finalPaymentMethod: paymentMethod });
             Toast.show({
                 type: 'success',
                 text1: 'Hoàn thành đặt sân thành công!',
@@ -246,6 +246,15 @@ export default function BookingOwnerScreen() {
                             className="flex-1 text-lg text-black px-2"
                             returnKeyType="search"
                         />
+                    </View>
+                    <View className="flex-row justify-start">
+                        <TouchableOpacity
+                            onPress={() => router.back()}
+                            className="flex-row items-center gap-2 py-2"
+                        >
+                            <Ionicons name="chevron-back" size={22} />
+                            <Text className="text-[15px] text-primary font-medium">Trở về trang trước</Text>
+                        </TouchableOpacity>
                     </View>
                 </View>
 

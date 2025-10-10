@@ -1,15 +1,17 @@
 // components/HomeComponent/DetailSportComponent/Comment/CommentsList.tsx
 import React from 'react';
-import { View, Text } from 'react-native';
+import { View } from 'react-native';
 import { Comment, CommentItem } from './CommentItem';
 import EmptyState from '@/components/ui/EmptyState';
 
 type ListProps = {
   comments: Comment[];
-  hideButton?: boolean;
+  currentUserId?: string;
+  onDeleted?: (id: string) => void;
+  onUpdated?: (id: string, patch: Partial<Pick<Comment, 'content' | 'star'>>) => void;
 };
 
-export const CommentsList: React.FC<ListProps> = ({ comments, hideButton = false }) => {
+export const CommentsList: React.FC<ListProps> = ({ comments, currentUserId, onDeleted, onUpdated }) => {
   if (!comments || comments.length === 0) {
     return (
       <View className="py-3">
@@ -24,9 +26,18 @@ export const CommentsList: React.FC<ListProps> = ({ comments, hideButton = false
 
   return (
     <View className="py-2">
-      {comments.map((c) => (
-        <CommentItem hideButton={hideButton} key={c.id} data={c} />
-      ))}
+      {comments.map((c) => {
+        const isOwner = currentUserId ? currentUserId === c.ownerId : false;
+        return (
+          <CommentItem
+            key={c.id}
+            data={c}
+            hideButton={!isOwner}
+            onDeleted={onDeleted}
+            onUpdated={onUpdated}
+          />
+        );
+      })}
     </View>
   );
 };

@@ -1,103 +1,166 @@
-// components/RatingCourtCard.tsx
-import React, { useEffect, useMemo, useState } from 'react';
-import { View, Text, TouchableOpacity, ScrollView, ActivityIndicator } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-
-import { Card, CardContent, CardFooter } from '@/components/Card';
+// components/RatingCard.tsx
+import React, { useEffect, useMemo, useState, useCallback } from 'react';
+import { View, Text, TouchableOpacity, TextInput, ScrollView, ActivityIndicator } from 'react-native';
 import Button from '@/components/Button';
 import Toast from 'react-native-toast-message';
 import { useAxios } from '@/lib/api';
+import { getErrorMessage } from '@/lib/utils';
 import { CommentsList } from '../HomeComponent/DetailSportComponent/Comment/CommentsList';
-import { Comment } from '../HomeComponent/DetailSportComponent/Comment/CommentItem';
-import CommentsSkeleton from '@/components/Skeleton/CommentsSkeleton';
 
-// fake data giữ nguyên/hoặc thêm nếu muốn
-const allFakeComments: Comment[] = [
-  { id: 'c1', authorName: 'Nguyễn Văn A', avatarUri: 'https://i.pravatar.cc/100?img=1', content: 'Sân đẹp, rộng rãi lắm mọi người!', createdAt: new Date(Date.now() - 1000 * 60 * 2) },
-  { id: 'c2', authorName: 'Trần Thị B', avatarUri: 'https://i.pravatar.cc/100?img=5', content: 'Mình thấy đèn hơi tối một chút.', createdAt: new Date(Date.now() - 1000 * 60 * 60 * 3) },
-  { id: 'c3', authorName: 'Lê Văn C', content: 'Anh chủ sân nhiệt tình, sẽ quay lại lần sau.', createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2) },
-  { id: 'c4', authorName: 'Trần Thị E', avatarUri: 'https://i.pravatar.cc/100?img=5', content: 'Mình thấy đèn hơi tối một chút.', createdAt: new Date(Date.now() - 1000 * 60 * 60 * 3) },
-  { id: 'c5', authorName: 'Lê Văn F', content: 'Anh chủ sân nhiệt tình, sẽ quay lại lần sau.', createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2) },
-  { id: 'c6', authorName: 'Phạm Văn G', content: 'Bãi xe rộng, tiện lợi.', createdAt: new Date(Date.now() - 1000 * 60 * 30) },
-  { id: 'c7', authorName: 'Đỗ Thị H', content: 'Phòng thay đồ sạch.', createdAt: new Date(Date.now() - 1000 * 60 * 90) },
-];
+type ApiRating = {
+  ratingId: string;
+  content: string;
+  star: number;
+  createdAt: string;
+  ownerId: string;
+  courtId: string;
+};
+
+type Comment = {
+  id: string;
+  authorName: string;
+  avatarUri?: string;
+  content: string;
+  createdAt: string;
+  ownerId: string;
+  star: number;
+};
+
+type ApiMeta = {
+  totalItems: number;
+  itemCount: number;
+  itemsPerPage: number;
+  totalPages: number;
+  currentPage: number;
+};
 
 export default function RatingCourtCard({
-  title = 'Đánh giá sân',
+  title = 'Đánh giá',
+  onChange,
   courtID,
+  currentUserId,
+  initialLimit = 10, // bạn có thể đổi mặc định
 }: {
   title?: string;
+    onChange?: (rating: number, note: string) => void;
   courtID: string;
+    currentUserId?: string;
+    initialLimit?: number;
 }) {
-  const [comments, setComments] = useState<Comment[]>([]);
-  const [initialLoading, setInitialLoading] = useState(true);
-  const [loadingMore, setLoadingMore] = useState(false);
+  // form create
+  const [rating, setRating] = useState<number>(3);
+  const [note, setNote] = useState<string>('');
+  const [submitting, setSubmitting] = useState<boolean>(false);
 
-  // phân trang đơn giản
-  const pageSize = 3;
+  // list state
+  const [items, setItems] = useState<Comment[]>([]);
   const [page, setPage] = useState(1);
-  const total = allFakeComments.length;
-  const hasMore = comments.length < total;
+  const [limit] = useState(initialLimit);
+  const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
 
+  const mapRatings = (raw: ApiRating[]): Comment[] =>
+    raw.map((r) => ({
+      id: r.ratingId,
+      authorName: 'Người dùng', // nếu backend trả tên thì map vào đây
+      avatarUri: undefined,
+      content: r.content,
+      createdAt: r.createdAt,
+      ownerId: r.ownerId,
+      star: r.star,
+    }));
+
+  const fetchPage = useCallback(
+    async (targetPage: number, append = false) => {
+      const isFirstPage = targetPage === 1 && !append;
+      if (isFirstPage) setLoading(true);
+      else setLoadingMore(true);
+
+      try {
+        const { data } = await useAxios.get(`/rating/${courtID}`, {
+          params: { page: targetPage, limit },
+        });
+
+        const raw: ApiRating[] = data?.data?.items ?? [];
+        const meta: ApiMeta | undefined = data?.data?.meta;
+        const mapped = mapRatings(raw);
+
+        setItems((prev) => (append ? [...prev, ...mapped] : mapped));
+
+        // tính hasMore từ meta
+        if (meta) {
+          setHasMore(meta.currentPage < meta.totalPages);
+        } else {
+          // fallback: nếu meta không có, dựa vào số lượng trả về
+          setHasMore(mapped.length === limit);
+        }
+        setPage(targetPage);
+      } catch (err) {
+        console.log('Error fetching ratings:', err);
+        if (!append) setItems([]);
+        setHasMore(false);
+      } finally {
+        setLoading(false);
+        setLoadingMore(false);
+      }
+    },
+    [courtID, limit]
+  );
+
+  // initial load
   useEffect(() => {
-    // fake gọi API lần đầu
-    setInitialLoading(true);
-    const t = setTimeout(() => {
-      const first = allFakeComments.slice(0, pageSize);
-      setComments(first);
-      setInitialLoading(false);
-      setPage(1);
-    }, 700);
-    return () => clearTimeout(t);
-  }, [courtID]);
+    fetchPage(1, false);
+  }, [fetchPage]);
 
-  const handleLoadMore = () => {
-    if (!hasMore || loadingMore) return;
-    setLoadingMore(true);
-    // fake API: delay 600ms
-    setTimeout(() => {
-      const nextPage = page + 1;
-      const nextChunk = allFakeComments.slice(0, nextPage * pageSize);
-      setComments(nextChunk);
-      setPage(nextPage);
-      setLoadingMore(false);
-    }, 600);
+  const loadMore = () => {
+    if (loadingMore || !hasMore) return;
+    fetchPage(page + 1, true);
   };
 
   return (
     <View>
+      {/* LIST */}
       <ScrollView
         className="mx-3 rounded-2xl p-4 bg-[#EEE] overflow-hidden"
         style={{ maxHeight: 400 }}
-        contentContainerStyle={{ paddingBottom: 16 }}
+        contentContainerStyle={{ paddingBottom: 12 }}
         nestedScrollEnabled
         showsVerticalScrollIndicator={false}
       >
         <Text className="text-xl font-extrabold mb-2 text-primary">{title}</Text>
 
-        {initialLoading ? (
-          <CommentsSkeleton rows={4} />
+        {loading ? (
+          <View className="py-6 items-center">
+            <ActivityIndicator />
+            <Text className="mt-2 text-sm text-muted-foreground">Đang tải đánh giá...</Text>
+          </View>
         ) : (
           <>
-            <CommentsList comments={comments} hideButton={true} />
-            {/* nút xem thêm */}
+              <CommentsList
+                comments={items}
+                currentUserId={currentUserId}
+              />
+
+              {/* Footer: Load more */}
             {hasMore ? (
-              <View className="items-center py-3 mt-1">
-                <Button variant="ghost" className="px-3 py-2" onPress={handleLoadMore} disabled={loadingMore}>
-                  {loadingMore ? (
-                    <View className="flex-row items-center gap-2">
-                      <ActivityIndicator size="small" />
-                      <Text>Đang tải...</Text>
-                    </View>
-                  ) : (
-                    <>
-                      <Text className="mr-1">Xem thêm</Text>
-                      <Ionicons name="chevron-down" size={16} />
-                    </>
-                  )}
-                </Button>
-              </View>
-            ) : null}
+                <View className="mt-2">
+                  <Button
+                    onPress={loadMore}
+                    disabled={loadingMore}
+                    className="rounded-xl"
+                    textClassName="text-[14px]"
+                  >
+                    {loadingMore ? 'Đang tải...' : 'Xem thêm'}
+                  </Button>
+                </View>
+              ) : (
+                items.length > 0 && (
+                  <Text className="mt-2 text-center text-xs text-muted-foreground">
+                    Đã hiển thị tất cả đánh giá
+                  </Text>
+                )
+              )}
           </>
         )}
       </ScrollView>

@@ -110,3 +110,67 @@ export function transformSlots(slots: RawSlot[]): UiSlot[] {
   // Bỏ field phụ
   return mapped.map(({ id, label, locked }) => ({ id, label, locked }));
 }
+
+export const apiSlotIdToFixedTimeSlotId = (apiTimeSlotId: string): { fixedId: string; type: 'am' | 'pm' } | null => {
+  const [startHourStr] = apiTimeSlotId.split('-');
+  const startHour = parseInt(startHourStr.substring(0, 2), 10);
+
+  let mappedHour = startHour;
+  let type: 'am' | 'pm';
+
+  if (startHour >= 1 && startHour <= 12) {
+    type = 'am';
+    //mappedHour = startHour; // Giữ nguyên giờ sáng
+  } else if (startHour >= 13 && startHour <= 23) {
+    type = 'pm';
+    mappedHour = startHour - 12;
+  } else {
+
+    return null;
+  }
+
+  if (mappedHour >= 1 && mappedHour <= 11) {
+    const mappedStartId = String(mappedHour).padStart(2, '0') + '00';
+    const mappedEndId = String(mappedHour + 1).padStart(2, '0') + '00';
+    return { fixedId: `${mappedStartId}-${mappedEndId}`, type: type };
+  }
+  return null;
+};
+
+export const processApiLockedSlots = (apiSlots: any[]) => {
+  const lockedKeys = new Set<string>();
+  apiSlots.forEach(apiSlot => {
+    if (apiSlot.locked) {
+      const rawTimeSlotId = apiSlot.id.replace('slot-', '');
+
+      const mappingResult = apiSlotIdToFixedTimeSlotId(rawTimeSlotId);
+
+      if (mappingResult) {
+        const { fixedId, type } = mappingResult;
+        lockedKeys.add(`${type}_slot-${fixedId}`);
+      } else {
+        console.warn(`Could not map API slot ID: ${rawTimeSlotId} to a fixed time slot or determine its type.`);
+      }
+    }
+  });
+  return lockedKeys;
+};
+
+export const fixedTimeSlotIdToApiTimeSlotId = (timeSlotId: string, courtId: 'am' | 'pm'): string | null => {
+  const [startHourStr] = timeSlotId.split('-');
+  const startHour = parseInt(startHourStr.substring(0, 2), 10);
+
+  let apiStartHour = startHour;
+
+  if (courtId === 'pm') {
+    apiStartHour = startHour + 12;
+  }
+
+  const apiEndHour = apiStartHour + 1;
+
+
+  const formattedStartId = String(apiStartHour).padStart(2, '0') + '00';
+  const formattedEndId = String(apiEndHour).padStart(2, '0') + '00';
+
+  return `slot-${formattedStartId}-${formattedEndId}`;
+};
