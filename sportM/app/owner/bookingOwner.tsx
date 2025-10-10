@@ -6,6 +6,7 @@ import {
     TextInput,
     ActivityIndicator,
     Platform,
+    Alert
 } from 'react-native';
 import { Feather, Ionicons } from '@expo/vector-icons';
 import { Card } from '@/components/Card';
@@ -168,28 +169,51 @@ export default function BookingOwnerScreen() {
         }
     }, [refreshBookings]);
 
-    const handleCompleteBooking = React.useCallback(async (bookingId: string) => {
+    const handleCompleteBookingWithPayment = React.useCallback(async (bookingId: string, paymentMethod: 'CASH' | 'BANK_TRANSFER') => {
         setProcessingBookingId(bookingId);
-        console.log('Completing booking:', bookingId);
         try {
-            await useAxios.patch(`/owner/bookings/${bookingId}/complete`);
+            await useAxios.patch(`/owner/bookings/${bookingId}/complete`, { PaymentMethod: paymentMethod });
             Toast.show({
                 type: 'success',
                 text1: 'Hoàn thành đặt sân thành công!',
-                text2: `Booking ID #${bookingId} đã được hoàn thành.`,
+                text2: `Booking ID #${bookingId} đã được hoàn thành với phương thức ${paymentMethod}.`,
             });
             refreshBookings();
         } catch (error: any) {
-            console.error('Lỗi khi hoàn thành đặt sân:', error);
+            console.error('Lỗi khi hoàn thành đặt sân:', getErrorMessage(error));
             Toast.show({
                 type: 'error',
                 text1: 'Hoàn thành đặt sân thất bại!',
-                text2:  getErrorMessage(error) || 'Có lỗi xảy ra, vui lòng thử lại.',
+                text2: error.response?.data?.message || 'Có lỗi xảy ra, vui lòng thử lại.',
             });
         } finally {
             setProcessingBookingId(null);
         }
     }, [refreshBookings]);
+
+    const handleInitiateCompleteBooking = React.useCallback((bookingId: string) => {
+        Alert.alert(
+            "Chọn phương thức thanh toán",
+            "Vui lòng chọn phương thức thanh toán cho booking này:",
+            [
+                {
+                    text: "Tiền mặt",
+                    onPress: () => handleCompleteBookingWithPayment(bookingId, 'CASH'),
+                },
+                {
+                    text: "Chuyển khoản",
+                    onPress: () => handleCompleteBookingWithPayment(bookingId, 'BANK_TRANSFER'),
+                },
+                {
+                    text: "Hủy",
+                    style: "cancel",
+                },
+            ],
+            { cancelable: true }
+        );
+    }, [handleCompleteBookingWithPayment]);
+
+
 
 
     if (!courtId) {
@@ -360,7 +384,7 @@ export default function BookingOwnerScreen() {
                                                                 <Button
                                                                     variant="default"
                                                                     className="mt-3 px-3 py-1 rounded-full bg-blue-500"
-                                                                    onPress={() => handleCompleteBooking(item?.orderId)}
+                                                                    onPress={() => handleInitiateCompleteBooking(item?.orderId)}
                                                                     disabled={processingBookingId === item?.orderId}
                                                                 >
                                                                     {processingBookingId === item?.orderId ? (
