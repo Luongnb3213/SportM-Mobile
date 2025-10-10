@@ -78,13 +78,26 @@ const DetailCourt = () => {
           </View>
 
           {/* header back */}
-          <View className="px-4">
+          <View className="px-4 flex flex-row justify-between items-center">
             <TouchableOpacity
               className="flex-row items-center gap-2 py-2"
               onPress={() => router.back()}
             >
               <Ionicons name="chevron-back" size={20} />
               <Text className="text-base text-primary font-medium">Trở về trang trước</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              className="flex-row items-center gap-2 py-2"
+              onPress={() => router.push({
+                pathname: '/owner/bookingOwner',
+                params: {
+                  courtId: courtID,
+                  courtName: court?.courtName?.toUpperCase?.() || ''
+                },
+              })}
+            >
+              <Text className="text-base text-primary font-medium">Xem lịch đã được đặt</Text>
+              <Ionicons name="chevron-back" style={{ transform: [{ rotateY: '180deg' }] }} size={20} />
             </TouchableOpacity>
           </View>
 

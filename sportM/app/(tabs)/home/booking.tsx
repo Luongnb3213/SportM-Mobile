@@ -87,7 +87,7 @@ export default function BookingsScreen() {
     ctrlRef.current?.abort();
     const ctrl = new AbortController();
     ctrlRef.current = ctrl;
-    
+
     (async () => {
       try {
         setLoadingInitial(true);
@@ -284,7 +284,7 @@ export default function BookingsScreen() {
                               >
                                 {b?.court?.address || '—'}
                               </Text>
-                               <Text
+                              <Text
                                 numberOfLines={1}
                                 className="mt-2 text-[12px] text-muted-foreground text-right"
                               >
