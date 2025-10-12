@@ -156,7 +156,7 @@ export const processApiLockedSlots = (apiSlots: any[]) => {
   return lockedKeys;
 };
 
-export const fixedTimeSlotIdToApiTimeSlotId = (timeSlotId: string, courtId: 'am' | 'pm'): string | null => {
+export function fixedTimeSlotIdToApiTimeSlotId(timeSlotId: string, courtId: 'am' | 'pm'): string | null {
   const [startHourStr] = timeSlotId.split('-');
   const startHour = parseInt(startHourStr.substring(0, 2), 10);
 
@@ -174,3 +174,4 @@ export const fixedTimeSlotIdToApiTimeSlotId = (timeSlotId: string, courtId: 'am'
 
   return `slot-${formattedStartId}-${formattedEndId}`;
 };
+
