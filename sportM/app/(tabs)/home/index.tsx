@@ -37,11 +37,10 @@ import NotificationTester from '@/components/NotificationComponent/NotificationT
 import { useAxios } from '@/lib/api';
 import EmptyState from '@/components/ui/EmptyState';
 import { formatPriceVND } from '@/lib/utils';
+import AdsHomeSection from '@/components/HomeComponent/AdsHomeSection';
 
 export default function HomeScreen() {
   const t = useAppTheme();
-  const [guest, setGuest] = useState(2);
-  const [loc, setLoc] = useState('');
   const insets = useSafeAreaInsets();
   const [bookingCourt, setBookingCourt] = useState<any[]>();
 
@@ -95,6 +94,31 @@ export default function HomeScreen() {
                 <Text className="text-black text-lg">Nhập địa điểm</Text>
               </View>
             </TouchableOpacity>
+
+
+            <View className="gap-5 px-2 mt-4 flex-col">
+              <View className="flex-row items-center justify-between px-4 bg-white">
+                <Text className="text-3xl font-bold leading-snug text-primary">Sự kiện nổi bật</Text>
+                <TouchableOpacity onPress={() => {
+                  router.push('/(tabs)/home/ads-page');
+                }} className="flex-row items-center">
+                  <Text className="text-base mr-1">Xem tất cả</Text>
+                  <Ionicons name="chevron-forward" size={18} color="black" />
+                </TouchableOpacity>
+              </View>
+
+              <AdsHomeSection />
+
+              <View className="items-center py-3">
+                <Button onPress={() => {
+                  router.push('/(tabs)/home/ads-page');
+                }} variant="ghost" className="px-3 py-2">
+                  <Text className="mr-1">Xem thêm</Text>
+                  <Ionicons name="chevron-down" size={16} />
+                </Button>
+              </View>
+            </View>
+
 
             <View className="gap-5 px-4 mt-4 flex-col">
               <View className="flex-row items-center justify-between px-4 bg-white">
