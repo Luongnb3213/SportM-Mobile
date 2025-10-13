@@ -3,12 +3,13 @@ import { Dimensions, View, Text, Image, TouchableOpacity, ActivityIndicator } fr
 import Carousel from 'react-native-reanimated-carousel';
 import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 import { KeyboardProvider } from 'react-native-keyboard-controller';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import FriendCardSkeleton from '@/components/Skeleton/FriendCardSkeleton';
 import { useAxios } from '@/lib/api';
 import EmptyState from '@/components/ui/EmptyState';
 import Toast from 'react-native-toast-message';
+import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
 
 const { height: SCREEN_HEIGHT, width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -21,6 +22,8 @@ type FeedItem = {
   userId: string
 };
 
+const FLOAT_GAP = 12;
+
 export default function FeedScreen() {
   const [items, setItems] = useState<FeedItem[]>([]);
   const [initialLoading, setInitialLoading] = useState(true);
@@ -29,6 +32,10 @@ export default function FeedScreen() {
 
   const carouselRef = useRef<any>(null);
   const [activeIndex, setActiveIndex] = useState(0);
+
+  const insets = useSafeAreaInsets();
+  const tabBarHeight = useBottomTabBarHeight();
+  const bottomGap = Math.max(insets.bottom, 8) + tabBarHeight + FLOAT_GAP;
 
   // Fake seed data
   useEffect(() => {
@@ -135,7 +142,7 @@ export default function FeedScreen() {
           </TouchableOpacity>
         </View>
 
-        <View className="flex-1">
+        <View className="flex-1" style={{ paddingBottom: bottomGap + 80 }}>
           {items.length === 0 ? (
             <EmptyState
               icon="people-outline"
@@ -156,11 +163,11 @@ export default function FeedScreen() {
               renderItem={({ item }) => (
                 <View className="w-full h-full relative bg-white">
                   <View
-                    style={{ marginHorizontal: 15, height: SCREEN_HEIGHT - 150 }}
+                    style={{ marginHorizontal: 15, height: SCREEN_HEIGHT - (bottomGap + 130) }}
                     className="rounded-2xl relative"
                   >
                     <Image
-                      source={{ uri: item.avatarUrl || 'https://picsum.phtos/800/1200?random=1' }}
+                      source={{ uri: item.avatarUrl || 'https://picsum.photos/800/1200?random=1' }}
                       resizeMode="cover"
                       style={{
                         position: 'absolute',

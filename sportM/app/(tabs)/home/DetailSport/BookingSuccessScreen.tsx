@@ -12,9 +12,10 @@ import {
   KeyboardAwareScrollView,
   KeyboardProvider,
 } from 'react-native-keyboard-controller';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import Button from '@/components/Button';
 import { router, useLocalSearchParams } from 'expo-router';
+import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
 
 function formatVNDate(iso: string) {
   const utc = new Date(iso);
@@ -30,19 +31,21 @@ function formatVNDate(iso: string) {
   const weekdayVN = ['CN', 'Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ 7'];
   return `${weekdayVN[dow]}, ngày ${d}/${m}/${y}`;
 }
-
+const FLOAT_GAP = 12;
 
 
 
 const BookingSuccessScreen = () => {
   const { orderId, createdAt } = useLocalSearchParams<{orderId: string, createdAt: string}>();
-
+  const insets = useSafeAreaInsets();
+  const tabBarHeight = useBottomTabBarHeight();
+  const bottomGap = Math.max(insets.bottom, 8) + tabBarHeight + FLOAT_GAP;
   return (
     <KeyboardProvider>
       <SafeAreaView className="flex-1 bg-background">
         <KeyboardAwareScrollView
           keyboardShouldPersistTaps="handled"
-          contentContainerStyle={{ flexGrow: 1 }}
+          contentContainerStyle={{ flexGrow: 1, paddingBottom: bottomGap }}
           style={{ backgroundColor: '#1F2257' }}
         >
           <View className="flex-row items-center px-4 py-5">
