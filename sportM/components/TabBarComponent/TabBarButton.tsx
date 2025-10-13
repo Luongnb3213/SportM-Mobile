@@ -60,8 +60,8 @@ const styles = StyleSheet.create({
   },
   notificationBadge: {
     position: 'absolute',
-    top: -4,
-    right: 20,
+    top: 0,
+    right: 23,
     width: 10,
     height: 10,
     borderRadius: 5,
