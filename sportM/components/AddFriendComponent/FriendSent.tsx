@@ -21,7 +21,6 @@ const FriendSent = () => {
       setInitialLoading(true);
       try {
         const { data } = await useAxios.get(`/friend-request?type=sent&page=1&limit=5`)
-        console.log(data.data.items)
         let items = data.data.items
         setSent(items);
         setHasMore(items.length > 0);

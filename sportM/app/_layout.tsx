@@ -11,6 +11,7 @@ import './globals.css';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { AuthProvider } from '@/providers/AuthProvider';
 import Toast, { BaseToast, ErrorToast } from 'react-native-toast-message';
+import { NotificationProvider } from '@/providers/NotificationContext';
 export default function RootLayout() {
   const colorScheme = useColorScheme();
   const [loaded] = useFonts({
@@ -58,6 +59,7 @@ export default function RootLayout() {
 
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+      <NotificationProvider>
         <AuthProvider>
           <Stack>
             <Stack.Screen name="index" options={{ headerShown: false }} />
@@ -72,6 +74,7 @@ export default function RootLayout() {
           <StatusBar style="auto" />
           <Toast config={toastConfig} />
         </AuthProvider>
+      </NotificationProvider>
     </ThemeProvider>
   );
 }

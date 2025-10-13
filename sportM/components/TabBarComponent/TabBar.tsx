@@ -3,6 +3,7 @@ import { View, StyleSheet } from 'react-native';
 import TabBarButton from './TabBarButton';
 import { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import { RouteNames } from './icons';
+import { useNotificationStatus } from '@/providers/NotificationContext';
 
 const TabBar: React.FC<BottomTabBarProps> = ({
   state,
@@ -11,6 +12,8 @@ const TabBar: React.FC<BottomTabBarProps> = ({
 }) => {
   const primaryColor = '#1F2257';
   const whiteColor = 'white';
+  const { hasUnreadNotifications } = useNotificationStatus();
+
   return (
     <View style={styles.tabbar}>
       {state.routes.map((route, index) => {
@@ -53,6 +56,7 @@ const TabBar: React.FC<BottomTabBarProps> = ({
             isFocused={isFocused}
             routeName={route.name as RouteNames}
             color={isFocused ? primaryColor : whiteColor}
+            hasUnreadNotifications={route.name === 'notification' ? hasUnreadNotifications : false}
             label={label as string}
           />
         );

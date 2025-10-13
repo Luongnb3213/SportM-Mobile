@@ -108,15 +108,6 @@ export default function HomeScreen() {
               </View>
 
               <AdsHomeSection />
-
-              <View className="items-center py-3">
-                <Button onPress={() => {
-                  router.push('/(tabs)/home/ads-page');
-                }} variant="ghost" className="px-3 py-2">
-                  <Text className="mr-1">Xem thêm</Text>
-                  <Ionicons name="chevron-down" size={16} />
-                </Button>
-              </View>
             </View>
 
 
