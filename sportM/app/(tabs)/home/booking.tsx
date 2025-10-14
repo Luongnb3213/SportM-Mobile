@@ -95,7 +95,6 @@ export default function BookingsScreen() {
         const statusParam = statusFilter ? `&status=${statusFilter}` : '';
         const { data } = await useAxios.get(`/bookings/my-bookings?page=1&limit=${LIMIT}&search=${debouncedSearch}${statusParam}`, { signal: ctrl.signal });
         setItems(data.data?.items);
-        console.log("Fetched bookings:", data.data?.items);
         setHasMore(data.data?.items?.length > 0);
       } catch (e) {
         // bỏ qua nếu bị abort

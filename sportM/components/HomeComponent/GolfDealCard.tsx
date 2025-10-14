@@ -87,6 +87,8 @@ export default function GolfDealCard({
             aspectRatio={16 / 9}
             renderItem={({ item }) => (
               <NearByYard
+                courtId={item?.id}
+                key={item?.id}
                 title={item?.name || ''}
                 pricePerHour={formatPriceVND(item?.pricePerHour)}
                   rating={item?.avgRating ?? 0}

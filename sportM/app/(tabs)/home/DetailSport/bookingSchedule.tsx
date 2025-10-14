@@ -14,7 +14,7 @@ import BookingScheduleSkeleton from '@/components/Skeleton/BookingScheduleSkelet
 import HeaderUser from '@/components/ui/HeaderUser';
 import { Ionicons } from '@expo/vector-icons';
 import Carousel from 'react-native-reanimated-carousel';
-import { fixedTimeSlotIdToApiTimeSlotId, processApiLockedSlots } from '@/lib/utils';
+import { fixedTimeSlotIdToApiTimeSlotId, getErrorMessage, processApiLockedSlots } from '@/lib/utils';
 
 
 type CourtDetail = {
@@ -154,7 +154,7 @@ export default function bookingSchedule() {
     setLoadingLockedSlots(true);
     try {
       const { data } = await useAxios.get(`/courts/${courtID}/slots`, { params: { date } });
-
+      console.log("API response for locked slots:", data.data);
       // Use the helper function to process the API response
       const lockedIds = processApiLockedSlots(data.data);
       console.log("Locked slots for", date, lockedIds);
@@ -277,7 +277,7 @@ export default function bookingSchedule() {
       })
       Toast.show({ type: 'success', text1: 'Đặt lịch thành công!' });
     } catch (e: any) {
-      console.log('Booking error', JSON.stringify(e));
+      console.log('Booking error', getErrorMessage(e));
       if (e.status == 409) {
         Toast.show({ type: 'error', text1: 'Đặt lịch thất bại', text2: 'Một hoặc nhiều khung giờ bạn chọn đã được đặt.' });
       } else {

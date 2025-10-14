@@ -8,7 +8,7 @@ import { useDebounce } from '@/hooks/useDebounce';
 import { useAxios } from '@/lib/api';
 import { formatPriceVND } from '@/lib/utils';
 import { useAppTheme } from '@/styles/theme';
-import { Feather, FontAwesome5, MaterialCommunityIcons } from '@expo/vector-icons';
+import { Entypo, Feather, FontAwesome5, FontAwesome6, MaterialCommunityIcons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import React, { useEffect, useRef } from 'react';
 import { Text, TextInput, TouchableOpacity, View } from 'react-native';
@@ -22,6 +22,20 @@ import {
 } from 'react-native-safe-area-context';
 
 type Pill = { sportTypeId: string | null; typeName: string; status: boolean };
+
+
+const PillIcon = ({ typeName }: { typeName: string }) => {
+  switch (typeName) {
+    case "Bóng rổ":
+      return <FontAwesome5 name="basketball-ball" size={14} color="black" />;
+    case "Bóng đá":
+      return <MaterialCommunityIcons name="soccer" size={14} color="black" />;
+    case "Bóng bàn":
+      return <FontAwesome6 name="ping-pong-paddle-ball" size={14} color="black" />;
+    default:
+      return <Entypo name="sports-club" size={14} color="black" />;
+  }
+};
 
 const Search = () => {
   const insets = useSafeAreaInsets();
@@ -54,7 +68,7 @@ const Search = () => {
     (async () => {
       try {
         setLoading(true);
-        const { data } = await useAxios.get(`/courts?page=${page}&limit=5&${debouncedSearch ? `search=${debouncedSearch}` : ''}&${sportTypeSelected ? `sportTypeId=${sportTypeSelected}` : ''}`, { signal: ctrl.signal });
+        const { data } = await useAxios.get(`/courts?page=${page}&limit=5${debouncedSearch ? `&search=${debouncedSearch}` : ''}${sportTypeSelected ? `&sportTypeId=${sportTypeSelected}` : ''}`, { signal: ctrl.signal });
         setListCourt(data.data.items);
         setTotalPage(data.data.meta.totalItems % 5 === 0 ? Math.floor(data.data.meta.totalItems / 5) : Math.floor(data.data.meta.totalItems / 5) + 1);
       } catch (error) {
@@ -121,12 +135,7 @@ const Search = () => {
                         key={p.sportTypeId}
                         className={`rounded-lg px-3 flex items-center flex-col shadow-xl py-3 bg-white ${sportTypeSelected === p.sportTypeId ? 'bg-slate-200' : ''}`}
                       >
-                        {p.typeName == "Bóng rổ" && (
-                          <FontAwesome5 name="basketball-ball" size={14} color="black" />
-                        )}
-                        {p.typeName == "Bóng đá" && (
-                          <MaterialCommunityIcons name="soccer" size={14} color="black" />
-                        )}
+                        <PillIcon typeName={p.typeName} />
                         <Text className="text-xs"> {p.typeName}</Text>
                       </TouchableOpacity>
                     ))

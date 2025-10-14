@@ -130,33 +130,40 @@ export default function HomeScreen() {
                     description="Hiện chưa có sân nào được đặt."
                   />
                 ) : (
-                  bookingCourt?.map((court: any) => (
-                    <GolfCourseCard
-                      key={court?.courtId}
-                      title={court?.courtName}
-                      pricePerHour={formatPriceVND(court?.pricePerHour)}
-                      rating={court?.avgRating || 0}
-                      imageUri={court?.courtImages[0] || 'https://sportm.vn/static/meda/san1.2f6f5f5f.jpg'}
-                      onPress={() =>
-                        router.push({
-                          pathname: '/(tabs)/home/DetailSport',
-                          params: { courtID: court?.courtId },
-                        })
+                    <>
+                      {
+                        bookingCourt?.map((court: any) => (
+                          <GolfCourseCard
+                            key={court?.courtId}
+                            title={court?.courtName}
+                            pricePerHour={formatPriceVND(court?.pricePerHour)}
+                            rating={court?.avgRating || 0}
+                            imageUri={court?.courtImages[0] || 'https://sportm.vn/static/meda/san1.2f6f5f5f.jpg'}
+                            onPress={() =>
+                              router.push({
+                                pathname: '/(tabs)/home/DetailSport',
+                                params: { courtID: court?.courtId },
+                              })
+                            }
+                          />
+                        ))
                       }
-                    />
-                  ))
-                  )
+                      <View className="items-center py-3">
+                        <Button onPress={() => {
+                          router.push('/(tabs)/home/booking');
+                        }} variant="ghost" className="px-3 py-2">
+                          <Text className="mr-1">Xem thêm</Text>
+                          <Ionicons name="chevron-down" size={16} />
+                        </Button>
+                      </View>
+                  </>
+
+                )
+
               ) : (
-                  Array.from({ length: 3 }).map((_, idx) => <GolfCourseCardSkeleton key={idx} />)
+                Array.from({ length: 3 }).map((_, idx) => <GolfCourseCardSkeleton key={idx} />)
               )}
-              <View className="items-center py-3">
-                <Button onPress={() => {
-                  router.push('/(tabs)/home/booking');
-                }} variant="ghost" className="px-3 py-2">
-                  <Text className="mr-1">Xem thêm</Text>
-                  <Ionicons name="chevron-down" size={16} />
-                </Button>
-              </View>
+
             </View>
 
             {/* Golf deal card */}
