@@ -167,7 +167,7 @@ export default function FeedScreen() {
                     className="rounded-2xl relative"
                   >
                     <Image
-                      source={{ uri: item.avatarUrl || 'https://picsum.photos/800/1200?random=1' }}
+                      source={{ uri: item.avatarUrl || 'https://picsum.phtos/800/1200?random=1' }}
                       resizeMode="cover"
                       style={{
                         position: 'absolute',

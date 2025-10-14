@@ -11,6 +11,7 @@ import {
   ImageBackground,
   Image,
   StyleSheet,
+  Linking,
 } from 'react-native';
 import Button from '@/components/Button';
 import { Card } from '@/components/Card';
@@ -179,7 +180,8 @@ export default function HomeScreen() {
                 paragraph={`Mỗi một đồng bạn đặt xuống là một đồng tôi nhận được. Fact thôi nhưng tôi sẽ cân bạn sâu vcl.
 Everybody knows that but who gives a fuck`}
                 ctaLabel="Đăng ký chủ sân"
-                onPressCTA={() => console.log('Đăng ký hội viên')}
+                onPressCTA={() => Linking.openURL('https://www.sportm.site/bang-gia').catch(err => console.error('Error opening maps', err))
+                }
                 stat1Value="360+"
                 stat1Desc="Hơn 360 sân được liệt kê trong hệ thống"
                 stat2Value="22k+"
@@ -190,8 +192,8 @@ Everybody knows that but who gives a fuck`}
 
             <View className="mt-3">
               <EmailSubscribeSection
-                defaultEmail="iamgay@gmail.com"
-                privacyUrl="https://sportm.vn/privacy"
+                defaultEmail="example@gmail.com"
+                privacyUrl="https://www.sportm.site/about-us"
                 onSubmit={async (email) => {
                   // TODO: call API ở đây
                   console.log('subscribe:', email);
