@@ -22,6 +22,7 @@ import UpdateAccountSkeleton from '@/components/Skeleton/UpdateAccountSkeleton';
 import { uploadToCloudinary } from '@/lib/uploadToCloudinary';
 import Toast from 'react-native-toast-message';
 import { jwtDecode } from 'jwt-decode';
+import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
 
 type Gender = 'male' | 'female' | '';
 
@@ -36,7 +37,6 @@ type ServerUser = {
   // có thể sẽ có sau:
   birthDate?: string | null; // ví dụ: "1990-12-31" hoặc ISO string
   gender?: boolean | 'male' | 'female' | null; // tùy backend
-  bankAccount?: string,
   bio?: string
 };
 
@@ -47,11 +47,11 @@ const UpdateAccount = () => {
   const [loading, setLoading] = React.useState(false);
   const [submitting, setSubmitting] = React.useState(false);
   const insets = useSafeAreaInsets();
+  const tabBarHeight = useBottomTabBarHeight();
 
   // form states
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
-  const [bankAccount, setBankAccount] = useState('');
   const [bio, setBio] = useState('');
   const [gender, setGender] = useState<Gender>('');
   const [birthdate, setBirthdate] = useState<Date | null>(null);
@@ -62,7 +62,6 @@ const UpdateAccount = () => {
   const [errors, setErrors] = useState<{
     name?: string;
     phone?: string;
-    bankAccount?: string;
     bio?: string;
     gender?: string;
     birthdate?: string;
@@ -85,7 +84,6 @@ const UpdateAccount = () => {
     const next: typeof errors = {};
     if (!name.trim()) next.name = 'Tên không được để trống';
     if (!phone.trim()) next.phone = 'SĐT không được để trống';
-    if (!bankAccount.trim()) next.bankAccount = 'Tài khoản ngân hàng không được để trống';
     if (!bio.trim()) next.bio = 'Bio không được để trống';
     if (!gender) next.gender = 'Vui lòng chọn giới tính';
     if (!birthdate) next.birthdate = 'Vui lòng chọn ngày sinh';
@@ -114,7 +112,6 @@ const UpdateAccount = () => {
         fullName: name.trim(),
         avatarUrl: avatarUrlFinal,
         phoneNumber: phone.trim(),
-        bankAccount: bankAccount.trim(),
         bio: bio.trim(),
         birthDate: birthdate ? new Date(birthdate).toISOString().slice(0, 10) : undefined,
         gender: gender === 'male',
@@ -169,8 +166,6 @@ const UpdateAccount = () => {
     } else {
       setGender(''); // chưa có thì để trống
     }
-
-    setBankAccount(u.bankAccount ?? '');
     setBio(u.bio ?? '');
   };
 
@@ -293,25 +288,6 @@ const UpdateAccount = () => {
                 ) : null}
               </View>
 
-              {/* Tài khoản NH (bắt buộc) */}
-              <View>
-                <Input
-                  label="Tài khoản ngân hàng"
-                  labelClasses="text-xl"
-                  value={bankAccount}
-                  onChangeText={(t) => {
-                    setBankAccount(t);
-                    if (errors.bankAccount) setErrors((e) => ({ ...e, bankAccount: undefined }));
-                  }}
-                  keyboardType="numeric"
-                  editable={!submitting}
-                  style={{ borderColor: errors.bankAccount ? 'red' : "#ebebeb" }}
-                />
-                {errors.bankAccount ? (
-                  <Text className="text-red-500 text-sm mt-1">{errors.bankAccount}</Text>
-                ) : null}
-              </View>
-
               {/* Bio (bắt buộc) */}
               <View>
                 <Text className="text-xl">Bio</Text>
@@ -404,7 +380,18 @@ const UpdateAccount = () => {
         </KeyboardAwareScrollView>
 
         {/* Footer cố định */}
-        <View className="absolute bottom-32 left-0 right-0 flex-row gap-4 p-4 bg-background border-t border-border">
+        <View style={{
+          position: 'absolute',
+          left: 0,
+          right: 0,
+          bottom: insets.bottom + tabBarHeight,
+          flexDirection: 'row',
+          gap: 16,
+          padding: 16,
+          backgroundColor: 'white',
+          borderTopWidth: 1,
+          borderColor: '#e5e5e5',
+        }}>
           <Button className="flex-1" onPress={handleUpdate} disabled={submitting}>
             {submitting ? (
               <View className="flex-row items-center justify-center gap-2">

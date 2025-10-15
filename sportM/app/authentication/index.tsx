@@ -39,14 +39,14 @@ export default function AuthScreen() {
               <View className="flex-row justify-center mb-8">
                 <Text
                   className={`w-1/2 text-2xl text-[#292929] text-center ${
-                    screen === 'login' ? 'font-bold underline' : ''
+                    screen === 'login' ? 'font-bold text-primary underline' : ''
                   }`}
                 >
                   Đăng nhập
                 </Text>
                 <Text
                   className={`w-1/2 text-2xl text-[#292929] text-center ${
-                    screen === 'signup' ? 'font-bold underline' : ''
+                    screen === 'signup' ? 'font-bold text-primary underline' : ''
                   }`}
                 >
                   Đăng ký

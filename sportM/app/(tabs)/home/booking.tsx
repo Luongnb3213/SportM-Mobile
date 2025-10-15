@@ -6,6 +6,9 @@ import {
   TextInput,
   ActivityIndicator,
   Platform,
+  Image,
+  Modal,
+  Pressable,
 } from 'react-native';
 import { Feather, Ionicons } from '@expo/vector-icons';
 import { Card } from '@/components/Card';
@@ -38,7 +41,6 @@ function formatViShortDate(input: string | number | Date) {
   return `${weekday}, ngày ${day}/${month}/${year}`;
 }
 
-// Define Booking Statuses and their corresponding icons and display names
 const BOOKING_STATUSES = [
   { label: 'Tất cả trạng thái', value: '' },
   { label: 'Chờ thanh toán', value: 'PENDING_DEPOSIT', icon: () => <Ionicons name="time-outline" size={16} color="#FFD700" /> },
@@ -49,10 +51,16 @@ const BOOKING_STATUSES = [
 
 const getStatusIcon = (status: string) => {
   const found = BOOKING_STATUSES.find(s => s.value == status);
-  // Khi hiển thị trong danh sách booking, chúng ta vẫn cần trả về JSX.Element trực tiếp
-  // Nên sẽ gọi hàm icon() nếu nó tồn tại
   return found?.icon ? found.icon() : null;
 };
+
+type PaymentInfo = {
+  id?: string;
+  accountName: string;
+  accountNumber: string;
+  bankName: string;
+  qrCodeUrl: string;
+} | null;
 
 /** ------------------ Screen ------------------ */
 export default function BookingsScreen() {
@@ -73,12 +81,16 @@ export default function BookingsScreen() {
   // Dropdown for status filter
   const [open, setOpen] = React.useState(false);
   const [statusFilter, setStatusFilter] = React.useState<string | null>(null);
-  // Định nghĩa lại type cho items trong DropDownPicker nếu cần thiết
   const [statusItems, setStatusItems] = React.useState(BOOKING_STATUSES.map(item => ({
     label: item.label,
     value: item.value,
-    icon: item.icon, // icon ở đây là một hàm, đúng với yêu cầu của DropDownPicker
+    icon: item.icon,
   })));
+
+  // Payment modal state
+  const [paymentOpen, setPaymentOpen] = React.useState(false);
+  const [paymentForBookingId, setPaymentForBookingId] = React.useState<string | null>(null);
+  const [paymentInfo, setPaymentInfo] = React.useState<PaymentInfo>(null);
 
   const LIMIT = 8;
   const ctrlRef = React.useRef<AbortController | null>(null);
@@ -97,7 +109,6 @@ export default function BookingsScreen() {
         setItems(data.data?.items);
         setHasMore(data.data?.items?.length > 0);
       } catch (e) {
-        // bỏ qua nếu bị abort
         console.log("Fetch bookings aborted or failed:", e);
       } finally {
         setLoadingInitial(false);
@@ -105,7 +116,7 @@ export default function BookingsScreen() {
     })();
 
     return () => ctrl.abort();
-  }, [debouncedSearch, statusFilter]); // Re-fetch when statusFilter changes
+  }, [debouncedSearch, statusFilter]);
 
   const onLoadMore = React.useCallback(async () => {
     if (loadingMore || !hasMore) return;
@@ -127,7 +138,6 @@ export default function BookingsScreen() {
         setHasMore(false);
       }
     } catch (e) {
-      // bỏ qua nếu bị abort
       console.log("Load more bookings aborted or failed:", e);
     } finally {
       setLoadingMore(false);
@@ -143,8 +153,6 @@ export default function BookingsScreen() {
         text1: 'Hủy đặt sân thành công!',
         text2: `Booking ID #${bookingId} đã được hủy.`,
       });
-      // Trigger re-fetch after successful cancellation
-      // By setting statusFilter to its current value, we ensure useEffect runs
       setStatusFilter('CANCELLED');
     } catch (error: any) {
       console.error('Lỗi khi hủy đặt sân:', error);
@@ -156,8 +164,28 @@ export default function BookingsScreen() {
     } finally {
       setCancelingBookingId(null);
     }
-  }, [statusFilter]);
+  }, []);
 
+  const openPaymentModal = (b: any) => {
+    const p: PaymentInfo | undefined = b?.court?.owner?.paymentInfo;
+    if (!p || !p.accountName || !p.accountNumber || !p.bankName || !p.qrCodeUrl) {
+      Toast.show({
+        type: 'error',
+        text1: 'Thiếu thông tin thanh toán',
+        text2: 'Chủ sân chưa cấu hình đủ thông tin thanh toán.',
+      });
+      return;
+    }
+    setPaymentInfo({
+      id: p.id,
+      accountName: p.accountName,
+      accountNumber: p.accountNumber,
+      bankName: p.bankName,
+      qrCodeUrl: p.qrCodeUrl,
+    });
+    setPaymentForBookingId(b?.bookingId || null);
+    setPaymentOpen(true);
+  };
 
   return (
     <KeyboardProvider>
@@ -187,7 +215,7 @@ export default function BookingsScreen() {
               <DropDownPicker
                 open={open}
                 value={statusFilter}
-                items={statusItems} // items giờ đã có icon là hàm
+                items={statusItems}
                 setOpen={setOpen}
                 setValue={setStatusFilter}
                 setItems={setStatusItems}
@@ -207,23 +235,22 @@ export default function BookingsScreen() {
                   borderColor: '#ccc',
                   borderRadius: 10,
                 }}
-                ArrowDownIconComponent={({ style }) => <Ionicons name="chevron-down" size={20} color="#0a0a0a" />}
-                ArrowUpIconComponent={({ style }) => <Ionicons name="chevron-up" size={20} color="#0a0a0a" />}
+                ArrowDownIconComponent={() => <Ionicons name="chevron-down" size={20} color="#0a0a0a" />}
+                ArrowUpIconComponent={() => <Ionicons name="chevron-up" size={20} color="#0a0a0a" />}
               />
             </View>
           </View>
         </View>
+
         <KeyboardAwareScrollView
           keyboardShouldPersistTaps="handled"
           contentContainerStyle={{ paddingBottom: insets.bottom + 150 }}
           extraKeyboardSpace={0}
         >
-          {/* Content */}
           <Card
             className="m-4 bg-background rounded-2xl overflow-hidden"
             style={{ borderWidth: 0 }}
           >
-            {/* Loading initial */}
             {loadingInitial ? (
               Array.from({ length: 4 }).map((_, i) => (
                 <View key={i} className="py-4">
@@ -256,9 +283,7 @@ export default function BookingsScreen() {
                             {/* Left */}
                             <View className="flex-1 pr-2">
                               <View className="flex-row items-center">
-                                <Text>
-                                  {getStatusIcon(b?.status)} {/* Vẫn gọi hàm ở đây */}
-                                </Text>
+                                <Text>{getStatusIcon(b?.status)}</Text>
                                 <Text className="text-lg font-semibold text-[#292929] ml-2">
                                   {b?.court?.courtName || '—'}
                                 </Text>
@@ -291,20 +316,29 @@ export default function BookingsScreen() {
                                 {toAmPm(b?.startTime)} - {toAmPm(b?.endTime)}
                               </Text>
 
-                              {/* Nút hủy chỉ hiển thị khi trạng thái là PENDING_DEPOSIT */}
+                              {/* Nút hủy + Thanh toán chỉ hiển thị khi trạng thái là PENDING_DEPOSIT */}
                               {b?.status === 'PENDING_DEPOSIT' && (
-                                <Button
-                                  variant="destructive"
-                                  className="mt-3 px-3 py-1 rounded-full"
-                                  onPress={() => handleCancelBooking(item?.orderId)}
-                                  disabled={cancelingBookingId === b?.bookingId}
-                                >
-                                  {cancelingBookingId === b?.bookingId ? (
-                                    <ActivityIndicator color="white" />
-                                  ) : (
-                                    <Text className="text-white text-[11px] font-medium">Hủy đặt sân</Text>
-                                  )}
-                                </Button>
+                                <View className="mt-3 flex-row gap-2">
+                                  <Button
+                                    variant="default"
+                                    className="px-3 py-1 rounded-full"
+                                    onPress={() => openPaymentModal(b)}
+                                  >
+                                    <Text className="text-white text-[11px] font-medium">Thanh toán</Text>
+                                  </Button>
+                                  <Button
+                                    variant="destructive"
+                                    className="px-3 py-1 rounded-full"
+                                    onPress={() => handleCancelBooking(b?.bookingId)}
+                                    disabled={cancelingBookingId === b?.bookingId}
+                                  >
+                                    {cancelingBookingId === b?.bookingId ? (
+                                      <ActivityIndicator color="white" />
+                                    ) : (
+                                      <Text className="text-white text-[11px] font-medium">Hủy đặt sân</Text>
+                                    )}
+                                  </Button>
+                                </View>
                               )}
                             </View>
                           </View>
@@ -341,6 +375,82 @@ export default function BookingsScreen() {
             )}
           </Card>
         </KeyboardAwareScrollView>
+
+        {/* Payment Modal (React Native) */}
+        <Modal
+          visible={paymentOpen}
+          transparent
+          animationType="fade"
+          onRequestClose={() => setPaymentOpen(false)}
+        >
+          <View
+            style={{
+              flex: 1,
+              backgroundColor: 'rgba(0,0,0,0.45)',
+              justifyContent: 'center',
+              alignItems: 'center',
+              paddingHorizontal: 24,
+            }}
+          >
+            <View
+              style={{
+                backgroundColor: 'white',
+                borderRadius: 20,
+                padding: 20,
+                width: '100%',
+                maxWidth: 380,
+              }}
+            >
+              <View className="flex-row items-center justify-between mb-2">
+                <Text className="text-lg font-semibold">Thông tin thanh toán</Text>
+                <TouchableOpacity onPress={() => setPaymentOpen(false)}>
+                  <Ionicons name="close" size={22} />
+                </TouchableOpacity>
+              </View>
+              <Text className="text-[12px] text-muted-foreground mb-4">
+                Vui lòng chuyển khoản theo thông tin bên dưới và ghi kèm mã Booking để được xác nhận nhanh hơn.
+              </Text>
+
+              {paymentInfo ? (
+                <>
+                  <View className="mb-3">
+                    <Text className="text-[13px] text-muted-foreground">Chủ tài khoản</Text>
+                    <Text className="text-[16px] font-semibold">{paymentInfo.accountName}</Text>
+                  </View>
+                  <View className="mb-3">
+                    <Text className="text-[13px] text-muted-foreground">Số tài khoản</Text>
+                    <Text className="text-[16px] font-semibold">{paymentInfo.accountNumber}</Text>
+                  </View>
+                  <View className="mb-3">
+                    <Text className="text-[13px] text-muted-foreground">Ngân hàng</Text>
+                    <Text className="text-[16px] font-semibold">{paymentInfo.bankName}</Text>
+                  </View>
+
+                  <View className="mt-1 mb-2">
+                    <Text className="text-[13px] text-muted-foreground mb-2">QR chuyển khoản</Text>
+                    <View className="w-full overflow-hidden rounded-xl border border-border" style={{ aspectRatio: 1 }}>
+                      <Image
+                        source={{ uri: paymentInfo.qrCodeUrl }}
+                        style={{ width: '100%', height: '100%' }}
+                        resizeMode="cover"
+                      />
+                    </View>
+                  </View>
+                </>
+              ) : (
+                <View className="py-6 items-center">
+                  <Text>Không có thông tin thanh toán.</Text>
+                </View>
+              )}
+
+              <View className="mt-4 flex-row justify-end gap-2">
+                <Button variant="outline" onPress={() => setPaymentOpen(false)}>
+                  Đóng
+                </Button>
+              </View>
+            </View>
+          </View>
+        </Modal>
         <Toast />
       </SafeAreaView>
     </KeyboardProvider>

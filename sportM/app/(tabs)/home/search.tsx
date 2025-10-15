@@ -1,4 +1,5 @@
 import GolfCourseCard from '@/components/HomeComponent/GolfCourseCard';
+import PillIcon from '@/components/PillIcon';
 import { Skeleton } from '@/components/Skeleton';
 import { GolfCourseCardSkeleton } from '@/components/Skeleton/GolfCourseCardSkeleton';
 import EmptyState from '@/components/ui/EmptyState';
@@ -24,18 +25,7 @@ import {
 type Pill = { sportTypeId: string | null; typeName: string; status: boolean };
 
 
-const PillIcon = ({ typeName }: { typeName: string }) => {
-  switch (typeName) {
-    case "Bóng rổ":
-      return <FontAwesome5 name="basketball-ball" size={14} color="black" />;
-    case "Bóng đá":
-      return <MaterialCommunityIcons name="soccer" size={14} color="black" />;
-    case "Bóng bàn":
-      return <FontAwesome6 name="ping-pong-paddle-ball" size={14} color="black" />;
-    default:
-      return <Entypo name="sports-club" size={14} color="black" />;
-  }
-};
+
 
 const Search = () => {
   const insets = useSafeAreaInsets();

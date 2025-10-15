@@ -1,4 +1,5 @@
 import GolfCourseCard from '@/components/HomeComponent/GolfCourseCard';
+import PillIcon from '@/components/PillIcon';
 import { Skeleton } from '@/components/Skeleton';
 import { GolfCourseCardSkeleton } from '@/components/Skeleton/GolfCourseCardSkeleton';
 import EmptyState from '@/components/ui/EmptyState';
@@ -121,12 +122,7 @@ const index = () => {
                         key={p.sportTypeId}
                         className={`rounded-lg px-3 flex items-center flex-col shadow-xl py-3  ${sportTypeSelected === p.sportTypeId ? 'bg-slate-200' : 'bg-white'}`}
                       >
-                        {p.typeName == "Bóng rổ" && (
-                          <FontAwesome5 name="basketball-ball" size={14} color="black" />
-                        )}
-                        {p.typeName == "Bóng đá" && (
-                          <MaterialCommunityIcons name="soccer" size={14} color="black" />
-                        )}
+                        <PillIcon typeName={p.typeName} />
                         <Text className="text-xs"> {p.typeName}</Text>
                       </TouchableOpacity>
                     ))

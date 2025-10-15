@@ -98,15 +98,15 @@ export default function SignUpForm({ email }: { email?: string }) {
     }
   };
 
-  useEffect(() => {
-    if (!email) {
-      router.push({
-        pathname: '/authentication/VerifyEmail',
-        params: { mode: 'signup' },
-      });
-      return;
-    }
-  }, []);
+  // useEffect(() => {
+  //   if (!email) {
+  //     router.push({
+  //       pathname: '/authentication/VerifyEmail',
+  //       params: { mode: 'signup' },
+  //     });
+  //     return;
+  //   }
+  // }, []);
 
   const handleGoogleSignin = async () => {
     try {
