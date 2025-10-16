@@ -39,12 +39,13 @@ import { useAxios } from '@/lib/api';
 import EmptyState from '@/components/ui/EmptyState';
 import { formatPriceVND } from '@/lib/utils';
 import AdsHomeSection from '@/components/HomeComponent/AdsHomeSection';
+import { useAuth } from '@/providers/AuthProvider';
 
 export default function HomeScreen() {
   const t = useAppTheme();
   const insets = useSafeAreaInsets();
   const [bookingCourt, setBookingCourt] = useState<any[]>();
-
+  const { user } = useAuth()
   useEffect(() => {
     (async () => {
       // fetch data from API
@@ -111,8 +112,7 @@ export default function HomeScreen() {
               <AdsHomeSection />
             </View>
 
-
-            <View className="gap-5 px-4 mt-4 flex-col">
+            {user && (<View className="gap-5 px-4 mt-4 flex-col">
               <View className="flex-row items-center justify-between px-4 bg-white">
                 <Text className="text-3xl font-bold leading-snug text-primary">Sân đã đặt</Text>
                 <TouchableOpacity onPress={() => {
@@ -165,7 +165,8 @@ export default function HomeScreen() {
                 Array.from({ length: 3 }).map((_, idx) => <GolfCourseCardSkeleton key={idx} />)
               )}
 
-            </View>
+            </View>)}
+
 
             {/* Golf deal card */}
             <View className="mt-4">

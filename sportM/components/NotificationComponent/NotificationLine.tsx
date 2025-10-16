@@ -78,7 +78,7 @@ export function NotificationLine({
                                         variant={cta.variant}
                                         className="px-4 py-1 rounded-md"
                                         onPress={() => {
-                                            onAction?.(n.id, cta.key);
+                                            onAction?.(cta as any, cta.key);
                                             // Optionally mark as read when an action is taken
                                             // onMarkAsRead?.(n.id);
                                         }}

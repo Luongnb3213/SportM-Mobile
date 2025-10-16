@@ -97,6 +97,10 @@ export default function DetailInfoCard({
           <View className="flex-col items-center gap-4 w-full">
             <Button
               onPress={() => {
+                if (!user) {
+                  router.replace('/authentication')
+                  return
+                }
                 router.push({
                   pathname: '/(tabs)/home/DetailSport/bookingSchedule',
                   params: { courtID },

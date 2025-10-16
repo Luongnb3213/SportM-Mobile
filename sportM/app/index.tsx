@@ -18,7 +18,7 @@ export default function Index() {
     <Redirect
       href={
         status === 'unauthenticated'
-          ? '/authentication'
+          ? '/home'
           : status === 'log_client'
           ? '/home'
           : '/owner'

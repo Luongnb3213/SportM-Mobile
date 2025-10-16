@@ -1,5 +1,5 @@
 // app/(tabs)/notifications/index.tsx
-import React, { JSX } from 'react';
+import React, { JSX, useEffect } from 'react';
 import {
   View,
   Text,
@@ -27,6 +27,7 @@ import { useNotificationStatus } from '@/providers/NotificationContext';
 import { NotificationLine } from '@/components/NotificationComponent/NotificationLine';
 import { useAxios } from '@/lib/api';
 import { router } from 'expo-router';
+import { useAuth } from '@/providers/AuthProvider';
 // Import your useAxios instance here
 // import useAxios from '@/lib/useAxios'; // Adjust the path as needed
 
@@ -69,6 +70,7 @@ export default function NotificationsScreen() {
   const [loadingMore, setLoadingMore] = React.useState(false);
   const [hasMore, setHasMore] = React.useState(true);
   const [page, setPage] = React.useState(1);
+  const { user } = useAuth();
 
   const { setHasUnreadNotifications } = useNotificationStatus();
 
@@ -77,7 +79,11 @@ export default function NotificationsScreen() {
     setHasUnreadNotifications(hasUnread);
   }, [setHasUnreadNotifications]); // Depend on setHasUnreadNotifications from context
 
-
+  useEffect(() => {
+    if (!user) {
+      router.replace('/authentication')
+    }
+  }, [])
   const fetchNotifications = React.useCallback(async (pageNum: number, isRefreshing = false) => {
     const ctrl = new AbortController();
     try {
@@ -106,7 +112,7 @@ export default function NotificationsScreen() {
       if (e.name === 'AbortError') {
         console.log("Fetch notifications aborted.");
       } else {
-        console.error("Failed to fetch notifications:", e);
+        console.log("Failed to fetch notifications:", e);
       }
       setHasMore(false);
     } finally {
@@ -137,7 +143,7 @@ export default function NotificationsScreen() {
         if (e.name === 'AbortError') {
           console.log("Initial fetch notifications aborted.");
         } else {
-          console.error("Initial fetch notifications failed:", e);
+          console.log("Initial fetch notifications failed:", e);
         }
       } finally {
         setLoadingInitial(false);
@@ -193,14 +199,16 @@ export default function NotificationsScreen() {
     fetchNotifications(page + 1);
   }, [loadingMore, hasMore, loadingInitial, refreshing, page, fetchNotifications]);
 
-  const onAction = React.useCallback((id: string, action: string) => {
+  const onAction = React.useCallback((cta: any, action: string) => {
     if (action === 'decline' || action === 'dismiss') {
       setItems((s) => {
-        const newItems = s.filter((x) => x.id !== id);
+        const newItems = s.filter((x) => x.id !== cta?.id);
         updateUnreadStatus(newItems);
         return newItems;
       });
+      return;
     }
+    router.push('/home/booking')
   }, [updateUnreadStatus]);
 
   const onMarkAsRead = React.useCallback((id: string) => {

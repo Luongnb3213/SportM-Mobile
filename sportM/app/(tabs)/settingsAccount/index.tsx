@@ -19,6 +19,13 @@ export default function ProfileScreen() {
 
   const [userData, setUserData] = React.useState(auth.user);
   const [loading, setLoading] = React.useState(false);
+
+  useEffect(() => {
+    if (!auth.user) {
+      router.replace('/authentication')
+    }
+  }, [])
+
   useEffect(() => {
     async function fetchUserData() {
       setLoading(true);
@@ -173,12 +180,12 @@ export default function ProfileScreen() {
                       <Ionicons name="information-circle-outline" size={18} />
                     }
                     label="Thông tin"
-                    onPress={() => {}}
+                    onPress={() => { }}
                   />
                   <QuickAction
                     icon={<Octicons name="issue-opened" size={18} />}
                     label="Báo lỗi"
-                    onPress={() => {}}
+                    onPress={() => { }}
                   />
                   <QuickAction
                     icon={<MaterialCommunityIcons name="logout" size={18} />}
@@ -193,7 +200,7 @@ export default function ProfileScreen() {
                   <ListItem
                     icon={<Ionicons name="calendar-outline" size={18} />}
                     label="Danh sách lịch đã đặt"
-                    onPress={() => {}}
+                    onPress={() => { }}
                   />
                 </View>
 
@@ -205,12 +212,12 @@ export default function ProfileScreen() {
                       <Ionicons name="information-circle-outline" size={18} />
                     }
                     label={`Thông tin phiên bản: ${version}`}
-                    onPress={() => {}}
+                    onPress={() => { }}
                   />
                   <ListItem
                     icon={<Ionicons name="document-text-outline" size={18} />}
                     label="Điều khoản và chính sách"
-                    onPress={() => {}}
+                    onPress={() => { }}
                   />
                 </View>
               </CardContent>

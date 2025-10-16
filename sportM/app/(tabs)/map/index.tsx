@@ -9,6 +9,7 @@ import Carousel from 'react-native-reanimated-carousel';
 import { useAxios } from '@/lib/api';
 import { GolfCourseCardSkeleton } from '@/components/Skeleton/GolfCourseCardSkeleton';
 import { router } from 'expo-router';
+import { useAuth } from '@/providers/AuthProvider';
 type NearByYardProps = {
   id: string;
   name: string;
@@ -32,6 +33,7 @@ const PAGE_W = CARD_W + GAP;
 const CARD_H = 258;
 export default function SearchScreen() {
   const [listCourt, setListCourt] = useState<NearByYardProps[] | undefined>(undefined);
+  const { user } = useAuth();
 
   useEffect(() => {
     (async () => {
@@ -50,6 +52,12 @@ export default function SearchScreen() {
       }
     })();
   }, []);
+
+  useEffect(() => {
+    if (!user) {
+      router.replace('/authentication')
+    }
+  }, [])
 
   return (
     <View className="flex-1 relative">

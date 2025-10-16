@@ -10,6 +10,7 @@ import { useAxios } from '@/lib/api';
 import EmptyState from '@/components/ui/EmptyState';
 import Toast from 'react-native-toast-message';
 import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
+import { useAuth } from '@/providers/AuthProvider';
 
 const { height: SCREEN_HEIGHT, width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -29,13 +30,18 @@ export default function FeedScreen() {
   const [initialLoading, setInitialLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const inflightRef = useRef(false);
-
+  const { user } = useAuth();
   const carouselRef = useRef<any>(null);
   const [activeIndex, setActiveIndex] = useState(0);
-
   const insets = useSafeAreaInsets();
   const tabBarHeight = useBottomTabBarHeight();
   const bottomGap = Math.max(insets.bottom, 8) + tabBarHeight + FLOAT_GAP;
+
+  useEffect(() => {
+    if (!user) {
+      router.replace('/authentication')
+    }
+  }, [])
 
   // Fake seed data
   useEffect(() => {

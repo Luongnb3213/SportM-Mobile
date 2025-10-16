@@ -10,6 +10,7 @@ import { useAxios } from '@/lib/api';
 import { Comment } from './Comment/CommentItem';
 import { CommentsList } from './Comment/CommentsList';
 import { getErrorMessage } from '@/lib/utils';
+import { useAuth } from '@/providers/AuthProvider';
 
 type ApiRating = {
   ratingId: string;
@@ -53,6 +54,7 @@ export default function RatingCard({
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(true);
+  const { user } = useAuth();
 
   const mapRatings = (raw: ApiRating[]): Comment[] =>
     raw.map((r) => ({
@@ -212,47 +214,51 @@ export default function RatingCard({
       </ScrollView>
 
       {/* FORM CREATE */}
-      <Card className="m-3 rounded-2xl p-4 bg-[#EEE]">
-        <CardContent className="p-0">
-          <Text className="text-xl font-extrabold text-primary">Thêm đánh giá của bạn</Text>
-          <Text className="mt-2 text-[13.5px] leading-5 text-muted-foreground">
-            Sau khi trải nghiệm sân, bạn cảm thấy như thế nào?
-          </Text>
 
-          {/* Stars */}
-          <View className="mt-4 flex-row items-center gap-3">
-            {Array.from({ length: 5 }).map((_, i) => {
-              const idx = i + 1;
-              const active = idx <= rating;
-              return (
-                <TouchableOpacity key={idx} onPress={() => handleRate(idx)} hitSlop={8}>
-                  <Ionicons name={active ? 'star' : 'star-outline'} size={28} color={active ? '#F59E0B' : '#94A3B8'} />
-                </TouchableOpacity>
-              );
-            })}
-          </View>
+      {user && (
+        <Card className="m-3 rounded-2xl p-4 bg-[#EEE]">
+          <CardContent className="p-0">
+            <Text className="text-xl font-extrabold text-primary">Thêm đánh giá của bạn</Text>
+            <Text className="mt-2 text-[13.5px] leading-5 text-muted-foreground">
+              Sau khi trải nghiệm sân, bạn cảm thấy như thế nào?
+            </Text>
 
-          {/* Comment box */}
-          <Text className="mt-5 text-[13.5px] font-semibold text-primary">Nhập nhận xét (tuỳ chọn)</Text>
-          <TextInput
-            placeholder="Nhập nhận xét"
-            multiline
-            value={note}
-            onChangeText={(t) => {
-              setNote(t);
-              onChange?.(rating, t);
-            }}
-            className="mt-2 min-h-[120px] rounded-2xl bg-white text-[15px]"
-            editable={!submitting}
-            numberOfLines={4}
-            style={{ textAlignVertical: 'top', padding: 12 }}
-          />
+            {/* Stars */}
+            <View className="mt-4 flex-row items-center gap-3">
+              {Array.from({ length: 5 }).map((_, i) => {
+                const idx = i + 1;
+                const active = idx <= rating;
+                return (
+                  <TouchableOpacity key={idx} onPress={() => handleRate(idx)} hitSlop={8}>
+                    <Ionicons name={active ? 'star' : 'star-outline'} size={28} color={active ? '#F59E0B' : '#94A3B8'} />
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
 
-          <Button className="mt-4 rounded-2xl" textClassName="text-base" onPress={handleSubmitRating} disabled={!canSubmit}>
-            {submitting ? 'Đang gửi...' : 'Xác nhận'}
-          </Button>
-        </CardContent>
-      </Card>
+            {/* Comment box */}
+            <Text className="mt-5 text-[13.5px] font-semibold text-primary">Nhập nhận xét (tuỳ chọn)</Text>
+            <TextInput
+              placeholder="Nhập nhận xét"
+              multiline
+              value={note}
+              onChangeText={(t) => {
+                setNote(t);
+                onChange?.(rating, t);
+              }}
+              className="mt-2 min-h-[120px] rounded-2xl bg-white text-[15px]"
+              editable={!submitting}
+              numberOfLines={4}
+              style={{ textAlignVertical: 'top', padding: 12 }}
+            />
+
+            <Button className="mt-4 rounded-2xl" textClassName="text-base" onPress={handleSubmitRating} disabled={!canSubmit}>
+              {submitting ? 'Đang gửi...' : 'Xác nhận'}
+            </Button>
+          </CardContent>
+        </Card>
+      )}
+
     </View>
   );
 }
