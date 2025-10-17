@@ -27,7 +27,7 @@ export default function RootLayout() {
       <BaseToast
         {...props}
         style={{ borderLeftColor: 'green' }}
-        contentContainerStyle={{ paddingHorizontal: 15 }}
+        contentContainerStyle={{ paddingHorizontal: 15, paddingVertical: 10 }}
         text1Style={{
           fontSize: 16,
         }}
@@ -48,6 +48,8 @@ export default function RootLayout() {
         text2Style={{
           fontSize: 14,
         }}
+        contentContainerStyle={{ paddingHorizontal: 15, paddingVertical: 10 }}
+        text2NumberOfLines={3}
       />
     ),
   };

@@ -109,9 +109,6 @@ const MapboxExample = () => {
       </Mapbox.MapView>
 
       <View style={styles.buttonContainer}>
-        <TouchableOpacity style={styles.button} onPress={() => flyToLocation(initialCoordinates)}>
-          <Text style={styles.buttonText}>Về TPHCM</Text>
-        </TouchableOpacity>
         <TouchableOpacity style={styles.button} onPress={flyToUserLocation}>
           <Text style={styles.buttonText}>Vị trí của tôi</Text>
         </TouchableOpacity>
