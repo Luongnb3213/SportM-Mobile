@@ -58,19 +58,6 @@ export default function HomeScreen() {
     })()
   }, [])
 
-  useEffect(() => {
-    (async () => {
-      await socket.connect();
-
-      const onConnect = () => console.log('✅ connected', socket.socket?.id);
-      const onDisconnect = (r: any) => console.log('🔌 disconnected', r);
-
-      socket.on('connect', onConnect);
-      socket.on('disconnect', onDisconnect);
-    })();
-  }, [])
-
-
 
   return (
     <KeyboardProvider>

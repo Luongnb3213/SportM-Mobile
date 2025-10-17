@@ -1,5 +1,5 @@
 // app/(tabs)/notifications/index.tsx
-import React, { JSX, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import {
   View,
   Text,
@@ -12,13 +12,8 @@ import {
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
   Ionicons,
-  Feather,
-  MaterialCommunityIcons,
-  AntDesign,
 } from '@expo/vector-icons';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/Avatar';
 import { Card } from '@/components/Card';
-import Button from '@/components/Button';
 import EmptyState from '@/components/ui/EmptyState';
 import HeaderUser from '@/components/ui/HeaderUser';
 import { KeyboardProvider } from 'react-native-keyboard-controller';
@@ -161,7 +156,6 @@ export default function NotificationsScreen() {
     }
 
     const handleNewNotification = (notification: NotificationPayload) => {
-      console.log('Received real-time notification:', notification);
       setItems((prev) => {
         const newNotificationWithId = {
           ...notification,

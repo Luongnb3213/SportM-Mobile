@@ -23,6 +23,7 @@ import { uploadToCloudinary } from '@/lib/uploadToCloudinary';
 import Toast from 'react-native-toast-message';
 import { jwtDecode } from 'jwt-decode';
 import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
+import { getErrorMessage } from '@/lib/utils';
 
 type Gender = 'male' | 'female' | '';
 
@@ -121,8 +122,7 @@ const UpdateAccount = () => {
         throw new Error('Thiếu userId. Hãy truyền hoặc gán userId trước khi gọi API.');
       }
       const { data } = await useAxios.patch(`/users/${userId}`, body);
-      const newUser = jwtDecode(data.data?.token)
-      console.log('Token decode:', newUser);
+      const newUser = data.data
       auth.setUser(newUser);
       Toast.show({
         type: 'success',
@@ -131,7 +131,6 @@ const UpdateAccount = () => {
       })
 
     } catch (err: any) {
-      console.log('Lỗi cập nhật:', JSON.stringify(err) || err);
       Toast.show({
         type: 'error',
         text1: 'Cập nhật thất bại',
@@ -179,7 +178,6 @@ const UpdateAccount = () => {
         const { data } = await useAxios.get(`/users/${auth.user?.userId}`);
         const userFromServer: ServerUser = data.data;
         if (isMounted) {
-          console.log("user Fetch", userFromServer)
           setUserData(userFromServer as any);
           hydrateFormFromUser(userFromServer);
         }

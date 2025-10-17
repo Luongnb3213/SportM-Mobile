@@ -193,7 +193,7 @@ const UpdateAccount = () => {
       };
 
       const { data: patchUserRes } = await useAxios.patch(`/users/${userId}`, bodyUser);
-      const newUser = jwtDecode(patchUserRes?.data?.token);
+      const newUser = patchUserRes?.data
       auth.setUser(newUser);
 
       // 4) Cập nhật payment info owner

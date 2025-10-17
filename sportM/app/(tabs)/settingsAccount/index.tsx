@@ -2,7 +2,7 @@
 import React, { useEffect } from 'react';
 import { Image, View, Text, TouchableOpacity, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Ionicons, MaterialCommunityIcons, Octicons } from '@expo/vector-icons';
+import { FontAwesome, Ionicons, MaterialCommunityIcons, Octicons } from '@expo/vector-icons';
 
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/Avatar';
 import Button from '@/components/Button';
@@ -12,13 +12,20 @@ import { clearTokens } from '@/lib/tokenStorage';
 import { useAuth } from '@/providers/AuthProvider';
 import { useAxios } from '@/lib/api';
 import ProfileScreenSkeleton from '@/components/Skeleton/ProfileScreenSkeleton';
+import TermsModal, { Section } from '@/components/SettingAccountComponent/TermsModal';
+import terms from '@/components/SettingAccountComponent/termsData';
+import termsContact from '@/components/SettingAccountComponent/termsContact';
+
 
 export default function ProfileScreen() {
-  const version = '2.2.2';
+  const version = '1.0.0';
   const auth = useAuth();
 
   const [userData, setUserData] = React.useState(auth.user);
   const [loading, setLoading] = React.useState(false);
+  const [showTerms, setShowTerms] = React.useState(false);
+  const [showContact, setShowContact] = React.useState(false);
+
 
   useEffect(() => {
     if (!auth.user) {
@@ -138,7 +145,9 @@ export default function ProfileScreen() {
                     </View>
                   </TouchableOpacity>
 
-                  <TouchableOpacity className="absolute bottom-[-22px] right-20 flex-row gap-3">
+                  <TouchableOpacity onPress={() => {
+                    router.push('/(tabs)/home/booking')
+                  }} className="absolute bottom-[-22px] right-20 flex-row gap-3">
                     <View className="w-12 h-12 rounded-full items-center justify-center bg-[#2E2F68] shadow-2xl">
                       <Ionicons
                         name="calendar-outline"
@@ -180,12 +189,12 @@ export default function ProfileScreen() {
                       <Ionicons name="information-circle-outline" size={18} />
                     }
                     label="Thông tin"
-                    onPress={() => { }}
+                    onPress={() => setShowTerms(true)}
                   />
                   <QuickAction
                     icon={<Octicons name="issue-opened" size={18} />}
                     label="Báo lỗi"
-                    onPress={() => { }}
+                    onPress={() => setShowContact(true)}
                   />
                   <QuickAction
                     icon={<MaterialCommunityIcons name="logout" size={18} />}
@@ -200,7 +209,12 @@ export default function ProfileScreen() {
                   <ListItem
                     icon={<Ionicons name="calendar-outline" size={18} />}
                     label="Danh sách lịch đã đặt"
-                    onPress={() => { }}
+                    onPress={() => { router.push('/(tabs)/home/booking') }}
+                  />
+                  <ListItem
+                    icon={<FontAwesome name="money" size={18} color="black" />}
+                    label="Lịch sử thanh toán"
+                    onPress={() => { router.push('/(tabs)/home/my-payments') }}
                   />
                 </View>
 
@@ -217,13 +231,25 @@ export default function ProfileScreen() {
                   <ListItem
                     icon={<Ionicons name="document-text-outline" size={18} />}
                     label="Điều khoản và chính sách"
-                    onPress={() => { }}
+                    onPress={() => setShowTerms(true)}
                   />
                 </View>
               </CardContent>
             </Card>
           </View>
         </View>
+        <TermsModal
+          visible={showTerms}
+          onClose={() => setShowTerms(false)}
+          title="Điều khoản sử dụng & Chính sách"
+          sections={terms}
+        />
+        <TermsModal
+          visible={showContact}
+          onClose={() => setShowContact(false)}
+          title="Liên hệ với chúng tôi"
+          sections={termsContact}
+        />
       </ScrollView>
     </SafeAreaView>
   );
