@@ -42,6 +42,9 @@ const DEFAULT_HERO =
   'https://images.unsplash.com/photo-1506744038136-4627383b3fb?auto=format&fit=crop&w=1470&q=80';
 const MAX_IMAGES = 4;
 
+MapboxGL.setAccessToken('pk.eyJ1IjoibHVvbmdjaGFvaSIsImEiOiJjbWZndzlwNHcwNW52MnJwdDJlaGViMDUxIn0.8D0hYvlEZdwx3GzONsOHpg');
+
+
 const PillInput = ({
   icon,
   placeholder,

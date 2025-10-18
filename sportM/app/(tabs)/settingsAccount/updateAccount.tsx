@@ -142,7 +142,7 @@ const UpdateAccount = () => {
   };
 
   const handleDelete = () => {
-    router.back();
+    router.push('/(tabs)/settingsAccount')
   };
 
 
@@ -202,7 +202,7 @@ const UpdateAccount = () => {
     <KeyboardProvider>
       <SafeAreaView className="flex-1 bg-white">
         <TouchableOpacity
-          onPress={() => router.back()}
+          onPress={() => router.push('/(tabs)/settingsAccount')}
           className="flex-row items-center gap-2 py-2 px-4 mb-4"
         >
           <Ionicons name="chevron-back" size={22} />
