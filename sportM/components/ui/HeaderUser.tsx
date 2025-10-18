@@ -37,14 +37,15 @@ const HeaderUser = () => {
       return;
     }
     const perm = await Location.getForegroundPermissionsAsync();
-    console.log('Current permission:', perm.status);
     const loc = await Location.getCurrentPositionAsync({});
-    console.log('Location:', loc);
     setShowLocation(false);
   };
 
   const handleClickIconHeader = () => {
-    if (user?.role === 'CLIENT') return;
+    if (user?.role === 'CLIENT') {
+      router.push('/(tabs)/settingsAccount/updateAccount')
+      return;
+    }
     if (pathname === '/owner') {
       router.push('/owner/addCourt');
     } else {
@@ -53,51 +54,54 @@ const HeaderUser = () => {
   };
 
   const handleClickAvatar = () => {
-    if (user?.role === 'CLIENT') return;
+    if (user?.role === 'CLIENT') {
+      router.push('/(tabs)/settingsAccount/updateAccount')
+      return;
+    }
     router.push('/owner/detailAccount');
   };
 
+
+
   return (
     <View className="py-4">
-      <View className="flex-row items-center gap-3">
-        <Avatar onTouchEnd={handleClickAvatar} className="w-12 h-12 rounded-full">
-          {user?.avatarUrl ? (
-            <AvatarImage  source={{ uri:  user?.avatarUrl }} />
-          ) : (
-            <AvatarFallback textClassname="text-base">
-              {user?.fullName
-                ?.split(' ')
-                .map((w: string) => w[0])
-                .slice(0, 2)
-                .join('') || 'U'}
-            </AvatarFallback>
-          )}
-        </Avatar>
-        <Text className="flex-1 text-base font-bold text-center">
-          Xin chào, {user?.fullName || ''}
-        </Text>
-        <TouchableOpacity onPress={handleClickIconHeader}>
-          <View className="w-12 h-12 rounded-full bg-white items-center justify-center shadow-2xl">
-            {user?.role === 'OWNER' ? (
-              pathname === '/owner' ? (
-                <AntDesign name="plus" size={24} color={t.foreground} />
-              ) : (
-                <Ionicons
-                  name="notifications-outline"
-                  size={24}
-                  color={t.foreground}
-                />
-              )
+      {user && (
+        <View className="flex-row items-center gap-3">
+          <Avatar onTouchEnd={handleClickAvatar} className="w-12 h-12 rounded-full">
+            {user?.avatarUrl ? (
+              <AvatarImage source={{ uri: user?.avatarUrl }} />
             ) : (
-              <MaterialCommunityIcons
-                name="account-outline"
-                size={24}
-                color={t.foreground}
-              />
+              <AvatarFallback textClassname="text-base">
+                {user?.fullName
+                  ?.split(' ')
+                  .map((w: string) => w[0])
+                  .slice(0, 2)
+                  .join('') || 'U'}
+              </AvatarFallback>
             )}
-          </View>
-        </TouchableOpacity>
-      </View>
+          </Avatar>
+          <Text className="flex-1 text-base font-bold text-center">
+            Xin chào, {user?.fullName || ''}
+          </Text>
+          <TouchableOpacity onPress={handleClickIconHeader}>
+            <View className="w-12 h-12 rounded-full bg-white items-center justify-center shadow-2xl">
+              {user?.role === 'OWNER' ? (
+                pathname === '/owner' ? (
+                  <AntDesign name="plus" size={24} color={t.foreground} />
+                ) : (
+                  <Ionicons
+                    name="notifications-outline"
+                    size={24}
+                    color={t.foreground}
+                  />
+                )
+              ) : (
+                  <></>
+              )}
+            </View>
+          </TouchableOpacity>
+        </View>
+      )}
       {showLocation && (
         <TouchableOpacity
           onPress={PermissionLocation}

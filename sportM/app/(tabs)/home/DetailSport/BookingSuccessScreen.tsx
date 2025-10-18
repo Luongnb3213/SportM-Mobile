@@ -12,48 +12,40 @@ import {
   KeyboardAwareScrollView,
   KeyboardProvider,
 } from 'react-native-keyboard-controller';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import Button from '@/components/Button';
+import { router, useLocalSearchParams } from 'expo-router';
+import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
+
+function formatVNDate(iso: string) {
+  const utc = new Date(iso);
+
+  const VN_OFFSET_MS = 7 * 60 * 60 * 1000;
+  const vn = new Date(utc.getTime() + VN_OFFSET_MS);
+
+  const dow = vn.getUTCDay();
+  const d = vn.getUTCDate();
+  const m = vn.getUTCMonth() + 1;
+  const y = vn.getUTCFullYear();
+
+  const weekdayVN = ['CN', 'Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ 7'];
+  return `${weekdayVN[dow]}, ngày ${d}/${m}/${y}`;
+}
+const FLOAT_GAP = 12;
+
+
 
 const BookingSuccessScreen = () => {
-  // <CHANGE> Added coordinates for the venue location
-  const venueCoordinates = {
-    latitude: 10.8231, // Ví dụ tọa độ TP.HCM
-    longitude: 106.6297,
-  };
-
-  const openGoogleMaps = async () => {
-    const { latitude, longitude } = venueCoordinates;
-
-    // URL cho Google Maps với tọa độ
-    const url = `https://www.google.com/maps/search/?api=1&query=${latitude},${longitude}`;
-
-    // Hoặc sử dụng URL scheme cho app Google Maps (nếu đã cài)
-    const googleMapsUrl = `google.navigation:q=${latitude},${longitude}`;
-
-    try {
-      // Kiểm tra xem có thể mở Google Maps app không
-      const supported = await Linking.canOpenURL(googleMapsUrl);
-
-      if (supported) {
-        // Mở Google Maps app
-        await Linking.openURL(googleMapsUrl);
-      } else {
-        // Mở Google Maps trên web browser
-        await Linking.openURL(url);
-      }
-    } catch (error) {
-      Alert.alert('Lỗi', 'Không thể mở Google Maps');
-      console.error('Error opening maps:', error);
-    }
-  };
-
+  const { orderId, createdAt } = useLocalSearchParams<{orderId: string, createdAt: string}>();
+  const insets = useSafeAreaInsets();
+  const tabBarHeight = useBottomTabBarHeight();
+  const bottomGap = Math.max(insets.bottom, 8) + tabBarHeight + FLOAT_GAP;
   return (
     <KeyboardProvider>
       <SafeAreaView className="flex-1 bg-background">
         <KeyboardAwareScrollView
           keyboardShouldPersistTaps="handled"
-          contentContainerStyle={{ flexGrow: 1 }}
+          contentContainerStyle={{ flexGrow: 1, paddingBottom: bottomGap }}
           style={{ backgroundColor: '#1F2257' }}
         >
           <View className="flex-row items-center px-4 py-5">
@@ -76,13 +68,10 @@ const BookingSuccessScreen = () => {
                   ĐẶT SÂN THÀNH CÔNG
                 </Text>
                 <Text className="text-xl text-gray-600 mb-4">
-                  Booking ID. #JQKA1234
+                  Booking ID. #{orderId || 'JQKA1234'}
                 </Text>
                 <Text className="text-2xl font-medium text-gray-800 mb-5">
-                  Thứ 5, ngày 3/6/2036
-                </Text>
-                <Text className="text-2xl font-medium text-gray-800 mb-1">
-                  Sân Golf Nem Chua
+                  {formatVNDate(createdAt)}
                 </Text>
               </View>
 
@@ -90,6 +79,9 @@ const BookingSuccessScreen = () => {
                 className="bg-primary w-full h-12 rounded-2xl mb-8"
                 size="lg"
                 textClassName="text-base"
+                onPress={() => {
+                  router.push('/(tabs)/home/booking')
+                }}
               >
                 Xác nhận
               </Button>

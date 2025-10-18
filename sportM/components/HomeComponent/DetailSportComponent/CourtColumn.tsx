@@ -10,21 +10,24 @@ type IconType = React.ComponentType<{
   color?: string;
 }>;
 
+// Slot now has an ID like '0100-0200'
+type Slot = { id: string; label: string };
+
 export default function CourtColumn({
   courtName,
   courtId,
-  slots,
+  timeSlots, // These are the generic slots with IDs like '0100-0200'
   selected,
   locked,
   onToggle,
   Icon,
 }: {
   courtName: string;
-  courtId: string;
-  slots: { id: string; label: string }[];
-  selected: Set<string>;
-  locked: Set<string>;
-  onToggle: (courtId: string, slotId: string) => void;
+    courtId: string; // 'am' or 'pm'
+    timeSlots: Slot[]; // Generic time slots (e.g., 0100-0200, 0200-0300, ...)
+    selected: Set<string>; // Contains full keys: 'am_slot-0100-0200'
+    locked: Set<string>;   // Contains full keys: 'pm_slot-0100-0200'
+    onToggle: (courtId: string, timeSlotId: string) => void; // timeSlotId is '0100-0200'
   Icon: IconType;
 }) {
   return (
@@ -37,16 +40,18 @@ export default function CourtColumn({
         <Text className="text-sm font-medium text-foreground">{courtName}</Text>
       </View>
 
-      {slots.map((s) => {
-        const key = `${courtId}_${s.id}`;
+      {timeSlots.map((s) => { // Iterate through the generic time slots
+        // The key for a specific bookable slot is a combination of courtId and generic slot id
+        // e.g., 'am_slot-0100-0200' or 'pm_slot-0100-0200'
+        const key = `${courtId}_slot-${s.id}`; 
         const isLocked = locked.has(key);
         const isSelected = selected.has(key);
 
         return (
           <Pressable
-            key={s.id}
+            key={s.id} // Use s.id here for React key, as it's unique for each time row
             disabled={isLocked}
-            onPress={() => onToggle(courtId, s.id)}
+            onPress={() => onToggle(courtId, s.id)} // Pass the generic slot ID to onToggle
             className={cn(
               'rounded-full border',
               isLocked

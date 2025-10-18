@@ -1,183 +1,264 @@
 // components/RatingCard.tsx
-import React, { useEffect, useState } from 'react';
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  TextInput,
-  ScrollView,
-} from 'react-native';
+import React, { useEffect, useMemo, useState, useCallback } from 'react';
+import { View, Text, TouchableOpacity, TextInput, ScrollView, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
-import { Card, CardContent, CardFooter } from '@/components/Card';
-import { Input } from '@/components/Input';
+import { Card, CardContent } from '@/components/Card';
 import Button from '@/components/Button';
 import Toast from 'react-native-toast-message';
 import { useAxios } from '@/lib/api';
 import { Comment } from './Comment/CommentItem';
 import { CommentsList } from './Comment/CommentsList';
+import { getErrorMessage } from '@/lib/utils';
+import { useAuth } from '@/providers/AuthProvider';
 
-const fakeComments: Comment[] = [
-  {
-    id: 'c1',
-    authorName: 'Nguyễn Văn A',
-    avatarUri: 'https://i.pravatar.cc/100?img=1',
-    content: 'Sân đẹp, rộng rãi lắm mọi người!',
-    createdAt: new Date(Date.now() - 1000 * 60 * 2), // 2 phút trước
-  },
-  {
-    id: 'c2',
-    authorName: 'Trần Thị B',
-    avatarUri: 'https://i.pravatar.cc/100?img=5',
-    content: 'Mình thấy đèn hơi tối một chút.',
-    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 3), // 3 giờ trước
-  },
-  {
-    id: 'c3',
-    authorName: 'Lê Văn C',
-    content: 'Anh chủ sân nhiệt tình, sẽ quay lại lần sau.',
-    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2), // 2 ngày trước
-  },
-  {
-    id: 'c4',
-    authorName: 'Trần Thị E',
-    avatarUri: 'https://i.pravatar.cc/100?img=5',
-    content: 'Mình thấy đèn hơi tối một chút.',
-    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 3), // 3 giờ trước
-  },
-  {
-    id: 'c5',
-    authorName: 'Lê Văn F',
-    content: 'Anh chủ sân nhiệt tình, sẽ quay lại lần sau.',
-    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2), // 2 ngày trước
-  },
-];
+type ApiRating = {
+  ratingId: string;
+  content: string;
+  star: number;
+  createdAt: string;
+  ownerId: string;
+  courtId: string;
+};
+
+type ApiMeta = {
+  totalItems: number;
+  itemCount: number;
+  itemsPerPage: number;
+  totalPages: number;
+  currentPage: number;
+};
 
 export default function RatingCard({
-  title = 'Đánh giá sân Golf Nem Chua',
+  title = 'Đánh giá',
   onChange,
   courtID,
+  currentUserId,
+  initialLimit = 10, // bạn có thể đổi mặc định
 }: {
   title?: string;
   onChange?: (rating: number, note: string) => void;
   courtID: string;
+    currentUserId?: string;
+    initialLimit?: number;
 }) {
+  // form create
   const [rating, setRating] = useState<number>(3);
   const [note, setNote] = useState<string>('');
-  const [ratingArray, setRatingArray] = useState<Comment[]>(fakeComments);
+  const [submitting, setSubmitting] = useState<boolean>(false);
+
+  // list state
+  const [items, setItems] = useState<Comment[]>([]);
+  const [page, setPage] = useState(1);
+  const [limit] = useState(initialLimit);
+  const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
+  const { user } = useAuth();
+
+  const mapRatings = (raw: ApiRating[]): Comment[] =>
+    raw.map((r) => ({
+      id: r.ratingId,
+      authorName: 'Người dùng', // nếu backend trả tên thì map vào đây
+      avatarUri: undefined,
+      content: r.content,
+      createdAt: r.createdAt,
+      ownerId: r.ownerId,
+      star: r.star,
+    }));
+
+  const fetchPage = useCallback(
+    async (targetPage: number, append = false) => {
+      const isFirstPage = targetPage === 1 && !append;
+      if (isFirstPage) setLoading(true);
+      else setLoadingMore(true);
+
+      try {
+        const { data } = await useAxios.get(`/rating/${courtID}`, {
+          params: { page: targetPage, limit },
+        });
+
+        const raw: ApiRating[] = data?.data?.items ?? [];
+        const meta: ApiMeta | undefined = data?.data?.meta;
+        const mapped = mapRatings(raw);
+
+        setItems((prev) => (append ? [...prev, ...mapped] : mapped));
+
+        // tính hasMore từ meta
+        if (meta) {
+          setHasMore(meta.currentPage < meta.totalPages);
+        } else {
+          // fallback: nếu meta không có, dựa vào số lượng trả về
+          setHasMore(mapped.length === limit);
+        }
+        setPage(targetPage);
+      } catch (err) {
+        console.log('Error fetching ratings:', err);
+        if (!append) setItems([]);
+        setHasMore(false);
+      } finally {
+        setLoading(false);
+        setLoadingMore(false);
+      }
+    },
+    [courtID, limit]
+  );
+
+  // initial load
+  useEffect(() => {
+    fetchPage(1, false);
+  }, [fetchPage]);
+
   const handleRate = (n: number) => {
     setRating(n);
     onChange?.(n, note);
   };
 
-  useEffect(() => {
-    (async () => {
-      return;
-      try {
-        const { data } = await useAxios.get(`/rating/${courtID}`);
-      } catch (error) {
-        console.error('Error fetching ratings:', error);
-      }
-    })();
-  }, []);
-
   const handleSubmitRating = async () => {
+    if (!rating && !note.trim()) return;
+    setSubmitting(true);
     try {
-      const { data } = await useAxios.post('/rating', {
-        courtId: courtID,
-        star: rating,
+      const payload = { courtId: courtID, star: rating, content: note.trim() };
+      const { data } = await useAxios.post('/rating', payload);
+
+      const newItem: Comment = {
+        id: data?.data?.ratingId ?? String(Date.now()),
+        authorName: 'Bạn',
+        avatarUri: undefined,
         content: note.trim(),
-      });
-      Toast.show({
-        type: 'success',
-        text1: 'Thành công',
-        text2: 'Cảm ơn bạn đã gửi đánh giá!',
-      });
-    } catch (error) {
-      console.error('Error submitting rating:', error);
+        createdAt: new Date().toISOString(),
+        ownerId: currentUserId,
+        star: rating,
+      };
+
+      // prepend vào danh sách
+      setItems((prev) => [newItem, ...prev]);
+      setNote('');
+      setRating(3);
+      Toast.show({ type: 'success', text1: 'Thành công', text2: 'Cảm ơn bạn đã gửi đánh giá!' });
+    } catch (error: any) {
+      console.log('Error submitting rating:', getErrorMessage(error));
       Toast.show({
         type: 'error',
         text1: 'Lỗi',
-        text2: 'Đã có lỗi xảy ra khi gửi đánh giá. Vui lòng thử lại.',
+        text2: getErrorMessage(error) || 'Đã có lỗi xảy ra khi gửi đánh giá. Vui lòng thử lại.',
       });
+    } finally {
+      setSubmitting(false);
     }
+  };
+
+  // callbacks từ item
+  const handleDeleted = (id: string) => {
+    setItems((prev) => prev.filter((x) => x.id !== id));
+  };
+
+  const handleUpdated = (id: string, patch: Partial<Pick<Comment, 'content' | 'star'>>) => {
+    setItems((prev) => prev.map((x) => (x.id === id ? { ...x, ...patch } : x)));
+  };
+
+  const canSubmit = useMemo(() => rating > 0 && !submitting, [rating, submitting]);
+
+  const loadMore = () => {
+    if (loadingMore || !hasMore) return;
+    fetchPage(page + 1, true);
   };
 
   return (
     <View>
-      {ratingArray?.length > 0 ? (
-        <ScrollView
-          className="mx-3 rounded-2xl p-4 bg-[#EEE] overflow-hidden"
-          style={{ maxHeight: 400 }}
-          contentContainerStyle={{ paddingBottom: 16 }}
-          nestedScrollEnabled
-          showsVerticalScrollIndicator={false}
-        >
-          <Text className="text-xl font-extrabold mb-2 text-primary">{title}</Text>
-          <CommentsList comments={ratingArray} />
-        </ScrollView>
-      ) : (
-        <View>
-          <Card className="m-3 rounded-2xl p-4 bg-[#EEE]">
-            <CardContent className="p-0">
-              {/* Title + subtitle */}
-              <Text className="text-xl font-extrabold text-primary">
-                {title}
-              </Text>
-              <Text className="mt-2 text-[13.5px] leading-5 text-muted-foreground">
-                Sau khi trải nghiệm sân, bạn có cảm thấy liệu yêu cầu của bạn đã
-                được thỏa mãn chưa?
-              </Text>
+      {/* LIST */}
+      <ScrollView
+        className="mx-3 rounded-2xl p-4 bg-[#EEE] overflow-hidden"
+        style={{ maxHeight: 400 }}
+        contentContainerStyle={{ paddingBottom: 12 }}
+        nestedScrollEnabled
+        showsVerticalScrollIndicator={false}
+      >
+        <Text className="text-xl font-extrabold mb-2 text-primary">{title}</Text>
 
-              {/* Stars */}
-              <View className="mt-4 flex-row items-center gap-3">
-                {Array.from({ length: 5 }).map((_, i) => {
-                  const idx = i + 1;
-                  const active = idx <= rating;
-                  return (
-                    <TouchableOpacity
-                      key={idx}
-                      onPress={() => handleRate(idx)}
-                      hitSlop={8}
-                    >
-                      <Ionicons
-                        name={active ? 'star' : 'star-outline'}
-                        size={28}
-                        color={active ? '#F59E0B' : '#94A3B8'}
-                      />
-                    </TouchableOpacity>
-                  );
-                })}
+        {loading ? (
+          <View className="py-6 items-center">
+            <ActivityIndicator />
+            <Text className="mt-2 text-sm text-muted-foreground">Đang tải đánh giá...</Text>
+          </View>
+        ) : (
+          <>
+            <CommentsList
+              comments={items}
+              currentUserId={currentUserId}
+              onDeleted={handleDeleted}
+              onUpdated={handleUpdated}
+            />
+
+            {/* Footer: Load more */}
+            {hasMore ? (
+              <View className="mt-2">
+                <Button
+                  onPress={loadMore}
+                  disabled={loadingMore}
+                  className="rounded-xl"
+                  textClassName="text-[14px]"
+                >
+                  {loadingMore ? 'Đang tải...' : 'Xem thêm'}
+                </Button>
               </View>
+            ) : (
+              items.length > 0 && (
+                <Text className="mt-2 text-center text-xs text-muted-foreground">
+                  Đã hiển thị tất cả đánh giá
+                </Text>
+              )
+            )}
+          </>
+        )}
+      </ScrollView>
 
-              {/* Comment box */}
-              <Text className="mt-5 text-[13.5px] font-semibold text-primary">
-                Nhập nhận xét của bạn tại đây (Optional)
-              </Text>
-              <TextInput
-                placeholder="Nhập nhận xét"
-                multiline
-                value={note}
-                onChangeText={(t) => {
-                  setNote(t);
-                  onChange?.(rating, t);
-                }}
-                className="mt-2 min-h-[140px] rounded-2xl bg-white text-[15px]"
-                editable
-                numberOfLines={4}
-                style={{ textAlignVertical: 'top', padding: 12 }}
-              />
-            </CardContent>
-          </Card>
-          <Button
-            className="mx-3 rounded-2xl"
-            textClassName="text-base"
-            onPress={handleSubmitRating}
-          >
-            Xác nhận
-          </Button>
-        </View>
+      {/* FORM CREATE */}
+
+      {user && (
+        <Card className="m-3 rounded-2xl p-4 bg-[#EEE]">
+          <CardContent className="p-0">
+            <Text className="text-xl font-extrabold text-primary">Thêm đánh giá của bạn</Text>
+            <Text className="mt-2 text-[13.5px] leading-5 text-muted-foreground">
+              Sau khi trải nghiệm sân, bạn cảm thấy như thế nào?
+            </Text>
+
+            {/* Stars */}
+            <View className="mt-4 flex-row items-center gap-3">
+              {Array.from({ length: 5 }).map((_, i) => {
+                const idx = i + 1;
+                const active = idx <= rating;
+                return (
+                  <TouchableOpacity key={idx} onPress={() => handleRate(idx)} hitSlop={8}>
+                    <Ionicons name={active ? 'star' : 'star-outline'} size={28} color={active ? '#F59E0B' : '#94A3B8'} />
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+
+            {/* Comment box */}
+            <Text className="mt-5 text-[13.5px] font-semibold text-primary">Nhập nhận xét (tuỳ chọn)</Text>
+            <TextInput
+              placeholder="Nhập nhận xét"
+              multiline
+              value={note}
+              onChangeText={(t) => {
+                setNote(t);
+                onChange?.(rating, t);
+              }}
+              className="mt-2 min-h-[120px] rounded-2xl bg-white text-[15px]"
+              editable={!submitting}
+              numberOfLines={4}
+              style={{ textAlignVertical: 'top', padding: 12 }}
+            />
+
+            <Button className="mt-4 rounded-2xl" textClassName="text-base" onPress={handleSubmitRating} disabled={!canSubmit}>
+              {submitting ? 'Đang gửi...' : 'Xác nhận'}
+            </Button>
+          </CardContent>
+        </Card>
       )}
+
     </View>
   );
 }

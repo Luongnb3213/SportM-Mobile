@@ -45,6 +45,12 @@ const OtpVerify: React.FC<OtpVerifyProps> = ({
           });
         }
       }
+    } catch (error: any) {
+      Toast.show({
+        type: 'error',
+        text1: 'Lỗi',
+        text2: error?.response?.data?.message || 'Xác thực OTP thất bại',
+      });
     } finally {
       setLoading(false);
     }

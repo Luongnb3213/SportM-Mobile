@@ -14,6 +14,7 @@ import BookingScheduleSkeleton from '@/components/Skeleton/BookingScheduleSkelet
 import HeaderUser from '@/components/ui/HeaderUser';
 import { Ionicons } from '@expo/vector-icons';
 import Carousel from 'react-native-reanimated-carousel';
+import { fixedTimeSlotIdToApiTimeSlotId, getErrorMessage, processApiLockedSlots } from '@/lib/utils';
 
 
 type CourtDetail = {
@@ -34,6 +35,23 @@ type CourtDetail = {
     phoneNumber?: string;
     avatarUrl?: string;
   };
+};
+
+const generateFixedTimeSlots = () => {
+  return Array.from({ length: 10 }, (_, i) => {
+    const startHour = i + 1;
+    const endHour = i + 2;
+
+    // Format start/end for ID: e.g., '0700', '0800'
+    const startId = String(startHour).padStart(2, '0') + '00';
+    const endId = String(endHour).padStart(2, '0') + '00';
+
+    return {
+      // ID will be just the time range: e.g., '0100-0200'
+      id: `${startId}-${endId}`,
+      label: `${String(startHour).padStart(2, '0')}:00 - ${String(endHour).padStart(2, '0')}:00`,
+    };
+  });
 };
 
 type Slot = { id: string; label: string };
@@ -57,11 +75,13 @@ const genDaysNext30 = () => {
   });
 };
 
+
+
+
 export default function bookingSchedule() {
   const insets = useSafeAreaInsets();
   const { courtID } = useLocalSearchParams<{ courtID: string }>();
   const { width } = Dimensions.get('window');
-
 
   // court detail
   const [court, setCourt] = useState<CourtDetail | null>(null);
@@ -71,13 +91,18 @@ export default function bookingSchedule() {
   const [days] = useState(() => genDaysNext30());
   const [activeDayId, setActiveDayId] = useState(days[0].id);
 
-  // slots & selections per-day
-  const [slotsByDay, setSlotsByDay] = useState<Record<string, Slot[]>>({});
-  // selected key: 'am_t0','pm_t3',...
+  // Hardcoded generic time slots (01:00-02:00 to 11:00-12:00)
+  const fixedTimeSlots = useMemo(() => generateFixedTimeSlots(), []);
+
+  // loading state for fetching locked slots
+  const [loadingLockedSlots, setLoadingLockedSlots] = useState(false);
+  // locked slots per-day, fetched from API
+  const [lockedSlotsByDay, setLockedSlotsByDay] = useState<Record<string, Set<string>>>({});
+  // selected slots per-day
   const [selectedByDay, setSelectedByDay] = useState<Record<string, Set<string>>>({});
 
   // invited
-   type Friend = { userId: string; fullName: string; avatarUrl?: string };
+  type Friend = { userId: string; fullName: string; avatarUrl?: string };
   const [invited, setInvited] = useState<Friend[]>([]);
   const invitedIds = useMemo(() => invited.map(f => f.userId), [invited]);
 
@@ -122,36 +147,55 @@ export default function bookingSchedule() {
     return () => { mounted = false; };
   }, [courtID]);
 
-  // fetch slots per day (mock or real)
-  const fetchSlotsForDate = useCallback(async (date: string) => {
-    console.log('fetchSlotsForDate', date);
-    const { data } = await useAxios.get(`/courts/${courtID}/slots`, { params: { date } });
-    const slots: Slot[] = data.data.map((x:any) => ({ id: x.id, label: `${x.start} - ${x.end}` }));
-    setSlotsByDay(prev => ({ ...prev, [date]: slots }));
-    setSelectedByDay(prev => prev[date] ? prev : ({ ...prev, [date]: new Set() }));
-  }, [useAxios, courtID]);
+
+  const fetchLockedSlotsForDate = useCallback(async (date: string) => {
+    if (lockedSlotsByDay[date]) return;
+
+    setLoadingLockedSlots(true);
+    try {
+      const { data } = await useAxios.get(`/courts/${courtID}/slots`, { params: { date } });
+      console.log("API response for locked slots:", data.data);
+      // Use the helper function to process the API response
+      const lockedIds = processApiLockedSlots(data.data);
+      console.log("Locked slots for", date, lockedIds);
+      setLockedSlotsByDay(prev => ({ ...prev, [date]: lockedIds }));
+    } catch (e) {
+      console.log("Failed to fetch locked slots for date", date, e);
+      setLockedSlotsByDay(prev => ({ ...prev, [date]: new Set() }));
+    } finally {
+      setLoadingLockedSlots(false);
+    }
+  }, [courtID, lockedSlotsByDay]);
 
   useEffect(() => {
+    // Initialize selectedByDay for the active day if not already present
     setSelectedByDay(prev => prev[activeDayId] ? prev : ({ ...prev, [activeDayId]: new Set() }));
   }, [activeDayId]);
 
   useEffect(() => {
-    if (!slotsByDay[activeDayId]) {
-      fetchSlotsForDate(activeDayId);
-    }
-  }, [activeDayId, slotsByDay, fetchSlotsForDate]);
+    // Fetch locked slots for the active day if not already fetched
+    fetchLockedSlotsForDate(activeDayId);
+  }, [activeDayId, fetchLockedSlotsForDate]);
 
   // toggle slot theo cột AM/PM
-  const onToggleSlot = useCallback((courtId: 'am' | 'pm', slotId: string) => {
+  const onToggleSlot = useCallback((courtId: 'am' | 'pm', timeSlotId: string) => {
     setSelectedByDay(prev => {
       const next = { ...prev };
       const cur = new Set(next[activeDayId] ?? new Set());
-      const key = `${courtId}_${slotId}`;
+      // Construct the full key: e.g., 'am_slot-0700-0800'
+      const key = `${courtId}_slot-${timeSlotId}`;
+
+      // Prevent selecting a locked slot
+      if (lockedSlotsByDay[activeDayId]?.has(key)) {
+        Toast.show({ type: 'error', text1: 'Khung giờ này đã bị khóa' });
+        return prev;
+      }
+
       cur.has(key) ? cur.delete(key) : cur.add(key);
       next[activeDayId] = cur;
       return next;
     });
-  }, [activeDayId]);
+  }, [activeDayId, lockedSlotsByDay]);
 
   // totals
   const totalHours = useMemo(
@@ -179,48 +223,73 @@ export default function bookingSchedule() {
       return;
     }
 
+    // --- LOGIC ĐỂ XÂY DỰNG BODY ĐÃ ĐƯỢC CẬP NHẬT ---
     const selections = Object.entries(selectedByDay)
       .filter(([_, s]) => s && s.size > 0)
       .map(([date, s]) => {
-        const keys = Array.from(s); // ['am_t0','pm_t3',...]
-        const amIds = keys.filter(k => k.startsWith('am_')).map(k => k.split('_')[1]);
-        const pmIds = keys.filter(k => k.startsWith('pm_')).map(k => k.split('_')[1]);
+        const keys = Array.from(s); // ['am_slot-0700-0800','pm_slot-0700-0800',...]
 
-        const all = slotsByDay[date] || [];
-        const toRanges = (ids: string[]) =>
-          all
-            .filter(sl => ids.includes(sl.id))
-            .map(sl => {
-              const [start, end] = sl.label.split(' - ').map(x => x.trim());
-              return { start, end };
-            });
+        const amSlotIdsForApi: string[] = [];
+        const pmSlotIdsForApi: string[] = [];
+
+        keys.forEach(key => {
+          const [courtPrefix, _, timeSlotId] = key.split(/_|-/); // Tách 'am', 'slot', '0700', '0800'
+          const fullTimeSlotId = `${timeSlotId}-${key.split('-')[2]}`; // Lấy lại '0700-0800' từ 'am_slot-0700-0800'
+
+          if (courtPrefix === 'am') {
+            const apiId = fixedTimeSlotIdToApiTimeSlotId(fullTimeSlotId, 'am');
+            if (apiId) amSlotIdsForApi.push(apiId);
+          } else if (courtPrefix === 'pm') {
+            const apiId = fixedTimeSlotIdToApiTimeSlotId(fullTimeSlotId, 'pm');
+            if (apiId) pmSlotIdsForApi.push(apiId);
+          }
+        });
+
         return {
           date,
-          am: { slotIds: amIds },
-          pm: { slotIds: pmIds },
+          am: {
+            slotIds: amSlotIdsForApi,
+          },
+          pm: {
+            slotIds: pmSlotIdsForApi,
+          },
         };
       });
 
     const body = {
       courtId: court?.courtId,
-      selections,               // tách rõ AM/PM cho BE
+      selections: selections, // Sử dụng cấu trúc selections mới
       inviteeIds: invitedIds,
-      note: note.trim(),
+      notes: note.trim(),
     };
+    // --- KẾT THÚC LOGIC CẬP NHẬT ---
 
-    console.log('submitting booking:', JSON.stringify(body));
 
+    console.log('submitting booking:', JSON.stringify(body, null, 2)); // Log đẹp hơn để dễ kiểm tra
     try {
-      await useAxios.post('/bookings', body);
+      const { data } = await useAxios.post('/bookings', body);
+      router.push({
+        pathname: '/(tabs)/home/DetailSport/BookingSuccessScreen',
+        params: {
+          orderId: data.data.orderId,
+          createdAt: data.data.createdAt
+        }
+      })
       Toast.show({ type: 'success', text1: 'Đặt lịch thành công!' });
     } catch (e: any) {
-      console.error('Booking error', e);
-      Toast.show({ type: 'error', text1: 'Đặt lịch thất bại', text2: 'Vui lòng thử lại' });
+      console.log('Booking error', getErrorMessage(e));
+      if (e.status == 409) {
+        Toast.show({ type: 'error', text1: 'Đặt lịch thất bại', text2: 'Một hoặc nhiều khung giờ bạn chọn đã được đặt.' });
+      } else {
+        Toast.show({ type: 'error', text1: 'Đặt lịch thất bại', text2: 'Vui lòng thử lại' });
+      }
     }
   };
 
+
+
   const images = court?.courtImages?.length ? court.courtImages : [
-    'https://images.unsplash.com/poto-1502877338535-766e1452684a?q=80&w=1600',
+    'https://images.unsplash.com/photo-1502877338535-766e1452684a?q=80&w=1600',
   ];
 
   if (loadingCourt) return <BookingScheduleSkeleton />;
@@ -299,7 +368,7 @@ export default function bookingSchedule() {
 
           {/* Lịch chọn giờ */}
           <BookingScheduleScreen
-            key={`${activeDayId}-${(slotsByDay[activeDayId]?.length || 0)}`}
+            key={`${activeDayId}`}
             days={days}
             activeDayId={activeDayId}
             setActiveDayId={(id) => {
@@ -308,11 +377,13 @@ export default function bookingSchedule() {
                 setSelectedByDay(prev => ({ ...prev, [id]: new Set() }));
               }
             }}
-            slots={slotsByDay[activeDayId] || []}
+            timeSlots={fixedTimeSlots}
             selected={selectedByDay[activeDayId] || new Set()}
             onToggle={onToggleSlot}
             pricePerHour={court?.pricePerHour ?? 0}
             sportType={court?.sportType}
+            lockedSlots={lockedSlotsByDay[activeDayId] || new Set()}
+            loadingLockedSlots={loadingLockedSlots} // Pass loading state
           />
 
           {/* Chi tiết giờ đã chọn: nhóm AM/PM */}
@@ -328,12 +399,13 @@ export default function bookingSchedule() {
                   Object.entries(selectedByDay).map(([date, set]) => {
                     if (!set || set.size === 0) return null;
                     const keys = Array.from(set);
-                    const amIds = keys.filter(k => k.startsWith('am_')).map(k => k.split('_')[1]);
-                    const pmIds = keys.filter(k => k.startsWith('pm_')).map(k => k.split('_')[1]);
+                    // Extract just the timeSlotId part from the full key for display
+                    const amSelectedTimeIds = keys.filter(k => k.startsWith('am_')).map(k => k.split('slot-')[1]);
+                    const pmSelectedTimeIds = keys.filter(k => k.startsWith('pm_')).map(k => k.split('slot-')[1]);
 
-                    const allSlots = slotsByDay[date] || [];
-                    const labels = (ids: string[]) => allSlots
-                      .filter(sl => ids.includes(sl.id))
+                    // Use fixedTimeSlots to get labels based on the timeSlotId
+                    const getLabels = (timeIds: string[], allSlots: Slot[]) => allSlots
+                      .filter(sl => timeIds.includes(sl.id))
                       .map(sl => sl.label)
                       .join(', ');
 
@@ -343,11 +415,11 @@ export default function bookingSchedule() {
                         <Text className="text-[15px] font-semibold">
                           {date} — {hours} giờ
                         </Text>
-                        {amIds.length > 0 && (
-                          <Text className="text-[14px] text-gray-700 mt-1">AM: {labels(amIds)}</Text>
+                        {amSelectedTimeIds.length > 0 && (
+                          <Text className="text-[14px] text-gray-700 mt-1">AM: {getLabels(amSelectedTimeIds, fixedTimeSlots)}</Text>
                         )}
-                        {pmIds.length > 0 && (
-                          <Text className="text-[14px] text-gray-700 mt-1">PM: {labels(pmIds)}</Text>
+                        {pmSelectedTimeIds.length > 0 && (
+                          <Text className="text-[14px] text-gray-700 mt-1">PM: {getLabels(pmSelectedTimeIds, fixedTimeSlots)}</Text>
                         )}
                       </View>
                     );
