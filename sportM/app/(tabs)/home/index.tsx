@@ -157,7 +157,7 @@ Everybody knows that but who gives a fuck`}
                 stat1Desc="Hơn 360 sân được liệt kê trong hệ thống"
                 stat2Value="22k+"
                 stat2Desc="Người chủ sân đã tin tưởng chúng tôi"
-                hashtags="#sportmlove #ilovenemchua"
+                hashtags="#sportmlove"
               />
             </View>
 

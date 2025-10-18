@@ -12,6 +12,7 @@ export default function OwnerLayout() {
       <Stack.Screen name="updateAccount" options={{ headerShown: false }} />
       <Stack.Screen name="updateCourt" options={{ headerShown: false }} />
       <Stack.Screen name="bookingOwner" options={{ headerShown: false }} />
+      <Stack.Screen name="my-payments" options={{ headerShown: false }} />
     </Stack>
   );
 }
