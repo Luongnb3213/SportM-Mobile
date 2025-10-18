@@ -31,7 +31,7 @@ export default function AdsHomeSection() {
                 setItems(data.data);
                 setLoading(false);
             } catch (error) {
-                console.error('Failed to fetch ads:', error);
+                console.log('Failed to fetch ads:', error);
             }
         })()
     }, []);

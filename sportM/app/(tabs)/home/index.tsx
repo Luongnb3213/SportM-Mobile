@@ -31,10 +31,7 @@ import GolfDealCard from '../../../components/HomeComponent/GolfDealCard';
 import GolfCourseCard from '@/components/HomeComponent/GolfCourseCard';
 import HeaderUser from '@/components/ui/HeaderUser';
 import { router } from 'expo-router';
-import { NearByYardSkeleton } from '@/components/Skeleton/NearByYardSkeleton';
 import { GolfCourseCardSkeleton } from '@/components/Skeleton/GolfCourseCardSkeleton';
-import { socket } from '@/lib/socket';
-import NotificationTester from '@/components/NotificationComponent/NotificationTester';
 import { useAxios } from '@/lib/api';
 import EmptyState from '@/components/ui/EmptyState';
 import { formatPriceVND } from '@/lib/utils';
@@ -71,20 +68,6 @@ export default function HomeScreen() {
             <View className="bg-background px-4">
               <HeaderUser />
             </View>
-
-            {/* Row 1: search input */}
-            <TouchableOpacity onPress={() => {
-              router.push('/(tabs)/home/search');
-            }} className="flex-row px-4 items-center bg-[#EEEEEE] rounded-xl h-14 mx-4 mt-4">
-              <Feather name="search" size={25} color="#0a0a0a" />
-              <View
-                className="flex-1 text-lg text-black px-2"
-              >
-                <Text className="text-black text-lg">Nhập địa điểm</Text>
-              </View>
-            </TouchableOpacity>
-
-
             <View className="gap-5 px-2 mt-4 flex-col">
               <View className="flex-row items-center justify-between px-4 bg-white">
                 <Text className="text-3xl font-bold leading-snug text-primary">Sự kiện nổi bật</Text>

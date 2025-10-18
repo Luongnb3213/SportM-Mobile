@@ -38,7 +38,7 @@ export default function AdsPage() {
                 setHasMore(data.data.items.length > 4);
                 setLoading(false);
             } catch (error) {
-                console.error('Failed to fetch ads:', error);
+                console.log('Failed to fetch ads:', error);
             }
         })()
     }, []);

@@ -55,7 +55,7 @@ const HeaderUser = () => {
 
   const handleClickAvatar = () => {
     if (user?.role === 'CLIENT') {
-      router.push('/(tabs)/settingsAccount')
+      router.push('/(tabs)/settingsAccount/updateAccount')
       return;
     }
     router.push('/owner/detailAccount');
@@ -96,11 +96,7 @@ const HeaderUser = () => {
                   />
                 )
               ) : (
-                <MaterialCommunityIcons
-                  name="account-outline"
-                  size={24}
-                  color={t.foreground}
-                />
+                  <></>
               )}
             </View>
           </TouchableOpacity>

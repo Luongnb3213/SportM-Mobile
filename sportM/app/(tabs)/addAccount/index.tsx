@@ -11,6 +11,7 @@ import EmptyState from '@/components/ui/EmptyState';
 import Toast from 'react-native-toast-message';
 import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
 import { useAuth } from '@/providers/AuthProvider';
+import { Avatar, AvatarFallback } from '@/components/Avatar';
 
 const { height: SCREEN_HEIGHT, width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -138,13 +139,20 @@ export default function FeedScreen() {
   return (
     <KeyboardProvider>
       <SafeAreaView className="flex-1">
-        <View className="px-4 pb-2 flex-row justify-start">
+        <View className="px-4 pb-2 flex-row justify-between items-center">
           <TouchableOpacity
             onPress={() => router.back()}
             className="flex-row items-center gap-2 py-2"
           >
             <Ionicons name="chevron-back" size={22} />
             <Text className="text-[15px] text-primary font-medium">Trở về trang trước</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            className="flex-row items-center gap-2 py-2"
+            onPress={() => router.push('/(tabs)/addAccount/listFriendRequest')}
+          >
+            <Text className="text-base text-primary font-medium">Xem lời mời</Text>
+            <Ionicons name="chevron-back" style={{ transform: [{ rotateY: '180deg' }] }} size={20} />
           </TouchableOpacity>
         </View>
 
@@ -172,17 +180,32 @@ export default function FeedScreen() {
                     style={{ marginHorizontal: 15, height: SCREEN_HEIGHT - (bottomGap + 130) }}
                     className="rounded-2xl relative"
                   >
-                    <Image
-                      source={{ uri: item.avatarUrl || 'https://picsum.phtos/800/1200?random=1' }}
-                      resizeMode="cover"
-                      style={{
+                    {item?.avatarUrl ? (
+                      <Image
+                        source={{ uri: item?.avatarUrl }}
+                        resizeMode="cover"
+                        style={{
+                          position: 'absolute',
+                          inset: 0,
+                          width: '100%',
+                          height: '100%',
+                          borderRadius: 16,
+                        }}
+                      />
+                    ) : (
+                      <Avatar style={{
                         position: 'absolute',
                         inset: 0,
                         width: '100%',
                         height: '100%',
                         borderRadius: 16,
-                      }}
-                    />
+                      }}>
+                        <AvatarFallback style={{
+                          borderRadius: 16,
+                        }} textClassname="text-xxl">{item.fullName?.split(' ').map(w => w[0]).slice(0, 2).join('') || 'U'}</AvatarFallback>
+                      </Avatar>
+                    )}
+
 
                     <View style={{ position: 'absolute', inset: 0, justifyContent: 'flex-end' }}>
                       <View className="bg-black/60 p-4 pb-28 rounded-2xl">
@@ -210,20 +233,6 @@ export default function FeedScreen() {
                         }}
                       >
                         <Ionicons name="close" size={28} color="white" />
-                      </TouchableOpacity>
-                      {/* Friend requests */}
-                      <TouchableOpacity
-                        onPress={() => router.push('/(tabs)/addAccount/listFriendRequest')}
-                        style={{
-                          width: 70,
-                          height: 70,
-                          borderRadius: 9999,
-                          backgroundColor: '#D8D8D8',
-                          justifyContent: 'center',
-                          alignItems: 'center',
-                        }}
-                      >
-                        <MaterialIcons name="supervisor-account" size={24} color="white" />
                       </TouchableOpacity>
                       {/* Add */}
                       <TouchableOpacity
