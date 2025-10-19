@@ -17,7 +17,6 @@
       }
     },
     "android": {
-      "newArchEnabled": false,
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/sportM-splash.png",
         "backgroundColor": "#ffffff"
@@ -40,14 +39,6 @@
       "favicon": "./assets/images/favicon.png"
     },
     "plugins": [
-      [
-        "expo-build-properties",
-        {
-          "android": {
-            "kotlinVersion": "1.9.22"
-          }
-        }
-      ],
       [
         "@rnmapbox/maps",
         {
@@ -77,6 +68,7 @@
           "backgroundColor": "#ffffff"
         }
       ],
+      "expo-build-properties",
       "expo-secure-store",
       "expo-notifications"
     ],
