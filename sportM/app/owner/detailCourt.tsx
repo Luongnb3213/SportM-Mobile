@@ -64,7 +64,7 @@ const DetailCourt = () => {
 
   return (
     <KeyboardProvider>
-      <SafeAreaView className="flex-1">
+      <SafeAreaView className="flex-1 bg-white">
         <KeyboardAwareScrollView
           keyboardShouldPersistTaps="handled"
           extraKeyboardSpace={0}

@@ -8,8 +8,7 @@ import Pagination from '@/components/ui/Pagination';
 import { useDebounce } from '@/hooks/useDebounce';
 import { useAxios } from '@/lib/api';
 import { formatPriceVND } from '@/lib/utils';
-import { useAppTheme } from '@/styles/theme';
-import { Entypo, Feather, FontAwesome5, FontAwesome6, MaterialCommunityIcons } from '@expo/vector-icons';
+import { Feather } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import React, { useEffect, useRef } from 'react';
 import { Text, TextInput, TouchableOpacity, View } from 'react-native';
@@ -29,7 +28,6 @@ type Pill = { sportTypeId: string | null; typeName: string; status: boolean };
 
 const Search = () => {
   const insets = useSafeAreaInsets();
-  const t = useAppTheme();
   const [sportTypeList, setSportTypeList] = React.useState<Pill[] | null>(null);
   const [sportTypeSelected, setSportTypeSelected] = React.useState<string | null>(null);
   const [searchText, setSearchText] = React.useState<string>('');
@@ -94,7 +92,7 @@ const Search = () => {
           keyboardShouldPersistTaps="handled"
           contentContainerStyle={{
             paddingBottom: insets.bottom + 150,
-            backgroundColor: t.background,
+            backgroundColor: 'white',
           }}
           extraKeyboardSpace={0}
         >

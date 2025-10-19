@@ -1,22 +1,15 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   View,
   Text,
-  ScrollView,
-  Dimensions,
   TouchableOpacity,
-  TextInput,
-  ImageBackground,
-  Image,
-  StyleSheet,
   Linking,
 } from 'react-native';
 import Button from '@/components/Button';
-import { Card } from '@/components/Card';
-import { useAppTheme } from '@/styles/theme';
-import { Feather, Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
+
+import { Ionicons } from '@expo/vector-icons';
 import {
   SafeAreaView,
   useSafeAreaInsets,
@@ -39,7 +32,6 @@ import AdsHomeSection from '@/components/HomeComponent/AdsHomeSection';
 import { useAuth } from '@/providers/AuthProvider';
 
 export default function HomeScreen() {
-  const t = useAppTheme();
   const insets = useSafeAreaInsets();
   const [bookingCourt, setBookingCourt] = useState<any[]>();
   const { user } = useAuth()
@@ -64,8 +56,8 @@ export default function HomeScreen() {
           contentContainerStyle={{ paddingBottom: insets.bottom + 150 }}
           extraKeyboardSpace={0}
         >
-          <View style={{ backgroundColor: t.background }}>
-            <View className="bg-background px-4">
+          <View style={{ backgroundColor: 'white' }}>
+            <View className="bg-white px-4">
               <HeaderUser />
             </View>
             <View className="gap-5 px-2 mt-4 flex-col">

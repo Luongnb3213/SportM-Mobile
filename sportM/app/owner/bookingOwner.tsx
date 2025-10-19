@@ -218,7 +218,7 @@ export default function BookingOwnerScreen() {
 
     if (!courtId) {
         return (
-            <SafeAreaView className="flex-1 bg-background">
+            <SafeAreaView className="flex-1 bg-white">
                 <View className="px-4">
                     <HeaderUser />
                 </View>
@@ -233,7 +233,7 @@ export default function BookingOwnerScreen() {
 
     return (
         <KeyboardProvider>
-            <SafeAreaView className="flex-1 bg-background">
+            <SafeAreaView className="flex-1 bg-white">
                 <View className="px-4">
                     <HeaderUser />
                     <View className="flex-row px-4 items-center bg-white rounded-xl h-20 mb-4">

@@ -61,7 +61,7 @@ export default function detailAccount() {
 
   if (loading) {
     return (
-      <SafeAreaView className="flex-1 bg-background">
+      <SafeAreaView className="flex-1 bg-white">
         <ProfileScreenSkeleton />
       </SafeAreaView>
     );
@@ -69,7 +69,7 @@ export default function detailAccount() {
 
   return (
     <KeyboardProvider>
-      <SafeAreaView className="flex-1 bg-background">
+      <SafeAreaView className="flex-1 bg-white">
         {/* Top bar */}
         <View className="px-4 pb-2 flex-row items-center justify-between">
           <TouchableOpacity

@@ -1,21 +1,17 @@
-import { useAxios } from '@/lib/api';
 import { useAuth } from '@/providers/AuthProvider';
-import { useAppTheme } from '@/styles/theme';
 import {
   AntDesign,
   Feather,
   Ionicons,
-  MaterialCommunityIcons,
 } from '@expo/vector-icons';
 import React, { useEffect, useState } from 'react';
 import { TouchableOpacity } from 'react-native';
 import { Text } from 'react-native';
-import { Image, View } from 'react-native';
+import { View } from 'react-native';
 import * as Location from 'expo-location';
 import { Avatar, AvatarFallback, AvatarImage } from '../Avatar';
 import { router, usePathname } from 'expo-router';
 const HeaderUser = () => {
-  const t = useAppTheme();
   const { user } = useAuth();
   const [showLocation, setShowLocation] = useState(true);
   const pathname = usePathname();
@@ -87,12 +83,12 @@ const HeaderUser = () => {
             <View className="w-12 h-12 rounded-full bg-white items-center justify-center shadow-2xl">
               {user?.role === 'OWNER' ? (
                 pathname === '/owner' ? (
-                  <AntDesign name="plus" size={24} color={t.foreground} />
+                  <AntDesign name="plus" size={24} color='black' />
                 ) : (
                   <Ionicons
                     name="notifications-outline"
                     size={24}
-                    color={t.foreground}
+                      color='black'
                   />
                 )
               ) : (
