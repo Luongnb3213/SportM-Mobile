@@ -156,7 +156,7 @@ export default function FeedScreen() {
           </TouchableOpacity>
         </View>
 
-        <View className="flex-1" style={{ paddingBottom: bottomGap + 80 }}>
+        <View className="flex-1 bg-white" style={{ paddingBottom: bottomGap + 80 }}>
           {items.length === 0 ? (
             <EmptyState
               icon="people-outline"

@@ -1,5 +1,22 @@
+import { socket } from '@/lib/socket';
 import { Stack } from 'expo-router';
+import { useEffect } from 'react';
 export default function OwnerLayout() {
+
+  useEffect(() => {
+    (async () => {
+      await socket.connect();
+
+      const onConnect = () => console.log('✅ connected', socket.socket?.id);
+      const onDisconnect = (r: any) => console.log('🔌 disconnected', r);
+
+      socket.on('connect', onConnect);
+      socket.on('disconnect', onDisconnect);
+    })();
+  }, [])
+
+
+
   return (
     <Stack
       screenOptions={{ headerShown: false, animation: 'slide_from_right' }}

@@ -189,7 +189,7 @@ export default function BookingsScreen() {
 
   return (
     <KeyboardProvider>
-      <SafeAreaView className="flex-1 bg-background">
+      <SafeAreaView className="flex-1 bg-white">
         <View className="px-4">
           <HeaderUser />
           {/* Search */}

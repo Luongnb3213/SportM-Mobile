@@ -371,7 +371,7 @@ const UpdateCourt = () => {
         <KeyboardAwareScrollView
           keyboardShouldPersistTaps="handled"
           extraKeyboardSpace={0}
-          contentContainerStyle={{ paddingBottom: insets.bottom + 50, flexGrow: 1 }}
+          contentContainerStyle={{ paddingBottom: insets.bottom + 50, flexGrow: 1, backgroundColor: 'white' }}
         >
           <View className="px-4">
             <HeaderUser />

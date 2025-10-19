@@ -222,7 +222,7 @@ export default function NotificationsScreen() {
       <SafeAreaView className="flex-1">
         <View className='px-4'>
           <HeaderUser />
-          <View className="flex-row items-center justify-start px-4 py-3 border-b border-border bg-background">
+          <View className="flex-row items-center justify-start px-4 py-3 border-b border-border bg-white">
             <TouchableOpacity onPress={() => router.back()} className="pr-2">
               <Ionicons name="chevron-back" size={20} />
             </TouchableOpacity>

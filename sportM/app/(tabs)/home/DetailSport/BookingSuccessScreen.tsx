@@ -42,7 +42,7 @@ const BookingSuccessScreen = () => {
   const bottomGap = Math.max(insets.bottom, 8) + tabBarHeight + FLOAT_GAP;
   return (
     <KeyboardProvider>
-      <SafeAreaView className="flex-1 bg-background">
+      <SafeAreaView className="flex-1 bg-white">
         <KeyboardAwareScrollView
           keyboardShouldPersistTaps="handled"
           contentContainerStyle={{ flexGrow: 1, paddingBottom: bottomGap }}
