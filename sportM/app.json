@@ -69,7 +69,7 @@
           "backgroundColor": "#ffffff"
         }
       ],
-      "expo-build-properties",
+      ["expo-build-properties", { "android": { "kotlinVersion": "1.9.24" } }],
       "expo-secure-store",
       "expo-notifications"
     ],
