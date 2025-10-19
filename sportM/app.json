@@ -17,6 +17,7 @@
       }
     },
     "android": {
+      "softwareKeyboardLayoutMode": "resize",
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/sportM-splash.png",
         "backgroundColor": "#ffffff"

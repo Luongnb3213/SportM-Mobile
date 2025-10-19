@@ -77,6 +77,10 @@ export default function EmailSubscribeSection({
           onChangeText={setEmail}
           placeholder="you@example.com"
           className="mb-5 w-full border-b text-lg border-[#000]"
+          keyboardType="email-address"
+          textContentType="emailAddress"
+          returnKeyType="done"
+          onSubmitEditing={handleSubmit}
         />
       </View>
 
