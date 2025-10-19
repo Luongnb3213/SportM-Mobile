@@ -19,6 +19,7 @@ export default function HomeStack() {
       <Stack.Screen name="search" options={{}} />
       <Stack.Screen name="ads-page" options={{}} />
       <Stack.Screen name="my-payments" options={{}} />
+      <Stack.Screen name="ads" options={{}} />
     </Stack>
   );
 }

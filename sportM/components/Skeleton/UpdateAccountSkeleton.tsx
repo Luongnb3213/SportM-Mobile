@@ -3,11 +3,9 @@ import { View, ScrollView, SafeAreaView, Text } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Skeleton } from '@/components/Skeleton';
 import { Card, CardHeader } from '@/components/Card';
-import { KeyboardProvider } from 'react-native-keyboard-controller';
 
 export default function UpdateAccountSkeleton() {
   return (
-    <KeyboardProvider>
       <SafeAreaView className="flex-1 bg-white">
         {/* Back row (fixed) */}
         <View className="flex-row items-center gap-2 py-2 px-4 mb-4">
@@ -81,7 +79,6 @@ export default function UpdateAccountSkeleton() {
           <Skeleton className="h-10 flex-1 rounded-md" />
           <Skeleton className="h-10 flex-1 rounded-md" />
         </View>
-      </SafeAreaView>
-    </KeyboardProvider>
+    </SafeAreaView>
   );
 }

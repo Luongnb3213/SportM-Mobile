@@ -5,11 +5,11 @@ import { Ionicons } from '@expo/vector-icons';
 import { Card } from '@/components/Card';
 import { Skeleton } from '@/components/Skeleton';
 import Button from '@/components/Button';
-import { KeyboardAwareScrollView, KeyboardProvider } from 'react-native-keyboard-controller';
 import HeaderUser from '@/components/ui/HeaderUser';
 import { router } from 'expo-router';
 import { useAxios } from '@/lib/api';
 import EmptyState from '@/components/ui/EmptyState';
+import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
 
 type AdItem = {
     advertisementId: string;
@@ -28,6 +28,7 @@ export default function AdsPage() {
     const [loadingMore, setLoadingMore] = React.useState(false);
     const [hasMore, setHasMore] = React.useState(true);
     const insets = useSafeAreaInsets();
+    const tabBarHeight = typeof useBottomTabBarHeight === 'function' ? useBottomTabBarHeight() : 0;
 
     React.useEffect(() => {
         (async () => {
@@ -59,98 +60,107 @@ export default function AdsPage() {
     };
 
     return (
-        <KeyboardProvider>
-            <SafeAreaView className="flex-1 bg-white">
-                <KeyboardAwareScrollView
-                    keyboardShouldPersistTaps="handled"
-                    contentContainerStyle={{ paddingBottom: insets.bottom + 150 }}
-                    extraKeyboardSpace={0}
-                >
-                    <View className="bg-background px-4">
-                        <HeaderUser />
+        <SafeAreaView className="flex-1 bg-white">
+            <ScrollView
+                keyboardShouldPersistTaps="handled"
+                keyboardDismissMode="on-drag"
+                automaticallyAdjustKeyboardInsets
+                contentInsetAdjustmentBehavior="always"
+                contentContainerStyle={{
+                    paddingBottom: (insets?.bottom ?? 0) + (tabBarHeight ?? 0) + 24,
+                }}
+            >
+                <View className="bg-background px-4">
+                    <HeaderUser />
+                </View>
+
+                {/* Header */}
+                <View className="px-4 pb-2 flex-row justify-start border-b border-border">
+                    <TouchableOpacity
+                        onPress={() => router.back()}
+                        className="flex-row items-center gap-2 py-2"
+                    >
+                        <Ionicons name="chevron-back" size={22} />
+                        <Text className="text-[15px] text-primary font-medium">Trở về trang trước</Text>
+                    </TouchableOpacity>
+                </View>
+
+                {/* Content */}
+                {loading ? (
+                    <View className="px-4 py-4">
+                        {Array.from({ length: 4 }).map((_, i) => (
+                            <Card key={i} className="mb-3 rounded-2xl overflow-hidden">
+                                <Skeleton className="h-36 w-full" />
+                                <View className="p-3">
+                                    <Skeleton className="h-4 w-40 mb-2" />
+                                    <Skeleton className="h-3 w-56 mb-1" />
+                                    <Skeleton className="h-3 w-48" />
+                                </View>
+                            </Card>
+                        ))}
                     </View>
-
-                    {/* Header */}
-                    <View className="px-4 pb-2 flex-row justify-start border-b border-border">
-                        <TouchableOpacity
-                            onPress={() => router.back()}
-                            className="flex-row items-center gap-2 py-2"
-                        >
-                            <Ionicons name="chevron-back" size={22} />
-                            <Text className="text-[15px] text-primary font-medium">Trở về trang trước</Text>
-                        </TouchableOpacity>
-                    </View>
-
-                    {/* Content */}
-                    {loading ? (
-                        <View className="px-4 py-4">
-                            {Array.from({ length: 4 }).map((_, i) => (
-                                <Card key={i} className="mb-3 rounded-2xl overflow-hidden">
-                                    <Skeleton className="h-36 w-full" />
-                                    <View className="p-3">
-                                        <Skeleton className="h-4 w-40 mb-2" />
-                                        <Skeleton className="h-3 w-56 mb-1" />
-                                        <Skeleton className="h-3 w-48" />
-                                    </View>
-                                </Card>
-                            ))}
-                        </View>
-                    ) : (
-                            <>
-                                {items?.length < 0 ? (
-                                    <EmptyState
-                                        icon="people-outline"
-                                        title="Không có sự kiện nổi bật nào"
-                                        description="Hiện chưa có sự kiện nổi bật nào."
-                                    />
-                                ) : (
-                                        <View className="px-4 py-4">
-                                            {items?.map((ad, idx) => (
-                                                <Card key={idx} className="mb-3 rounded-2xl overflow-hidden">
-                                                    <Image source={{ uri: ad.imageUrl }} style={{ width: '100%', height: 140 }} />
-                                                    <View className="p-3">
-                                                        <Text className="text-[15px] font-semibold text-primary" numberOfLines={1}>
-                                                            {ad.title}
-                                                        </Text>
-                                                        <Text className="text-[12px] text-muted-foreground mt-1" numberOfLines={2}>
-                                                            {ad.content}
-                                                        </Text>
-                                                        <View className="mt-2 flex-row items-center">
-                                                            <Ionicons name="time-outline" size={14} />
-                                                            <Text className="ml-1 text-[12px] text-muted-foreground">
-                                                                {new Date(ad.startDate).toLocaleDateString()} -{' '}
-                                                                {new Date(ad.endDate).toLocaleDateString()}
-                                                            </Text>
-                                                        </View>
-                                                        <Button className="mt-3 h-9" size="sm">
-                                                            Xem chi tiết
-                                                        </Button>
-                                                    </View>
-                                                </Card>
-                                            ))}
-
-                                            <View className="mt-2 items-center">
-                                                {loadingMore ? (
-                                                    <View className="flex-row items-center">
-                                                        <ActivityIndicator />
-                                                        <Text className="ml-2">Đang tải thêm…</Text>
-                                                    </View>
-                                                ) : hasMore ? (
-                                                    <Button className="mt-2 px-6" onPress={onLoadMore}>
-                                                        Xem thêm
-                                                    </Button>
-                                                ) : (
-                                                    <Text className="text-muted-foreground text-sm mt-2">
-                                                        Đã hiển thị tất cả
-                                                    </Text>
-                                                )}
+                ) : (
+                    <>
+                        {items?.length < 0 ? (
+                            <EmptyState
+                                icon="people-outline"
+                                title="Không có sự kiện nổi bật nào"
+                                description="Hiện chưa có sự kiện nổi bật nào."
+                            />
+                        ) : (
+                            <View className="px-4 py-4">
+                                {items?.map((ad, idx) => (
+                                    <Card key={idx} className="mb-3 rounded-2xl overflow-hidden">
+                                        <Image source={{ uri: ad.imageUrl }} style={{ width: '100%', height: 140 }} />
+                                        <View className="p-3">
+                                            <Text className="text-[15px] font-semibold text-primary" numberOfLines={1}>
+                                                {ad.title}
+                                            </Text>
+                                            <Text className="text-[12px] text-muted-foreground mt-1" numberOfLines={2}>
+                                                {ad.content}
+                                            </Text>
+                                            <View className="mt-2 flex-row items-center">
+                                                <Ionicons name="time-outline" size={14} />
+                                                <Text className="ml-1 text-[12px] text-muted-foreground">
+                                                    {new Date(ad.startDate).toLocaleDateString()} -{' '}
+                                                    {new Date(ad.endDate).toLocaleDateString()}
+                                                </Text>
                                             </View>
+                                            <Button onPress={() => router.push(
+                                                {
+                                                    pathname: '/(tabs)/home/ads',
+                                                    params: {
+                                                        id: ad.advertisementId
+                                                    }
+                                                }
+                                            )} className="mt-3 h-9" size="sm">
+                                                Xem chi tiết
+                                            </Button>
                                         </View>
-                                )}
-                            </>
-                    )}
-                </KeyboardAwareScrollView>
-            </SafeAreaView>
-        </KeyboardProvider>
+                                    </Card>
+                                ))}
+
+                                <View className="mt-2 items-center">
+                                    {loadingMore ? (
+                                        <View className="flex-row items-center">
+                                            <ActivityIndicator />
+                                            <Text className="ml-2">Đang tải thêm…</Text>
+                                        </View>
+                                    ) : hasMore ? (
+                                        <Button className="mt-2 px-6" onPress={onLoadMore}>
+                                            Xem thêm
+                                        </Button>
+                                    ) : (
+                                        <Text className="text-muted-foreground text-sm mt-2">
+                                            Đã hiển thị tất cả
+                                        </Text>
+                                    )}
+                                </View>
+                            </View>
+                        )}
+                    </>
+                )}
+            </ScrollView>
+        </SafeAreaView>
     );
 }

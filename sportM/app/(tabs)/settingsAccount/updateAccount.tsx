@@ -4,11 +4,7 @@ import { useAxios } from '@/lib/api';
 import { useAuth } from '@/providers/AuthProvider';
 import { Ionicons } from '@expo/vector-icons';
 import React, { useEffect, useState } from 'react';
-import { ActivityIndicator, Text, TextInput, TouchableOpacity, View } from 'react-native';
-import {
-  KeyboardAwareScrollView,
-  KeyboardProvider,
-} from 'react-native-keyboard-controller';
+import { ActivityIndicator, KeyboardAvoidingView, Platform, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import {
   SafeAreaView,
   useSafeAreaInsets,
@@ -21,9 +17,8 @@ import { router } from 'expo-router';
 import UpdateAccountSkeleton from '@/components/Skeleton/UpdateAccountSkeleton';
 import { uploadToCloudinary } from '@/lib/uploadToCloudinary';
 import Toast from 'react-native-toast-message';
-import { jwtDecode } from 'jwt-decode';
 import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
-import { getErrorMessage } from '@/lib/utils';
+import { ScrollView } from 'react-native';
 
 type Gender = 'male' | 'female' | '';
 
@@ -199,40 +194,47 @@ const UpdateAccount = () => {
   }
 
   return (
-    <KeyboardProvider>
-      <SafeAreaView className="flex-1 bg-white">
-        <TouchableOpacity
-          onPress={() => router.push('/(tabs)/settingsAccount')}
-          className="flex-row items-center gap-2 py-2 px-4 mb-4"
-        >
-          <Ionicons name="chevron-back" size={22} />
-          <Text className="text-[15px] text-primary font-medium">
-            Trở về trang trước
-          </Text>
-        </TouchableOpacity>
+    <SafeAreaView className="flex-1 bg-white">
+      <TouchableOpacity
+        onPress={() => router.push('/(tabs)/settingsAccount')}
+        className="flex-row items-center gap-2 py-2 px-4 mb-4"
+      >
+        <Ionicons name="chevron-back" size={22} />
+        <Text className="text-[15px] text-primary font-medium">
+          Trở về trang trước
+        </Text>
+      </TouchableOpacity>
 
-        <View className="m-4 pb-4 border-b border-border">
-          <View className="flex-col items-center gap-4">
-            <TouchableOpacity onPress={pickImage} disabled={submitting}>
-              <Avatar className="h-32 w-32">
-                {avatar ? (
-                  <AvatarImage source={{ uri: avatar }} />
-                ) : (
-                  <AvatarFallback textClassname="text-xl">?</AvatarFallback>
-                )}
-              </Avatar>
-              <View className="absolute bottom-0 right-0 bg-primary rounded-full p-1 opacity-90">
-                <Ionicons name="camera" size={16} color="white" />
-              </View>
-            </TouchableOpacity>
-            <CardTitle>Thông tin cá nhân</CardTitle>
-          </View>
+      <View className="m-4 pb-4 border-b border-border">
+        <View className="flex-col items-center gap-4">
+          <TouchableOpacity onPress={pickImage} disabled={submitting}>
+            <Avatar className="h-32 w-32">
+              {avatar ? (
+                <AvatarImage source={{ uri: avatar }} />
+              ) : (
+                <AvatarFallback textClassname="text-xl">?</AvatarFallback>
+              )}
+            </Avatar>
+            <View className="absolute bottom-0 right-0 bg-primary rounded-full p-1 opacity-90">
+              <Ionicons name="camera" size={16} color="white" />
+            </View>
+          </TouchableOpacity>
+          <CardTitle>Thông tin cá nhân</CardTitle>
         </View>
-
-        <KeyboardAwareScrollView
+      </View>
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        keyboardVerticalOffset={insets.top}
+      >
+        <ScrollView
           keyboardShouldPersistTaps="handled"
-          contentContainerStyle={{ paddingBottom: insets.bottom + 150 }}
-          extraKeyboardSpace={0}
+          keyboardDismissMode="on-drag"
+          automaticallyAdjustKeyboardInsets
+          contentInsetAdjustmentBehavior="always"
+          contentContainerStyle={{
+            paddingBottom: (insets?.bottom ?? 0) + (tabBarHeight ?? 0) + 24,
+          }}
         >
           <View className="mb-4 p-4 px-8">
             <View className="gap-4">
@@ -375,42 +377,41 @@ const UpdateAccount = () => {
               ) : null}
             </View>
           </View>
-        </KeyboardAwareScrollView>
-
-        {/* Footer cố định */}
-        <View style={{
-          position: 'absolute',
-          left: 0,
-          right: 0,
-          bottom: insets.bottom + tabBarHeight,
-          flexDirection: 'row',
-          gap: 16,
-          padding: 16,
-          backgroundColor: 'white',
-          borderTopWidth: 1,
-          borderColor: '#e5e5e5',
-        }}>
-          <Button className="flex-1" onPress={handleUpdate} disabled={submitting}>
-            {submitting ? (
-              <View className="flex-row items-center justify-center gap-2">
-                <ActivityIndicator size="small" />
-                <Text className="text-base">Đang cập nhật...</Text>
-              </View>
-            ) : (
-              'Cập nhật'
-            )}
-          </Button>
-          <Button
-            variant="destructive"
-            className="flex-1"
-            onPress={handleDelete}
-            disabled={submitting}
-          >
-            Huỷ
-          </Button>
-        </View>
-      </SafeAreaView>
-    </KeyboardProvider>
+        </ScrollView>
+      </KeyboardAvoidingView>
+      {/* Footer cố định */}
+      <View style={{
+        position: 'absolute',
+        left: 0,
+        right: 0,
+        bottom: insets.bottom + tabBarHeight,
+        flexDirection: 'row',
+        gap: 16,
+        padding: 16,
+        backgroundColor: 'white',
+        borderTopWidth: 1,
+        borderColor: '#e5e5e5',
+      }}>
+        <Button className="flex-1" onPress={handleUpdate} disabled={submitting}>
+          {submitting ? (
+            <View className="flex-row items-center justify-center gap-2">
+              <ActivityIndicator size="small" />
+              <Text className="text-base">Đang cập nhật...</Text>
+            </View>
+          ) : (
+            'Cập nhật'
+          )}
+        </Button>
+        <Button
+          variant="destructive"
+          className="flex-1"
+          onPress={handleDelete}
+          disabled={submitting}
+        >
+          Huỷ
+        </Button>
+      </View>
+    </SafeAreaView>
   );
 };
 

@@ -8,10 +8,6 @@ import {
 
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/Avatar';
 import {
-  KeyboardAwareScrollView,
-  KeyboardProvider,
-} from 'react-native-keyboard-controller';
-import {
   SafeAreaView,
   useSafeAreaInsets,
 } from 'react-native-safe-area-context';
@@ -19,6 +15,8 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { useAuth } from '@/providers/AuthProvider';
 import { useAxios } from '@/lib/api';
 import ProfileSkeleton from '@/components/Skeleton/ProfileSkeleton';
+import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
+import { ScrollView } from 'react-native';
 
 type Pill = { id: string | number; label: string; icon?: React.ReactNode };
 
@@ -32,6 +30,7 @@ const pills: Pill[] = [
 
 export default function DetailAccount() {
   const insets = useSafeAreaInsets();
+  const tabBarHeight = typeof useBottomTabBarHeight === 'function' ? useBottomTabBarHeight() : 0;
   const auth = useAuth();
   const [userData, setUserData] = React.useState(auth.user);
   const [loading, setLoading] = React.useState(false);
@@ -60,128 +59,132 @@ export default function DetailAccount() {
   const randomPills = useMemo(() => getRandomPills(pills), []);
   if (loading) {
     return (
-      <KeyboardProvider>
-        <SafeAreaView className="flex-1">
-          <KeyboardAwareScrollView
-            keyboardShouldPersistTaps="handled"
-            extraKeyboardSpace={0}
-            contentContainerStyle={{ paddingBottom: insets.bottom + 150 }}
-          >
-            <ProfileSkeleton />
-          </KeyboardAwareScrollView>
-        </SafeAreaView>
-      </KeyboardProvider>
+      <SafeAreaView className="flex-1">
+        <ScrollView
+          keyboardShouldPersistTaps="handled"
+          keyboardDismissMode="on-drag"
+          automaticallyAdjustKeyboardInsets
+          contentInsetAdjustmentBehavior="always"
+          contentContainerStyle={{
+            paddingBottom: (insets?.bottom ?? 0) + (tabBarHeight ?? 0) + 24,
+          }}
+        >
+          <ProfileSkeleton />
+        </ScrollView>
+      </SafeAreaView>
     );
   }
 
   return (
-    <KeyboardProvider>
-      <SafeAreaView className="flex-1">
-        <KeyboardAwareScrollView
-          keyboardShouldPersistTaps="handled"
-          extraKeyboardSpace={0}
-          contentContainerStyle={{ paddingBottom: insets.bottom + 150, backgroundColor: 'white' }}
-        >
-          <View className="m-3 rounded-2xl overflow-hidden">
-            {/* Header */}
-            <View className="pb-0">
-              <View className="flex-row items-center justify-between">
-                <View className="flex-row items-start gap-3">
-                  <TouchableOpacity
-                    onPress={() => router.back()}
-                    className="p-1.5 rounded-full"
-                  >
-                    <Ionicons name="chevron-back" size={22} />
-                  </TouchableOpacity>
+    <SafeAreaView className="flex-1">
+      <ScrollView
+        keyboardShouldPersistTaps="handled"
+        keyboardDismissMode="on-drag"
+        automaticallyAdjustKeyboardInsets
+        contentInsetAdjustmentBehavior="always"
+        contentContainerStyle={{
+          paddingBottom: (insets?.bottom ?? 0) + (tabBarHeight ?? 0) + 24,
+        }}
+      >
+        <View className="m-3 rounded-2xl overflow-hidden">
+          {/* Header */}
+          <View className="pb-0">
+            <View className="flex-row items-center justify-between">
+              <View className="flex-row items-start gap-3">
+                <TouchableOpacity
+                  onPress={() => router.back()}
+                  className="p-1.5 rounded-full"
+                >
+                  <Ionicons name="chevron-back" size={22} />
+                </TouchableOpacity>
 
-                  <View className="flex-row items-center gap-3">
-                    <Avatar className="w-12 h-12">
-                      {userData?.avatarUrl ? (
-                        <AvatarImage source={{ uri: userData.avatarUrl }} />
-                      ) : (
-                        <AvatarFallback textClassname="text-base">
-                          {userData?.fullName
-                            ?.split(' ')
-                            .map((w: string) => w[0])
-                            .slice(0, 2)
-                            .join('') || 'U'}
-                        </AvatarFallback>
-                      )}
-                    </Avatar>
-                    <View>
-                      <Text className="text-base font-semibold text-primary">
-                        {auth.user?.fullName || ''}
-                      </Text>
-                      <Text className="text-xs text-muted-foreground">
-                        Thành phố Hà Nội · {new Date().getFullYear() - new Date(userData?.birthDate).getFullYear()} tuổi
-                      </Text>
-                    </View>
+                <View className="flex-row items-center gap-3">
+                  <Avatar className="w-12 h-12">
+                    {userData?.avatarUrl ? (
+                      <AvatarImage source={{ uri: userData.avatarUrl }} />
+                    ) : (
+                      <AvatarFallback textClassname="text-base">
+                        {userData?.fullName
+                          ?.split(' ')
+                          .map((w: string) => w[0])
+                          .slice(0, 2)
+                          .join('') || 'U'}
+                      </AvatarFallback>
+                    )}
+                  </Avatar>
+                  <View>
+                    <Text className="text-base font-semibold text-primary">
+                      {auth.user?.fullName || ''}
+                    </Text>
+                    <Text className="text-xs text-muted-foreground">
+                      Thành phố Hà Nội · {new Date().getFullYear() - new Date(userData?.birthDate).getFullYear()} tuổi
+                    </Text>
                   </View>
                 </View>
               </View>
             </View>
+          </View>
 
-            {/* Ảnh chính */}
-            <View className="pt-3">
-              <View className="rounded-xl overflow-hidden">
-                {userData?.avatarUrl ? (
-                  <Image
-                    source={{ uri: userData?.avatarUrl }}
-                    className="w-full"
-                    style={{ aspectRatio: 3 / 4 }}
-                    resizeMode="cover"
-                  />
-                ) : (
-                  <View
-                    className="w-full items-center justify-center"
-                    style={{ aspectRatio: 3 / 4, backgroundColor: '#e1e1e1' }}
-                  >
-                    <Text className="text-8xl font-bold text-primary">
-                      {userData?.fullName
-                        ?.split(' ')
-                        .map((w: string) => w[0])
-                        .slice(0, 2)
-                        .join('') || 'U'}
-                    </Text>
-                  </View>
-                )}
-              </View>
-            </View>
-
-            {/* Hàng pill */}
-            <View className="pt-3">
-              <View className="flex-row flex-wrap gap-2">
-                {randomPills.map((p) => (
-                  <View
-                    key={p.id}
-                    className="rounded-lg px-3 flex items-center flex-col shadow-xl py-3 bg-white"
-                  >
-                    <MaterialCommunityIcons name={p.icon as any} size={14} />
-                    <Text className="text-xs"> {p.label}</Text>
-                  </View>
-                ))}
-              </View>
-            </View>
-
-            {/* Thông tin chi tiết */}
-            <View className="flex-col items-start gap-2 mt-3">
-              <Text className="text-3xl font-bold mb-3">Bio</Text>
-              <View className="flex-row items-center gap-2">
-                <AntDesign name="home" size={14} color="black" />
-                <Text className="text-xl">Cầu Giấy, thành phố Hà Nội</Text>
-              </View>
-              <View className="flex-row items-center gap-2">
-                <Ionicons name="time-outline" size={14} />
-                <Text className="text-xl">Tất cả các ngày</Text>
-              </View>
-              <View className="flex-row items-center gap-2">
-                <MaterialCommunityIcons name="bio" size={14} color="black" />
-                <Text className="text-xl">{userData?.bio || ''}</Text>
-              </View>
+          {/* Ảnh chính */}
+          <View className="pt-3">
+            <View className="rounded-xl overflow-hidden">
+              {userData?.avatarUrl ? (
+                <Image
+                  source={{ uri: userData?.avatarUrl }}
+                  className="w-full"
+                  style={{ aspectRatio: 3 / 4 }}
+                  resizeMode="cover"
+                />
+              ) : (
+                <View
+                  className="w-full items-center justify-center"
+                  style={{ aspectRatio: 3 / 4, backgroundColor: '#e1e1e1' }}
+                >
+                  <Text className="text-8xl font-bold text-primary">
+                    {userData?.fullName
+                      ?.split(' ')
+                      .map((w: string) => w[0])
+                      .slice(0, 2)
+                      .join('') || 'U'}
+                  </Text>
+                </View>
+              )}
             </View>
           </View>
-        </KeyboardAwareScrollView>
-      </SafeAreaView>
-    </KeyboardProvider>
+
+          {/* Hàng pill */}
+          <View className="pt-3">
+            <View className="flex-row flex-wrap gap-2">
+              {randomPills.map((p) => (
+                <View
+                  key={p.id}
+                  className="rounded-lg px-3 flex items-center flex-col shadow-xl py-3 bg-white"
+                >
+                  <MaterialCommunityIcons name={p.icon as any} size={14} />
+                  <Text className="text-xs"> {p.label}</Text>
+                </View>
+              ))}
+            </View>
+          </View>
+
+          {/* Thông tin chi tiết */}
+          <View className="flex-col items-start gap-2 mt-3">
+            <Text className="text-3xl font-bold mb-3">Bio</Text>
+            <View className="flex-row items-center gap-2">
+              <AntDesign name="home" size={14} color="black" />
+              <Text className="text-xl">Cầu Giấy, thành phố Hà Nội</Text>
+            </View>
+            <View className="flex-row items-center gap-2">
+              <Ionicons name="time-outline" size={14} />
+              <Text className="text-xl">Tất cả các ngày</Text>
+            </View>
+            <View className="flex-row items-center gap-2">
+              <MaterialCommunityIcons name="bio" size={14} color="black" />
+              <Text className="text-xl">{userData?.bio || ''}</Text>
+            </View>
+          </View>
+        </View>
+      </ScrollView>
+    </SafeAreaView>
   );
 }
