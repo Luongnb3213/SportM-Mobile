@@ -150,7 +150,7 @@ export default function SignUpForm({ email }: { email?: string }) {
             console.log('Play services not available or outdated');
             break;
           default:
-            console.log('Some other error happened:', error);
+            console.log('Some other error happened:', JSON.stringify(error));
         }
       }
     }
