@@ -55,7 +55,7 @@ export default function VerifyEmail() {
             ) : (
               <RequestEmail
                 from={mode}
-                defaultEmail="luongnb3213@gmail.com"
+                  defaultEmail="example@gmail.com"
                 submittingText="Đang gửi..."
               />
             )}
