@@ -1,8 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Dimensions, View, Text, Image, TouchableOpacity, ActivityIndicator } from 'react-native';
 import Carousel from 'react-native-reanimated-carousel';
-import { Ionicons, MaterialIcons } from '@expo/vector-icons';
-import { KeyboardProvider } from 'react-native-keyboard-controller';
+import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import FriendCardSkeleton from '@/components/Skeleton/FriendCardSkeleton';
@@ -120,7 +119,6 @@ export default function FeedScreen() {
 
   if (initialLoading) {
     return (
-      <KeyboardProvider>
         <SafeAreaView className="flex-1">
           <View className="px-4 pb-2 flex-row justify-start">
             <TouchableOpacity
@@ -132,12 +130,10 @@ export default function FeedScreen() {
             </TouchableOpacity>
           </View>
           <FriendCardSkeleton />
-        </SafeAreaView>
-      </KeyboardProvider>
+      </SafeAreaView>
     );
   }
   return (
-    <KeyboardProvider>
       <SafeAreaView className="flex-1">
         <View className="px-4 pb-2 flex-row justify-between items-center">
           <TouchableOpacity
@@ -264,11 +260,8 @@ export default function FeedScreen() {
               )}
             />
           )
-          }
-
-
+        }
         </View>
-      </SafeAreaView>
-    </KeyboardProvider>
+    </SafeAreaView>
   );
 }

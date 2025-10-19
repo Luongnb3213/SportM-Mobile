@@ -1,21 +1,19 @@
 // ProfileScreen.tsx
 import React, { useEffect } from 'react';
-import { Image, View, Text, TouchableOpacity, ScrollView } from 'react-native';
+import { Image, View, Text, TouchableOpacity, ScrollView, KeyboardAvoidingView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { FontAwesome, Ionicons, MaterialCommunityIcons, Octicons } from '@expo/vector-icons';
-
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/Avatar';
-import Button from '@/components/Button';
 import { Card, CardContent } from '@/components/Card';
 import { router } from 'expo-router';
 import { clearTokens } from '@/lib/tokenStorage';
 import { useAuth } from '@/providers/AuthProvider';
 import { useAxios } from '@/lib/api';
 import ProfileScreenSkeleton from '@/components/Skeleton/ProfileScreenSkeleton';
-import TermsModal, { Section } from '@/components/SettingAccountComponent/TermsModal';
+import TermsModal from '@/components/SettingAccountComponent/TermsModal';
 import terms from '@/components/SettingAccountComponent/termsData';
 import termsContact from '@/components/SettingAccountComponent/termsContact';
-import { KeyboardProvider } from 'react-native-keyboard-controller';
+import { Platform } from 'react-native';
 
 
 export default function detailAccount() {
@@ -68,8 +66,11 @@ export default function detailAccount() {
   }
 
   return (
-    <KeyboardProvider>
-      <SafeAreaView className="flex-1 bg-white">
+    <SafeAreaView className="flex-1 bg-white">
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      >
         {/* Top bar */}
         <View className="px-4 pb-2 flex-row items-center justify-between">
           <TouchableOpacity
@@ -86,7 +87,7 @@ export default function detailAccount() {
 
           <TouchableOpacity
             onPress={() => {
-              router.push('/(tabs)/settingsAccount/updateAccount');
+              router.push('/owner/updateAccount');
             }}
           >
             <View className="w-12 h-12 rounded-full bg-white items-center justify-center shadow-2xl">
@@ -94,7 +95,6 @@ export default function detailAccount() {
             </View>
           </TouchableOpacity>
         </View>
-
         <ScrollView
           contentContainerStyle={{ paddingBottom: 200 }}
           showsVerticalScrollIndicator={false}
@@ -220,13 +220,11 @@ export default function detailAccount() {
             sections={termsContact}
           />
         </ScrollView>
-      </SafeAreaView>
-    </KeyboardProvider>
-
+      </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 }
 
-/* ---------- nhỏ gọn tái sử dụng ---------- */
 
 function SectionHeader({
   title,

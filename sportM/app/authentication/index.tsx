@@ -1,15 +1,12 @@
 // app/(auth)/index.tsx
 import React from 'react';
-import { View, Text, Image } from 'react-native';
+import { View, Text, Image, KeyboardAvoidingView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import {
-  KeyboardProvider,
-  KeyboardAwareScrollView,
-} from 'react-native-keyboard-controller';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/Tabs'; // :contentReference[oaicite:6]{index=6}
 import SignInForm from '../../components/AuthenticationComponent/SignInForm';
 import SignUpForm from '../../components/AuthenticationComponent/SignUpForm';
-import { router, useLocalSearchParams } from 'expo-router';
+import { useLocalSearchParams } from 'expo-router';
+import { ScrollView } from 'react-native';
+import { Platform } from 'react-native';
 
 export default function AuthScreen() {
   const { screenname, email } = useLocalSearchParams<{
@@ -20,12 +17,19 @@ export default function AuthScreen() {
     screenname || 'login'
   );
   return (
-    <KeyboardProvider>
-      <SafeAreaView className="flex-1 bg-white">
-        <KeyboardAwareScrollView
+    <SafeAreaView className="flex-1 bg-white">
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      >
+        <ScrollView
           keyboardShouldPersistTaps="handled"
-          contentContainerStyle={{ flexGrow: 1 }}
-          style={{ backgroundColor: '#1F2257' }}
+          keyboardDismissMode="on-drag"
+          automaticallyAdjustKeyboardInsets
+          contentInsetAdjustmentBehavior="always"
+          contentContainerStyle={{
+            flexGrow: 1
+          }}
         >
           {/* khung xanh + panel trắng giống mockup */}
           <View className="rounded-2xl p-5 bg-[#1F2257]">
@@ -38,25 +42,23 @@ export default function AuthScreen() {
               </View>
               <View className="flex-row justify-center mb-8">
                 <Text
-                  className={`w-1/2 text-2xl text-[#292929] text-center ${
-                    screen === 'login' ? 'font-bold text-primary underline' : ''
-                  }`}
+                  className={`w-1/2 text-2xl text-[#292929] text-center ${screen === 'login' ? 'font-bold text-primary underline' : ''
+                    }`}
                 >
                   Đăng nhập
                 </Text>
                 <Text
-                  className={`w-1/2 text-2xl text-[#292929] text-center ${
-                    screen === 'signup' ? 'font-bold text-primary underline' : ''
-                  }`}
+                  className={`w-1/2 text-2xl text-[#292929] text-center ${screen === 'signup' ? 'font-bold text-primary underline' : ''
+                    }`}
                 >
                   Đăng ký
                 </Text>
               </View>
-              {screen === 'login' ? <SignInForm  /> : <SignUpForm email={email} />}
+              {screen === 'login' ? <SignInForm /> : <SignUpForm email={email} />}
             </View>
           </View>
-        </KeyboardAwareScrollView>
-      </SafeAreaView>
-    </KeyboardProvider>
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 }

@@ -45,12 +45,12 @@ export default function HomeScreen() {
     })();
   }, []);
 
+
   return (
     <SafeAreaView className="flex-1" style={{ backgroundColor: '#fff' }}>
       <KeyboardAvoidingView
         style={{ flex: 1 }}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        // Nếu bạn có header của React Navigation muốn cộng thêm offset, thay vì insets.top có thể + headerHeight
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         keyboardVerticalOffset={insets.top}
       >
         <ScrollView
@@ -59,7 +59,7 @@ export default function HomeScreen() {
           automaticallyAdjustKeyboardInsets
           contentInsetAdjustmentBehavior="always"
           contentContainerStyle={{
-            paddingBottom: (insets?.bottom ?? 0) + (tabBarHeight ?? 0) + 24, // đủ chỗ cho tabbar + CTA cuối trang
+            paddingBottom: (insets?.bottom ?? 0) + (tabBarHeight ?? 0) + 24, 
           }}
         >
           <View style={{ backgroundColor: 'white' }}>
@@ -165,7 +165,6 @@ Everybody knows that but who gives a fuck`}
                 stat1Desc="Hơn 360 sân được liệt kê trong hệ thống"
                 stat2Value="22k+"
                 stat2Desc="Người chủ sân đã tin tưởng chúng tôi"
-                hashtags="#sportmlove"
               />
             </View>
 

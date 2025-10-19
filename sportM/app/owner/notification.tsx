@@ -16,7 +16,6 @@ import {
 import { Card } from '@/components/Card';
 import EmptyState from '@/components/ui/EmptyState';
 import HeaderUser from '@/components/ui/HeaderUser';
-import { KeyboardProvider } from 'react-native-keyboard-controller';
 import { socket } from '@/lib/socket';
 import { useNotificationStatus } from '@/providers/NotificationContext';
 import { NotificationLine } from '@/components/NotificationComponent/NotificationLine';
@@ -218,7 +217,6 @@ export default function NotificationsScreen() {
   }, [updateUnreadStatus]);
 
   return (
-    <KeyboardProvider>
       <SafeAreaView className="flex-1">
         <View className='px-4'>
           <HeaderUser />
@@ -282,7 +280,6 @@ export default function NotificationsScreen() {
             />
           )}
         </Card>
-      </SafeAreaView>
-    </KeyboardProvider>
+    </SafeAreaView>
   );
 }

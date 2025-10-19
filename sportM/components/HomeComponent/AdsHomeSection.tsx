@@ -60,38 +60,45 @@ export default function AdsHomeSection() {
                                 description="Hiện chưa có sự kiện nổi bật nào."
                             />
                         ) : (
-                                <View className="px-4">
-                                    {items?.map((ad, idx) => (
-                                        <Card key={idx} className="mb-3 rounded-2xl overflow-hidden">
-                                            <Image source={{ uri: ad.imageUrl }} style={{ width: '100%', height: 140 }} />
-                                            <View className="p-3">
-                                                <Text className="text-[15px] font-semibold text-primary" numberOfLines={1}>
-                                                    {ad.title}
+                            <View className="px-4">
+                                {items?.map((ad, idx) => (
+                                    <Card key={idx} className="mb-3 rounded-2xl overflow-hidden">
+                                        <Image source={{ uri: ad.imageUrl }} style={{ width: '100%', height: 140 }} />
+                                        <View className="p-3">
+                                            <Text className="text-[15px] font-semibold text-primary" numberOfLines={1}>
+                                                {ad.title}
+                                            </Text>
+                                            <Text className="text-[12px] text-muted-foreground mt-1" numberOfLines={2}>
+                                                {ad.content}
+                                            </Text>
+                                            <View className="mt-2 flex-row items-center">
+                                                <Ionicons name="time-outline" size={14} />
+                                                <Text className="ml-1 text-[12px] text-muted-foreground">
+                                                    {new Date(ad.startDate).toLocaleDateString()} -{' '}
+                                                    {new Date(ad.endDate).toLocaleDateString()}
                                                 </Text>
-                                                <Text className="text-[12px] text-muted-foreground mt-1" numberOfLines={2}>
-                                                    {ad.content}
-                                                </Text>
-                                                <View className="mt-2 flex-row items-center">
-                                                    <Ionicons name="time-outline" size={14} />
-                                                    <Text className="ml-1 text-[12px] text-muted-foreground">
-                                                        {new Date(ad.startDate).toLocaleDateString()} -{' '}
-                                                        {new Date(ad.endDate).toLocaleDateString()}
-                                                    </Text>
-                                                </View>
-                                                <Button className="mt-3 h-9" size="sm">
-                                                    Xem chi tiết
-                                                </Button>
                                             </View>
-                                        </Card>
-                                    ))}
-                                    <View className="items-center py-3">
-                                        <Button onPress={() => {
-                                            router.push('/(tabs)/home/ads-page');
-                                        }} variant="ghost" className="px-3 py-2">
-                                            <Text className="mr-1">Xem thêm</Text>
-                                            <Ionicons name="chevron-down" size={16} />
+                                        <Button onPress={() => router.push(
+                                            {
+                                                pathname: '/(tabs)/home/ads',
+                                                params: {
+                                                    id: ad.advertisementId
+                                                }
+                                            }
+                                        )} className="mt-3 h-9" size="sm">
+                                            Xem chi tiết
                                         </Button>
                                     </View>
+                                </Card>
+                            ))}
+                                <View className="items-center py-3">
+                                    <Button onPress={() => {
+                                        router.push('/(tabs)/home/ads-page');
+                                    }} variant="ghost" className="px-3 py-2">
+                                        <Text className="mr-1">Xem thêm</Text>
+                                        <Ionicons name="chevron-down" size={16} />
+                                    </Button>
+                                </View>
                             </View>
                         )}
                     </>

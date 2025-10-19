@@ -5,17 +5,15 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { FontAwesome, Ionicons, MaterialCommunityIcons, Octicons } from '@expo/vector-icons';
 
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/Avatar';
-import Button from '@/components/Button';
 import { Card, CardContent } from '@/components/Card';
 import { router } from 'expo-router';
 import { clearTokens } from '@/lib/tokenStorage';
 import { useAuth } from '@/providers/AuthProvider';
 import { useAxios } from '@/lib/api';
 import ProfileScreenSkeleton from '@/components/Skeleton/ProfileScreenSkeleton';
-import TermsModal, { Section } from '@/components/SettingAccountComponent/TermsModal';
+import TermsModal from '@/components/SettingAccountComponent/TermsModal';
 import terms from '@/components/SettingAccountComponent/termsData';
 import termsContact from '@/components/SettingAccountComponent/termsContact';
-import { KeyboardProvider } from 'react-native-keyboard-controller';
 
 
 export default function ProfileScreen() {
@@ -68,7 +66,6 @@ export default function ProfileScreen() {
   }
 
   return (
-    <KeyboardProvider>
       <SafeAreaView className="flex-1 bg-background">
         {/* Top bar */}
         <View className="px-4 pb-2 flex-row items-center justify-between">
@@ -253,13 +250,10 @@ export default function ProfileScreen() {
             sections={termsContact}
           />
         </ScrollView>
-      </SafeAreaView>
-    </KeyboardProvider>
-
+    </SafeAreaView>
   );
 }
 
-/* ---------- nhỏ gọn tái sử dụng ---------- */
 
 function SectionHeader({
   title,
