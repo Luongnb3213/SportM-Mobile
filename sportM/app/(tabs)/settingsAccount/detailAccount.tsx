@@ -80,7 +80,7 @@ export default function DetailAccount() {
         <KeyboardAwareScrollView
           keyboardShouldPersistTaps="handled"
           extraKeyboardSpace={0}
-          contentContainerStyle={{ paddingBottom: insets.bottom + 150 }}
+          contentContainerStyle={{ paddingBottom: insets.bottom + 150, backgroundColor: 'white' }}
         >
           <View className="m-3 rounded-2xl overflow-hidden">
             {/* Header */}

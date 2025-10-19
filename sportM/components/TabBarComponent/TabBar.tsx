@@ -3,7 +3,10 @@ import { View, StyleSheet } from 'react-native';
 import TabBarButton from './TabBarButton';
 import { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import { RouteNames } from './icons';
+import { useNotificationStatus } from '@/providers/NotificationContext';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+const FLOAT_GAP = 12;
 const TabBar: React.FC<BottomTabBarProps> = ({
   state,
   descriptors,
@@ -11,16 +14,18 @@ const TabBar: React.FC<BottomTabBarProps> = ({
 }) => {
   const primaryColor = '#1F2257';
   const whiteColor = 'white';
+  const { hasUnreadNotifications } = useNotificationStatus();
+  const { bottom: insetBottom } = useSafeAreaInsets();
   return (
-    <View style={styles.tabbar}>
+    <View style={[styles.tabbar, { bottom: insetBottom + FLOAT_GAP }, { paddingBottom: styles.tabbar.paddingVertical + (insetBottom > 0 ? 4 : 0) }]}>
       {state.routes.map((route, index) => {
         const { options } = descriptors[route.key];
         const label =
           options.tabBarLabel !== undefined
             ? options.tabBarLabel
             : options.title !== undefined
-            ? options.title
-            : route.name;
+              ? options.title
+              : route.name;
 
         if (['+not-found', 'index'].includes(route.name)) return null;
 
@@ -53,6 +58,7 @@ const TabBar: React.FC<BottomTabBarProps> = ({
             isFocused={isFocused}
             routeName={route.name as RouteNames}
             color={isFocused ? primaryColor : whiteColor}
+            hasUnreadNotifications={route.name === 'notification' ? hasUnreadNotifications : false}
             label={label as string}
           />
         );
@@ -64,7 +70,6 @@ const TabBar: React.FC<BottomTabBarProps> = ({
 const styles = StyleSheet.create({
   tabbar: {
     position: 'absolute',
-    bottom: 50,
     flex: 1,
     flexDirection: 'row',
     justifyContent: 'space-between',

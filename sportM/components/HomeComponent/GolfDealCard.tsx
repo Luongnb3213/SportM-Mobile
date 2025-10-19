@@ -1,81 +1,60 @@
 import React, { useEffect } from 'react';
-import { Image, View, Text, Dimensions } from 'react-native';
+import { View, Text } from 'react-native';
 import NearByYard from './NearByYard';
 import FlatPeekCarousel from './FlatPeekCarousel';
 import { NearByYardSkeleton } from '../Skeleton/NearByYardSkeleton';
+import { useAxios } from '@/lib/api';
+import * as Location from 'expo-location';
+import { formatPriceVND } from '@/lib/utils';
+import EmptyState from '../ui/EmptyState';
 
 type GolfDealCardProps = {
-  heading?: string; // “HÃY ĐẶT SÂN VỚI CHÚNG TÔI”
-  title: string; // “Trải nghiệm…”
+  heading?: string; // “Gợi ý cho bạn”
+  title: string;    // “Trải nghiệm…”
 };
 
-type NearByYardProps = {
-  id: string | number;
-  title: string;
-  pricePerHour: string; // "1.000.000/ giờ"
-  rating: number | string; // 4.5
-  imageUri: string;
-  location?: string; // "Hà Nội"
+// Kiểu dữ liệu sân gần đây từ API near-by (ví dụ bạn đưa)
+type CourtItem = {
+  id: string;
+  name: string;
+  pricePerHour: number;
+  avgRating: number | null;
+  imageUrl: string | null;
+  address?: string;
+  distance?: number;
+  latitude?: number;
+  longitude?: number;
 };
-
-const data: NearByYardProps[] = [
-  {
-    id: 1,
-    title: 'Bíc cờ bôn',
-    pricePerHour: '1.000.000/ giờ',
-    rating: 4.5,
-    imageUri:
-      'https://images.unsplash.com/photo-1502877338535-766e1452684a?q=80&w=1600',
-    location: 'Hà Nội',
-  },
-  {
-    id: 2,
-    title: 'Sân golf xanh',
-    pricePerHour: '1.200.000/ giờ',
-    rating: 4.7,
-    imageUri:
-      'https://images.unsplash.com/photo-1502877338535-766e1452684a?q=80&w=1600',
-    location: 'Đà Nẵng',
-  },
-  {
-    id: 3,
-    title: 'Sân golf tím',
-    pricePerHour: '1.500.000/ giờ',
-    rating: 4.9,
-    imageUri:
-      'https://images.unsplash.com/photo-1502877338535-766e1452684a?q=80&w=1600',
-    location: 'Hà Nội',
-  },
-  {
-    id: 4,
-    title: 'Sân golf cam',
-    pricePerHour: '1.800.000/ giờ',
-    rating: 4.8,
-    imageUri:
-      'https://images.unsplash.com/photo-1502877338535-766e1452684a?q=80&w=1600',
-    location: 'Hồ Chí Minh',
-  },
-  {
-    id: 5,
-    title: 'Sân golf đỏ',
-    pricePerHour: '2.000.000/ giờ',
-    rating: 5.0,
-    imageUri:
-      'https://images.unsplash.com/photo-1502877338535-766e1452684a?q=80&w=1600',
-    location: 'Hà Nội',
-  },
-];
 
 export default function GolfDealCard({
   heading = 'Gợi ý cho bạn',
   title,
 }: GolfDealCardProps) {
-  const [listCourt, setListCourt] = React.useState<NearByYardProps[]>();
+  const [listCourt, setListCourt] = React.useState<CourtItem[] | undefined>();
+
   useEffect(() => {
     (async () => {
-      // fetch data from API
-    })()
+      try {
+        const perm = await Location.getForegroundPermissionsAsync();
+        if (perm.status !== 'granted') return;
+
+        const loc = await Location.getCurrentPositionAsync({});
+        const { data } = await useAxios.get(
+          `/courts/near-by?lat=${loc?.coords.latitude}&lng=${loc?.coords.longitude}`
+        );
+        setListCourt(Array.isArray(data?.data) ? data.data : []);
+      } catch (error) {
+        console.log('error', error);
+        setListCourt([]); // fallback để không crash UI
+      }
+    })();
   }, []);
+
+  // Skeleton items để hiển thị lúc đầu load
+  const skeletonItems = [{ id: 1 }, { id: 2 }, { id: 3 }, { id: 4 }];
+
+  const hasCourts = Array.isArray(listCourt) && listCourt.length > 0;
+  const isLoading = typeof listCourt === 'undefined';
 
   return (
     <View className="px-4 pr-0">
@@ -92,31 +71,43 @@ export default function GolfDealCard({
       </Text>
 
       <View>
-
-        {listCourt ? (<FlatPeekCarousel
-          data={data}
-          itemsPerView={2.1}
-          aspectRatio={16 / 9}
-          renderItem={({ item }) => (
-            <NearByYard
-              title={item.title}
-              pricePerHour={item.pricePerHour}
-              rating={item.rating}
-              imageUri={item.imageUri}
-              location={item.location}
-            />
-          )}
-        />) :
+        {isLoading ? (
+          // Lúc đầu load: skeleton
           <FlatPeekCarousel
-            data={data}
+            data={skeletonItems}
+            itemsPerView={2.1}
+            aspectRatio={16 / 9}
+            renderItem={({ item }) => <NearByYardSkeleton key={String(item.id)} />}
+          />
+        ) : hasCourts ? (
+          // Có dữ liệu thật
+          <FlatPeekCarousel
+            data={listCourt}
             itemsPerView={2.1}
             aspectRatio={16 / 9}
             renderItem={({ item }) => (
-              <NearByYardSkeleton key={item.id} />
-            )}
-          />
-
-        }
+              <NearByYard
+                courtId={item?.id}
+                key={item?.id}
+                title={item?.name || ''}
+                pricePerHour={formatPriceVND(item?.pricePerHour)}
+                  rating={item?.avgRating ?? 0}
+                  imageUri={
+                    item?.imageUrl ||
+                    'https://images.unsplash.com/photo-150287733855-766e1452684a?q=80&w=1600'
+                  }
+                  location={item?.address}
+                />
+              )}
+            />
+          ) : (
+            // Không có sân gần nhất
+            <EmptyState
+              icon="golf-outline"
+              title="Chưa có sân nào gần nhất"
+              description="Hiện chưa có sân nào gần nhất."
+            />
+        )}
       </View>
     </View>
   );

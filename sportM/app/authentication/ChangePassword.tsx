@@ -50,7 +50,7 @@ const ChangePassword = () => {
 
   return (
     <KeyboardProvider>
-      <SafeAreaView className="flex-1 bg-background">
+      <SafeAreaView className="flex-1 bg-white">
         <KeyboardAwareScrollView
           keyboardShouldPersistTaps="handled"
           contentContainerStyle={{ flexGrow: 1 }}

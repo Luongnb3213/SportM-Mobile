@@ -308,7 +308,7 @@ export const OTPInput = forwardRef<OTPInputRef, OTPInputProps>(
             }
           }
         } catch (e) {
-          console.error('Clipboard error:', e);
+          console.log('Clipboard error:', e);
         }
       };
 

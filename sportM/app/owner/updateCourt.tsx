@@ -31,6 +31,7 @@ import { Skeleton } from '@/components/Skeleton';
 import { formatPriceVND } from '@/lib/utils';
 import { useDebounce } from '@/hooks/useDebounce';
 import UpdateCourtSkeleton from '@/components/Skeleton/UpdateCourtSkeleton';
+import PillIcon from '@/components/PillIcon';
 
 // ===== small input with icon =====
 const PillInput = ({
@@ -249,10 +250,10 @@ const UpdateCourt = () => {
         description: description.trim(),
         pricePerHour: Number(String(pricePerHour).replaceAll(',', '')),
         subService: subService.trim(),
-      }; 
+      };
 
       await axios.patch(`/owner/courts/${courtID}`, body);
-        
+
       console.log('Update court body:', body);
       Toast.show({ type: 'success', text1: 'Thành công', text2: 'Cập nhật sân thành công!' });
       router.push('/owner');
@@ -284,7 +285,7 @@ const UpdateCourt = () => {
         const prox = pickedCoord ?? pickingCenter ?? DEFAULT_CENTER;
         const feats = await forwardGeocode(debouncedQuery, prox);
         if (alive) setSuggestions(feats);
-      } catch {}
+      } catch { }
     })();
     return () => {
       alive = false;
@@ -370,7 +371,7 @@ const UpdateCourt = () => {
         <KeyboardAwareScrollView
           keyboardShouldPersistTaps="handled"
           extraKeyboardSpace={0}
-          contentContainerStyle={{ paddingBottom: insets.bottom + 50, flexGrow: 1 }}
+          contentContainerStyle={{ paddingBottom: insets.bottom + 50, flexGrow: 1, backgroundColor: 'white' }}
         >
           <View className="px-4">
             <HeaderUser />
@@ -514,12 +515,10 @@ const UpdateCourt = () => {
                           <TouchableOpacity
                             onPress={() => setSportTypeSelected(p.sportTypeId)}
                             key={p.sportTypeId || p.typeName}
-                            className={`rounded-lg px-3 flex items-center flex-col shadow-xl py-3 ${
-                              sportTypeSelected === p.sportTypeId ? 'bg-slate-200' : 'bg-white'
-                            }`}
+                            className={`rounded-lg px-3 flex items-center flex-col shadow-xl py-3 ${sportTypeSelected === p.sportTypeId ? 'bg-slate-200' : 'bg-white'
+                              }`}
                           >
-                            {p.typeName === 'Bóng rổ' && <FontAwesome5 name="basketball-ball" size={14} color="black" />}
-                            {p.typeName === 'Bóng đá' && <MaterialCommunityIcons name="soccer" size={14} color="black" />}
+                            <PillIcon typeName={p.typeName} />
                             <Text className="text-xs"> {p.typeName}</Text>
                           </TouchableOpacity>
                         ))

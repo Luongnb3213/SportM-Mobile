@@ -35,11 +35,15 @@ import Toast from 'react-native-toast-message';
 import { Skeleton } from '@/components/Skeleton';
 import { formatPriceVND } from '@/lib/utils';
 import { useDebounce } from '@/hooks/useDebounce';
+import PillIcon from '@/components/PillIcon';
 
 
 const DEFAULT_HERO =
   'https://images.unsplash.com/photo-1506744038136-4627383b3fb?auto=format&fit=crop&w=1470&q=80';
 const MAX_IMAGES = 4;
+
+MapboxGL.setAccessToken('pk.eyJ1IjoibHVvbmdjaGFvaSIsImEiOiJjbWZndzlwNHcwNW52MnJwdDJlaGViMDUxIn0.8D0hYvlEZdwx3GzONsOHpg');
+
 
 const PillInput = ({
   icon,
@@ -336,7 +340,7 @@ const AddCourt = () => {
 
   return (
     <KeyboardProvider>
-      <SafeAreaView className="flex-1">
+      <SafeAreaView className="flex-1 bg-white">
         <KeyboardAwareScrollView
           keyboardShouldPersistTaps="handled"
           extraKeyboardSpace={0}
@@ -496,12 +500,7 @@ const AddCourt = () => {
                                 key={p.sportTypeId}
                                 className={`rounded-lg px-3 flex items-center flex-col shadow-xl py-3  ${sportTypeSelected === p.sportTypeId ? 'bg-slate-200' : 'bg-white'}`}
                               >
-                                {p.typeName == "Bóng rổ" && (
-                                  <FontAwesome5 name="basketball-ball" size={14} color="black" />
-                                )}
-                                {p.typeName == "Bóng đá" && (
-                                  <MaterialCommunityIcons name="soccer" size={14} color="black" />
-                                )}
+                                <PillIcon typeName={p.typeName} />
                                 <Text className="text-xs"> {p.typeName}</Text>
                               </TouchableOpacity>
                             ))

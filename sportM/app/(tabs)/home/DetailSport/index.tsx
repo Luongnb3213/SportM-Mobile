@@ -17,6 +17,7 @@ import {
 import Carousel from 'react-native-reanimated-carousel';
 import DetailCourtSkeleton from '@/components/Skeleton/DetailCourtSkeleton';
 import DetailInfoCard from '@/components/HomeComponent/DetailSportComponent/DetailInfoCard';
+import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
 
 type CourtDTO = {
   courtId: string;
@@ -40,6 +41,8 @@ type CourtDTO = {
 
 const DetailCourt = () => {
   const insets = useSafeAreaInsets();
+  const tabBarHeight = useBottomTabBarHeight();
+  const bottomGap = Math.max(insets.bottom, 8) + tabBarHeight + 12;
   const { width } = Dimensions.get('window');
   const { courtID } = useLocalSearchParams<{ courtID: string }>();
 
@@ -66,12 +69,12 @@ const DetailCourt = () => {
 
   return (
     <KeyboardProvider>
-      <SafeAreaView className="flex-1">
+      <SafeAreaView className="flex-1 bg-white">
         <KeyboardAwareScrollView
           keyboardShouldPersistTaps="handled"
           extraKeyboardSpace={0}
           contentContainerStyle={{
-            paddingBottom: insets.bottom + 50,
+            paddingBottom: bottomGap,
             flexGrow: 1,
           }}
         >

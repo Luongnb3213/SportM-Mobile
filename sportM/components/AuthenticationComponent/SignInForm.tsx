@@ -16,6 +16,7 @@ import {
 import Toast from 'react-native-toast-message';
 import { useAuth } from '@/providers/AuthProvider';
 import { decodeJwt } from '@/lib/jwt';
+import { getErrorMessage } from '@/lib/utils';
 
 GoogleSignin.configure({
   webClientId:
@@ -81,9 +82,11 @@ export default function SignInForm() {
         router.replace('/owner');
       }
     } catch (err: any) {
+      console.log(getErrorMessage(err));
       Toast.show({
         type: 'error',
         text1: 'Đăng nhập thất bại. Vui lòng thử lại.',
+        text2: 'Vui lòng kiểm tra lại email và mật khẩu. Mật khẩu không được chứa ký tự đặc biệt.',
       });
     } finally {
       setSubmitting(false);

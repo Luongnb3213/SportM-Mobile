@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { View, StyleSheet, Text, TouchableOpacity, Image } from 'react-native';
+import { View, StyleSheet, Text, TouchableOpacity, Image, Alert } from 'react-native';
 import Mapbox, {
   MapView,
   Camera,
@@ -11,28 +11,42 @@ import Mapbox, {
 } from '@rnmapbox/maps';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import { FontAwesome5 } from '@expo/vector-icons';
-// Set your Mapbox access token
-Mapbox.setAccessToken(
-  'pk.eyJ1IjoibHVvbmdjaGFvaSIsImEiOiJjbWZndzlwNHcwNW52MnJwdDJlaGViMDUxIn0.8D0hYvlEZdwx3GzONsOHpg'
-);
+
+Mapbox.setAccessToken('pk.eyJ1IjoibHVvbmdjaGFvaSIsImEiOiJjbWZndzlwNHcwNW52MnJwdDJlaGViMDUxIn0.8D0hYvlEZdwx3GzONsOHpg');
 
 const MapboxExample = () => {
-   const mapRef = useRef<MapView>(null);
+  const mapRef = useRef<MapView>(null);
   const cameraRef = useRef<Camera>(null);
-  const [mapReady, setMapReady] = useState(false);
+  const [mapReady, setMapReady] = useState(true);
   const [userLocation, setUserLocation] = useState<[number, number] | null>(null);
 
-  const initialCoordinates: [number, number] = [105.804817, 21.028511]; // (thực ra là Hà Nội)
+  const pendingFlyToUserRef = useRef(false);
+  const pendingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  const initialCoordinates: [number, number] = [105.804817, 21.028511]; // Hà Nội
 
   useEffect(() => {
     (async () => {
-      const ok = await Mapbox.requestAndroidLocationPermissions();
-      console.log('Location permission', ok ? 'granted' : 'denied');
+      await Mapbox.requestAndroidLocationPermissions();
     })();
+    return () => {
+      if (pendingTimeoutRef.current) clearTimeout(pendingTimeoutRef.current);
+    };
   }, []);
 
   const handleUserLocationUpdate = (loc: any) => {
-    setUserLocation([loc.coords.longitude, loc.coords.latitude]);
+    const coord: [number, number] = [loc.coords.longitude, loc.coords.latitude];
+    setUserLocation(coord);
+
+    // 🔹 Nếu đang chờ vị trí để bay thì bay ngay khi nhận được lần đầu
+    if (pendingFlyToUserRef.current && mapReady) {
+      flyToLocation(coord);
+      pendingFlyToUserRef.current = false;
+      if (pendingTimeoutRef.current) {
+        clearTimeout(pendingTimeoutRef.current);
+        pendingTimeoutRef.current = null;
+      }
+    }
   };
 
   const flyToLocation = (coord: [number, number]) => {
@@ -45,20 +59,29 @@ const MapboxExample = () => {
   };
 
   const flyToUserLocation = () => {
-    if (userLocation) flyToLocation(userLocation);
+    if (!mapReady) return;
+    if (userLocation) {
+      flyToLocation(userLocation);
+      return;
+    }
+    pendingFlyToUserRef.current = true;
+
   };
+
   return (
     <View style={styles.container}>
       <Mapbox.MapView
         ref={mapRef}
         style={styles.map}
-        styleURL="mapbox://styles/mapbox/streets-v9"   // ✅ dùng styleURL
+        styleURL="mapbox://styles/mapbox/streets-v9"
         zoomEnabled
         scrollEnabled
         pitchEnabled
         rotateEnabled
         scaleBarEnabled={false}
-        onDidFinishRenderingMapFully={() => setMapReady(true)} // ✅ chờ map ready
+        onDidFinishRenderingMapFully={() => {
+          setMapReady(true)
+        }}
       >
         <Camera
           ref={cameraRef}
@@ -76,7 +99,6 @@ const MapboxExample = () => {
           showsUserHeadingIndicator
         />
 
-        {/* ✅ Dùng PointAnnotation thay MarkerView */}
         {mapReady && (
           <Mapbox.PointAnnotation id="marker1" coordinate={[105.854444, 21.029167]}>
             <View style={{ alignItems: 'center', justifyContent: 'center' }}>
@@ -87,15 +109,12 @@ const MapboxExample = () => {
       </Mapbox.MapView>
 
       <View style={styles.buttonContainer}>
-        <TouchableOpacity style={styles.button} onPress={() => flyToLocation(initialCoordinates)}>
-          <Text style={styles.buttonText}>Về TPHCM</Text>
-        </TouchableOpacity>
         <TouchableOpacity style={styles.button} onPress={flyToUserLocation}>
           <Text style={styles.buttonText}>Vị trí của tôi</Text>
         </TouchableOpacity>
       </View>
     </View>
-  )
+  );
 };
 
 

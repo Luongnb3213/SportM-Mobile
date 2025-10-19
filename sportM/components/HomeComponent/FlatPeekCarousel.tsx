@@ -1,4 +1,3 @@
-'use client';
 
 import type React from 'react';
 import { useMemo } from 'react';
@@ -16,7 +15,7 @@ type RenderItemParams<T> = {
 };
 
 type Props<T extends Item> = {
-  data: T[];
+  data: T[] | undefined | null;
   onPressItem?: (item: T) => void;
   itemsPerView?: number; // số item full trên màn hình (mặc định 2)
   peekFraction?: number; // phần "lấp ló" của item tiếp theo (0.2 = 20%)
@@ -34,6 +33,8 @@ export default function FlatPeekCarousel<T extends Item>({
   aspectRatio = 13 / 9,
   renderItem: customRenderItem,
 }: Props<T>) {
+  const safeData = Array.isArray(data) ? data : [];
+
   const { cardWidth, cardHeight, snap, sidePad } = useMemo(() => {
     // cardWidth * (itemsPerView + peekFraction) + spacing*(itemsPerView-1) = SCREEN_WIDTH
     const cardW =
@@ -65,6 +66,7 @@ export default function FlatPeekCarousel<T extends Item>({
       <TouchableOpacity
         style={{ width: cardWidth, marginRight: spacing, height: cardHeight }}
         onPress={onPress}
+        activeOpacity={0.9}
       >
         {content}
       </TouchableOpacity>
@@ -75,8 +77,8 @@ export default function FlatPeekCarousel<T extends Item>({
     <View className="w-full">
       <FlatList
         horizontal
-        data={data}
-        keyExtractor={(it) => String(it.id)}
+        data={safeData}
+        keyExtractor={(it: any, idx) => String(it?.id ?? idx)}
         renderItem={renderFlatListItem}
         showsHorizontalScrollIndicator={false}
         decelerationRate="fast"

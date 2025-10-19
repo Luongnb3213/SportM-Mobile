@@ -4,12 +4,12 @@ import {
   View,
   Text,
   TouchableOpacity,
-  Platform,
   TextInput,
+  Linking,
 } from 'react-native';
 import { Checkbox } from '@/components/Checkbox';
 import Button from '@/components/Button';
-import { ExternalLink } from '@/components/ExternalLink';
+import Toast from 'react-native-toast-message';
 
 
 type Props = {
@@ -32,9 +32,17 @@ export default function EmailSubscribeSection({
     [email, agree]
   );
 
+
   const handleSubmit = async () => {
+    if (!valid || loading) return;
     try {
       setLoading(true);
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+      Toast.show({
+        type: 'success',
+        text1: 'Cảm ơn bạn đã đăng ký!',
+        text2: 'Chúng tôi sẽ gửi thông tin đến email của bạn sớm nhất có thể.',
+      })
       if (onSubmit) await onSubmit(email);
       setEmail('');
       setAgree(false);
@@ -73,28 +81,35 @@ export default function EmailSubscribeSection({
       </View>
 
       {/* Terms checkbox row */}
-      <View className="flex-row items-start gap-3 mb-6">
+      <View className="flex-row items-start gap-1 mb-6">
         <TouchableOpacity
           onPress={() => setAgree((v) => !v)}
           activeOpacity={0.8}
+          className="flex flex-row items-center gap-2"
         >
-          <Checkbox checkboxClasses="w-5 h-5" className="mt-1" />
+          <View
+            className={`w-5 h-5 border-2 mt-1 rounded-sm flex items-center justify-center ${agree ? 'bg-primary border-primary' : 'border-gray-400'
+              }`}
+          >
+            {agree && <Text className="text-white text-sm">✓</Text>}
+          </View>
         </TouchableOpacity>
 
         <Text className="flex-1 text-base leading-6 text-[#454545] italic">
           Tôi đã đọc, đồng ý với các điều khoản của{' '}
-          <ExternalLink
-            href={privacyUrl as any}
+          <Text
+            onPress={() => Linking.openURL(privacyUrl).catch(err => console.error('Error opening maps', err))}
             className="underline text-primary/70"
           >
             Chính sách bảo mật
-          </ExternalLink>
+          </Text>
         </Text>
       </View>
 
       {/* Submit */}
       <Button
         onPress={handleSubmit}
+        disabled={!valid || loading}
         className="w-36 h-12 rounded-2xl bg-primary/95 disabled:opacity-40"
         textClassName="text-yellow-300 text-lg"
       >

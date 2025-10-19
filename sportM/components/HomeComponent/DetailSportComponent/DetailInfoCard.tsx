@@ -5,8 +5,9 @@ import { Ionicons } from '@expo/vector-icons';
 import { Card, CardHeader, CardContent, CardFooter } from '@/components/Card';
 import { Button } from '@/components/Button';
 import { router } from 'expo-router';
-import RatingCourtCard from '@/components/OwnerComponent/RatingCourtCard';
 import InfoSport from './InfoSport';
+import RatingCard from './RatingCard';
+import { useAuth } from '@/providers/AuthProvider';
 
 type TabItem = { key: string; label: string };
 
@@ -43,7 +44,7 @@ export default function DetailInfoCard({
   court?: CourtDTO;
 }) {
   const [active, setActive] = useState('info');
-
+  const { user } = useAuth();
   return (
     <Card className="mx-3 my-3 overflow-hidden rounded-2xl ">
       {/* HEADER tabs */}
@@ -74,7 +75,7 @@ export default function DetailInfoCard({
       <CardContent className="px-3 py-4 bg-white">
         {active === 'review' && (
           <View>
-            <RatingCourtCard courtID={courtID} /> 
+            <RatingCard courtID={courtID} title={court?.courtName} currentUserId={user?.userId} />
           </View>
         )}
 
@@ -96,6 +97,10 @@ export default function DetailInfoCard({
           <View className="flex-col items-center gap-4 w-full">
             <Button
               onPress={() => {
+                if (!user) {
+                  router.replace('/authentication')
+                  return
+                }
                 router.push({
                   pathname: '/(tabs)/home/DetailSport/bookingSchedule',
                   params: { courtID },

@@ -3,6 +3,8 @@
 import { Tabs, useSegments } from 'expo-router';
 import TabBar from '../../components/TabBarComponent/TabBar';
 import { Text, View } from 'react-native';
+import { useEffect } from 'react';
+import { socket } from '@/lib/socket';
 
 export default function TabsLayout() {
   const tabs = [
@@ -12,6 +14,19 @@ export default function TabsLayout() {
     { name: 'notification', label: 'Thông báo' },
     { name: 'settingsAccount', label: 'Tài khoản' },
   ];
+
+  useEffect(() => {
+    (async () => {
+      await socket.connect();
+
+      const onConnect = () => console.log('✅ connected', socket.socket?.id);
+      const onDisconnect = (r: any) => console.log('🔌 disconnected', r);
+
+      socket.on('connect', onConnect);
+      socket.on('disconnect', onDisconnect);
+    })();
+  }, [])
+
 
   return (
     <Tabs

@@ -1,354 +1,287 @@
-// app/(tabs)/account/index.tsx
-import React from 'react';
+// app/(tabs)/notifications/index.tsx
+import React, { useEffect } from 'react';
 import {
-  Text,
-  TouchableOpacity,
   View,
-  TextInput,
+  Text,
+  FlatList,
+  TouchableOpacity,
+  RefreshControl,
   ActivityIndicator,
+  // StyleSheet, // No longer needed for common styles
 } from 'react-native';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
-  KeyboardAwareScrollView,
-  KeyboardProvider,
-} from 'react-native-keyboard-controller';
-import {
-  SafeAreaView,
-  useSafeAreaInsets,
-} from 'react-native-safe-area-context';
-import HeaderUser from '@/components/ui/HeaderUser';
-import Button from '@/components/Button';
-import { Ionicons, Feather } from '@expo/vector-icons';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/Avatar';
+  Ionicons,
+} from '@expo/vector-icons';
 import { Card } from '@/components/Card';
-import NotificationTester from '@/components/NotificationComponent/NotificationTester';
+import EmptyState from '@/components/ui/EmptyState';
+import HeaderUser from '@/components/ui/HeaderUser';
+import { KeyboardProvider } from 'react-native-keyboard-controller';
+import { socket } from '@/lib/socket';
+import { useNotificationStatus } from '@/providers/NotificationContext';
+import { NotificationLine } from '@/components/NotificationComponent/NotificationLine';
+import { useAxios } from '@/lib/api';
+import { router } from 'expo-router';
+import { useAuth } from '@/providers/AuthProvider';
+// Import your useAxios instance here
+// import useAxios from '@/lib/useAxios'; // Adjust the path as needed
 
-/* =========================
- * Types & Fake seed data
- * ========================= */
-type Noti =
-  | {
-      id: string;
-      type: 'system';
-      text: string;
-      time: string;
-    }
-  | {
-      id: string;
-      type: 'friend_request';
-      user: { name: string; avatar?: string };
-      text: string;
-      time: string;
-    };
-
-// tạo ~60 thông báo trộn giữa system & friend_request
-const SEED_NOTIFS: Noti[] = Array.from({ length: 60 }).map((_, i) => {
-  const isFR = i % 3 === 1;
-  if (isFR) {
-    return {
-      id: `fr${i}`,
-      type: 'friend_request' as const,
-      user: {
-        name: ['Êm Fô', 'Long Vũ', 'Bảo Minh', 'Mi Mi'][i % 4],
-        avatar: `https://i.pravatar.cc/100?img=${(i % 70) + 1}`,
-      },
-      text: 'đã gửi cho bạn 1 lời kết bạn',
-      time: 'Hôm nay, lúc 9:36 AM',
-    };
-  }
-  return {
-    id: `sys${i}`,
-    type: 'system' as const,
-    text:
-      i % 2 === 0
-        ? 'Bạn đã đặt thành công sân Golf Nem Chua. Đừng quên hẹn của mình nhé'
-        : 'Thanh toán của bạn đã được xác nhận.',
-    time: 'Hôm nay, lúc 9:36 AM',
-  };
-});
-
-/* =========================
- * Fake API (filter + paginate)
- * ========================= */
-function mockFetchNotifs({
-  search = '',
-  page = 1,
-  limit = 10,
-  signal,
-}: {
-  search?: string;
-  page?: number;
-  limit?: number;
-  signal?: AbortSignal;
-}): Promise<{ items: Noti[]; hasMore: boolean }> {
-  return new Promise((resolve, reject) => {
-    const timer = setTimeout(() => {
-      const q = search.trim().toLowerCase();
-      const filtered = q
-        ? SEED_NOTIFS.filter((n) => {
-            if (n.type === 'system') {
-              return (
-                n.text.toLowerCase().includes(q) ||
-                n.time.toLowerCase().includes(q)
-              );
-            }
-            return (
-              n.text.toLowerCase().includes(q) ||
-              n.user.name.toLowerCase().includes(q) ||
-              n.time.toLowerCase().includes(q)
-            );
-          })
-        : SEED_NOTIFS;
-
-      const start = (page - 1) * limit;
-      const end = start + limit;
-      const items = filtered.slice(start, end);
-      resolve({ items, hasMore: end < filtered.length });
-    }, 700);
-
-    signal?.addEventListener('abort', () => {
-      clearTimeout(timer);
-    });
-  });
+// =======================
+// Notification Types
+// =======================
+export enum NotificationType {
+  BOOKING_SUCCESS = 'BOOKING_SUCCESS',
+  INVITED_TO_BOOKING = 'INVITED_TO_BOOKING',
+  NEW_BOOKING_FOR_OWNER = 'NEW_BOOKING_FOR_OWNER',
+  FRIEND_REQUEST = 'FRIEND_REQUEST',
+  FRIEND_ACCEPTED = 'FRIEND_ACCEPTED',
+  BOOKING_REMINDER = 'BOOKING_REMINDER',
 }
 
-/* =========================
- * Screen
- * ========================= */
-export default function Notification() {
-  const insets = useSafeAreaInsets();
+// =======================
+// Types
+// =======================
+export type NotificationBase = {
+  id: string;
+  type: NotificationType;
+  createdAt: string;
+  read?: boolean;
+};
 
-  // list state
-  const [data, setData] = React.useState<Noti[]>([]);
-  const [page, setPage] = React.useState(1);
-  const [hasMore, setHasMore] = React.useState(false);
+export type NotificationPayload = NotificationBase & {
+  title?: string;
+  message?: string;
+  actor?: { id: string; name: string; avatar?: string, friendRequestId?: string } | null;
+  meta?: Record<string, any>;
+};
 
-  // loading states
-  const [loadingInitial, setLoadingInitial] = React.useState(false);
+
+const NOTIFICATION_LIMIT = 8; // Define a constant for limit
+
+export default function NotificationsScreen() {
+  const [items, setItems] = React.useState<NotificationPayload[]>([]);
+  const [loadingInitial, setLoadingInitial] = React.useState(true);
+  const [refreshing, setRefreshing] = React.useState(false);
   const [loadingMore, setLoadingMore] = React.useState(false);
+  const [hasMore, setHasMore] = React.useState(true);
+  const [page, setPage] = React.useState(1);
+  const { user } = useAuth();
 
-  const LIMIT = 10;
-  const ctrlRef = React.useRef<AbortController | null>(null);
+  const { setHasUnreadNotifications } = useNotificationStatus();
 
-  // first load + search change
-  React.useEffect(() => {
-    ctrlRef.current?.abort();
+  const updateUnreadStatus = React.useCallback((currentItems: NotificationPayload[]) => {
+    const hasUnread = currentItems?.some(n => !n.read);
+    setHasUnreadNotifications(hasUnread);
+  }, [setHasUnreadNotifications]); // Depend on setHasUnreadNotifications from context
+
+  useEffect(() => {
+    if (!user) {
+      router.replace('/authentication')
+    }
+  }, [])
+  const fetchNotifications = React.useCallback(async (pageNum: number, isRefreshing = false) => {
     const ctrl = new AbortController();
-    ctrlRef.current = ctrl;
+    try {
+      if (isRefreshing) {
+        setRefreshing(true);
+        setPage(1); // Reset page on refresh
+      } else {
+        setLoadingMore(true);
+      }
+      // --- useAxios API call: GET /notification?page=${pageNum}&limit=${NOTIFICATION_LIMIT} ---
 
+      const { data } = await useAxios.get(`/notification?page=${pageNum}&limit=${NOTIFICATION_LIMIT}`, { signal: ctrl.signal });
+      let newNotifications = data.data?.data || []; // Assuming data structure
+
+      if (pageNum === 1) {
+        setItems(newNotifications);
+      } else {
+        setItems((prev) => [...prev, ...newNotifications]);
+      }
+      setHasMore(newNotifications.length === NOTIFICATION_LIMIT);
+      setPage(pageNum);
+      // Correctly pass items for updateUnreadStatus
+      updateUnreadStatus(pageNum === 1 ? newNotifications : [...items, ...newNotifications]);
+
+    } catch (e: any) {
+      if (e.name === 'AbortError') {
+        console.log("Fetch notifications aborted.");
+      } else {
+        console.log("Failed to fetch notifications:", e);
+      }
+      setHasMore(false);
+    } finally {
+      if (isRefreshing) {
+        setRefreshing(false);
+      } else {
+        setLoadingMore(false);
+      }
+      setLoadingInitial(false);
+    }
+    return ctrl;
+  }, [items, updateUnreadStatus]); // Add 'items' as dependency for updateUnreadStatus to work correctly
+
+  // Initial load
+  React.useEffect(() => {
+    const ctrl = new AbortController();
     (async () => {
       try {
         setLoadingInitial(true);
         setPage(1);
-        const { items, hasMore } = await mockFetchNotifs({
-          page: 1,
-          limit: LIMIT,
-          signal: ctrl.signal,
-        });
-        setData(items);
-        setHasMore(hasMore);
-      } catch (e) {
-        // ignore abort
+        // --- useAxios API call: GET /notification?page=1&limit=${NOTIFICATION_LIMIT} ---
+        const { data } = await useAxios.get(`/notification?page=1&limit=${NOTIFICATION_LIMIT}`, { signal: ctrl.signal });
+        const initialNotifications = data.data?.data || [];
+        setItems(initialNotifications);
+        setHasMore(initialNotifications.length === NOTIFICATION_LIMIT);
+        updateUnreadStatus(initialNotifications);
+      } catch (e: any) {
+        if (e.name === 'AbortError') {
+          console.log("Initial fetch notifications aborted.");
+        } else {
+          console.log("Initial fetch notifications failed:", e);
+        }
       } finally {
         setLoadingInitial(false);
       }
     })();
 
     return () => ctrl.abort();
-  }, []);
+  }, []); // Add fetchNotifications as dependency
 
-  // load more
-  const onLoadMore = React.useCallback(async () => {
-    if (loadingMore || !hasMore) return;
-
-    ctrlRef.current?.abort();
-    const ctrl = new AbortController();
-    ctrlRef.current = ctrl;
-
-    try {
-      setLoadingMore(true);
-      const nextPage = page + 1;
-      const { items, hasMore: nextHasMore } = await mockFetchNotifs({
-        page: nextPage,
-        limit: LIMIT,
-        signal: ctrl.signal,
-      });
-
-      if (items.length > 0) {
-        setData((prev) => [...prev, ...items]);
-        setPage(nextPage);
-        setHasMore(nextHasMore);
-      } else {
-        setHasMore(false);
-      }
-    } catch (e) {
-      // ignore abort
-    } finally {
-      setLoadingMore(false);
+  // WebSocket listeners for real-time notifications
+  React.useEffect(() => {
+    if (!socket.socket) {
+      console.warn("Socket not initialized. Real-time notifications will not work.");
+      return;
     }
-  }, [loadingMore, hasMore, page]);
+
+    const handleNewNotification = (notification: NotificationPayload) => {
+      setItems((prev) => {
+        const newNotificationWithId = {
+          ...notification,
+          read: false,
+          id: `${notification.id}-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`
+        };
+        const newItems = [newNotificationWithId, ...prev];
+        updateUnreadStatus(newItems);
+        return newItems;
+      });
+    };
+
+    Object.values(NotificationType).forEach((type) => {
+      socket.on(type, handleNewNotification);
+      console.log(`Listening for socket event: ${type}`);
+    });
+
+    return () => {
+      Object.values(NotificationType).forEach((type) => {
+        socket.off(type, handleNewNotification);
+        console.log(`Stopped listening for socket event: ${type}`);
+      });
+    };
+  }, [socket.socket, updateUnreadStatus]);
+
+  const onRefresh = React.useCallback(() => {
+    setLoadingMore(false);
+    setHasMore(true);
+    setPage(1);
+    fetchNotifications(1, true);
+  }, [fetchNotifications]);
+
+  const onLoadMore = React.useCallback(() => {
+    if (loadingMore || !hasMore || loadingInitial || refreshing) return;
+    fetchNotifications(page + 1);
+  }, [loadingMore, hasMore, loadingInitial, refreshing, page, fetchNotifications]);
+
+  const onAction = React.useCallback((cta: any, action: string) => {
+    if (action === 'decline' || action === 'dismiss') {
+      setItems((s) => {
+        const newItems = s.filter((x) => x.id !== cta?.id);
+        updateUnreadStatus(newItems);
+        return newItems;
+      });
+      return;
+    }
+    router.push('/home/booking')
+  }, [updateUnreadStatus]);
+
+  const onMarkAsRead = React.useCallback((id: string) => {
+    setItems((prev) => {
+      const updatedItems = prev.map((n) =>
+        n.id === id ? { ...n, read: true } : n
+      );
+      updateUnreadStatus(updatedItems);
+      return updatedItems;
+    });
+    // --- useAxios API call: POST /notification/${id}/read ---
+    // useAxios.post(`/notification/${id}/read`).catch(console.error);
+  }, [updateUnreadStatus]);
 
   return (
     <KeyboardProvider>
       <SafeAreaView className="flex-1">
-        <KeyboardAwareScrollView
-          keyboardShouldPersistTaps="handled"
-          contentContainerStyle={{ paddingBottom: insets.bottom + 150 }}
-          extraKeyboardSpace={0}
-        >
-          <View className="bg-white">
-            <NotificationTester />
-            <View className="bg-background px-4">
-              <HeaderUser />
-            </View>
-
-            {/* Top bar */}
-            <View className="flex-row items-center justify-start px-4 py-3 border-b border-border">
-              <TouchableOpacity className="pr-2">
-                <Ionicons name="chevron-back" size={20} />
-              </TouchableOpacity>
-
-              <View className="flex-row items-center gap-2">
-                <Text className="text-base font-semibold text-primary">
-                  Thông báo
-                </Text>
-              </View>
-
-              <View className="w-5" />
-            </View>
-
-            <Card
-              className="m-4 mx-0 rounded-2xl overflow-hidden bg-background"
-              style={{ borderWidth: 0 }}
-            >
-              {/* loading initial */}
-              {loadingInitial ? (
-                Array.from({ length: 6 }).map((_, i) => (
-                  <View key={i} className="px-4 py-4 border-b border-border">
-                    <View className="h-4 w-40 bg-muted rounded mb-2" />
-                    <View className="h-3 w-28 bg-muted rounded" />
-                  </View>
-                ))
-              ) : data.length === 0 ? (
-                <View className="px-4 py-10 items-center">
-                  <Text className="text-muted-foreground">
-                    Không có thông báo
-                  </Text>
-                </View>
-              ) : (
-                <>
-                  {data.map((n, idx) => {
-                    const isLast = idx === data.length - 1;
-
-                    if (n.type === 'system') {
-                      const highlight = 'sân Golf Nem Chua';
-                      const parts = n.text.split(highlight);
-
-                      return (
-                        <View
-                          key={n.id  + idx }
-                          className={[
-                            'px-4 py-4 bg-white/0',
-                            !isLast && 'border-b border-border',
-                          ].join(' ')}
-                        >
-                          <View className="flex-row items-start gap-2">
-                            <View className="mt-1 h-2 w-2 rounded-full bg-[#90CDF4]" />
-                            <View className="h-10 w-10" />
-                            <View className="flex-1">
-                              <Text className="text-[13.5px] leading-5">
-                                {parts.length > 1 ? (
-                                  <>
-                                    {parts[0]}
-                                    <Text className="font-semibold text-primary">
-                                      {highlight}
-                                    </Text>
-                                    {parts[1]}
-                                  </>
-                                ) : (
-                                  n.text
-                                )}
-                              </Text>
-                              <Text className="mt-2 text-[12px] text-muted-foreground">
-                                {n.time}
-                              </Text>
-                            </View>
-                          </View>
-                        </View>
-                      );
-                    }
-
-                    // friend_request
-                    return (
-                      <View
-                        key={n.id}
-                        className={[
-                          'px-4 py-4',
-                          !isLast && 'border-b border-border',
-                        ].join(' ')}
-                      >
-                        <View className="flex-row gap-3 items-start">
-                          <View className="mt-1 h-2 w-2 rounded-full bg-[#90CDF4]" />
-                          <Avatar className="h-10 w-10">
-                            {n.user.avatar ? (
-                              <AvatarImage source={{ uri: n.user.avatar }} />
-                            ) : (
-                              <AvatarFallback>UF</AvatarFallback>
-                            )}
-                          </Avatar>
-
-                          <View className="flex-1">
-                            <Text className="text-[13.5px] leading-5">
-                              <Text className="font-medium">{n.user.name}</Text>{' '}
-                              {n.text}
-                            </Text>
-
-                            <View className="mt-3 flex-row gap-3">
-                              <Button className="px-4 py-1 rounded-md">
-                                Chấp nhận
-                              </Button>
-                              <Button
-                                variant="outline"
-                                className="px-4 py-2 rounded-md"
-                                style={{ borderWidth: 0 }}
-                              >
-                                Từ chối
-                              </Button>
-                            </View>
-
-                            <Text className="mt-3 text-[12px] text-muted-foreground">
-                              {n.time}
-                            </Text>
-                          </View>
-                        </View>
-                      </View>
-                    );
-                  })}
-
-                  {/* Footer: Xem thêm / Loading */}
-                  {hasMore ? (
-                    <View className="items-center py-3">
-                      {loadingMore ? (
-                        <View className="px-3 py-2 flex-row items-center">
-                          <ActivityIndicator />
-                          <Text className="ml-2">Đang tải...</Text>
-                        </View>
-                      ) : (
-                        <Button
-                          variant="ghost"
-                          className="px-3 py-2 flex-row items-center"
-                          onPress={onLoadMore}
-                        >
-                          <Text className="mr-1">Xem thêm</Text>
-                          <Ionicons name="chevron-down" size={16} />
-                        </Button>
-                      )}
-                    </View>
-                  ) : null}
-                </>
-              )}
-            </Card>
+        <View className='px-4'>
+          <HeaderUser />
+          <View className="flex-row items-center justify-start px-4 py-3 border-b border-border bg-white">
+            <TouchableOpacity onPress={() => router.back()} className="pr-2">
+              <Ionicons name="chevron-back" size={20} />
+            </TouchableOpacity>
+            <Text className="text-base font-semibold text-primary">Thông báo</Text>
           </View>
-        </KeyboardAwareScrollView>
+        </View>
+
+        <Card
+          className="m-4 mx-0 rounded-2xl overflow-hidden bg-background"
+          style={{ borderWidth: 0, marginBottom: 50 }} // keep inline style for specific overrides
+        >
+          {loadingInitial ? (
+            Array.from({ length: 6 }).map((_, i) => (
+              <View key={i} className="px-4 py-4 border-b border-border">
+                <View className="h-4 w-40 bg-muted rounded mb-2" />
+                <View className="h-3 w-28 bg-muted rounded" />
+              </View>
+            ))
+          ) : items.length === 0 ? (
+            <View className="px-4 py-10 items-center">
+              <EmptyState
+                icon="golf-outline"
+                title="Chưa có thông báo nào"
+                description="Hiện chưa có thông báo nào."
+              />
+            </View>
+          ) : (
+            <FlatList
+              data={items}
+                  keyExtractor={(it) => it.id}
+                  renderItem={({ item }) => (
+                    <NotificationLine n={item} onAction={onAction} onMarkAsRead={onMarkAsRead} />
+                  )}
+                  ItemSeparatorComponent={() => (
+                    <View className="border-b border-border" />
+                  )}
+                  refreshControl={
+                    <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+                  }
+                  contentContainerStyle={{ paddingBottom: 200 }}
+                  onEndReachedThreshold={0.9}
+                  onEndReached={onLoadMore}
+                  ListFooterComponent={
+                <View className="items-center py-4">
+                  {loadingMore ? (
+                    <View className="flex-row items-center">
+                      <ActivityIndicator />
+                      <Text className="ml-2">Đang tải thêm...</Text>
+                    </View>
+                      ) : !hasMore && items.length > 0 ? (
+                    <Text className="text-muted-foreground text-sm">
+                      Đã hiển thị tất cả thông báo
+                    </Text>
+                  ) : null}
+                </View>
+              }
+            />
+          )}
+        </Card>
       </SafeAreaView>
     </KeyboardProvider>
   );
