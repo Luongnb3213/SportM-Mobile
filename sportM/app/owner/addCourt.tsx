@@ -5,6 +5,7 @@ import {
   Dimensions,
   ImageBackground,
   Keyboard,
+  KeyboardAvoidingView,
   Modal,
   ScrollView,
   Text,
@@ -12,10 +13,6 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import {
-  KeyboardAwareScrollView,
-  KeyboardProvider,
-} from 'react-native-keyboard-controller';
 import {
   SafeAreaView,
   useSafeAreaInsets,
@@ -36,6 +33,8 @@ import { Skeleton } from '@/components/Skeleton';
 import { formatPriceVND } from '@/lib/utils';
 import { useDebounce } from '@/hooks/useDebounce';
 import PillIcon from '@/components/PillIcon';
+import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
+import { Platform } from 'react-native';
 
 
 const DEFAULT_HERO =
@@ -203,7 +202,7 @@ const AddCourt = () => {
         name: name.trim(),
         address: address.trim(),
         imgUrls,
-        sportType: sportTypeSelected, 
+        sportType: sportTypeSelected,
         lat: Number(lat),
         lng: Number(lng),
         description: description.trim(),
@@ -252,7 +251,7 @@ const AddCourt = () => {
           setSuggestions(feats);
         }
       } catch (e) {
-     
+
       }
     })();
     return () => { alive = false; };
@@ -273,7 +272,7 @@ const AddCourt = () => {
     Keyboard.dismiss();
   };
 
- 
+
   const confirmPick = async () => {
     if (!pickedCoord) return;
     setSuggestions([]);
@@ -339,12 +338,19 @@ const AddCourt = () => {
   }
 
   return (
-    <KeyboardProvider>
-      <SafeAreaView className="flex-1 bg-white">
-        <KeyboardAwareScrollView
+    <SafeAreaView className="flex-1 bg-white">
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'padding'}
+      >
+        <ScrollView
           keyboardShouldPersistTaps="handled"
-          extraKeyboardSpace={0}
-          contentContainerStyle={{ paddingBottom: insets.bottom + 50, flexGrow: 1 }}
+          keyboardDismissMode="on-drag"
+          automaticallyAdjustKeyboardInsets
+          contentInsetAdjustmentBehavior="always"
+          contentContainerStyle={{
+            paddingBottom: (insets?.bottom ?? 0) + 20,
+          }}
         >
           <View className="px-4">
             <HeaderUser />
@@ -465,18 +471,7 @@ const AddCourt = () => {
                     />
                     {errors.description ? <Text className="text-red-500 text-sm">{errors.description}</Text> : null}
 
-                    {/* pricePerHour */}
-                    <PillInput
-                      icon={<FontAwesome name="hourglass-2" size={24} color="black" />}
-                      placeholder="Giá/giờ (VND)"
-                      value={formatPriceVND(pricePerHour)}
-                      keyboardType="numeric"
-                      onChangeText={(t) => {
-                        setPricePerHour(t.replace(/[^\d]/g, ''));
-                        if (errors.pricePerHour) setErrors((e) => ({ ...e, pricePerHour: undefined }));
-                      }}
-                    />
-                    {errors.pricePerHour ? <Text className="text-red-500 text-sm">{errors.pricePerHour}</Text> : null}
+
 
                     {/* subService */}
                     <PillInput
@@ -489,6 +484,19 @@ const AddCourt = () => {
                       }}
                     />
                     {errors.subService ? <Text className="text-red-500 text-sm">{errors.subService}</Text> : null}
+
+                    {/* pricePerHour */}
+                    <PillInput
+                      icon={<FontAwesome name="hourglass-2" size={24} color="black" />}
+                      placeholder="Giá/giờ (VND)"
+                      value={formatPriceVND(pricePerHour)}
+                      keyboardType="numeric"
+                      onChangeText={(t) => {
+                        setPricePerHour(t.replace(/[^\d]/g, ''));
+                        if (errors.pricePerHour) setErrors((e) => ({ ...e, pricePerHour: undefined }));
+                      }}
+                    />
+                    {errors.pricePerHour ? <Text className="text-red-500 text-sm">{errors.pricePerHour}</Text> : null}
 
                     <View className="pt-1">
                       <View className="flex-row flex-wrap gap-1">
@@ -548,9 +556,8 @@ const AddCourt = () => {
               </CardFooter>
             </Card>
           </View>
-        </KeyboardAwareScrollView>
-      </SafeAreaView>
-
+        </ScrollView>
+      </KeyboardAvoidingView>
       {/* Map Modal */}
       <Modal visible={mapVisible} animationType="slide" onRequestClose={() => setMapVisible(false)}>
         <SafeAreaView className="flex-1 bg-white">
@@ -634,7 +641,7 @@ const AddCourt = () => {
           </View>
         </SafeAreaView>
       </Modal>
-    </KeyboardProvider>
+    </SafeAreaView>
   );
 };
 

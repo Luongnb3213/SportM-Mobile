@@ -1,10 +1,8 @@
 // bookingSchedule.tsx
 import React, { useEffect, useMemo, useState, useCallback } from 'react';
-import { View, Text, Image, TouchableOpacity, ImageBackground, Dimensions } from 'react-native';
-import { KeyboardAwareScrollView, KeyboardProvider } from 'react-native-keyboard-controller';
+import { View, Text, TouchableOpacity, ImageBackground, Dimensions } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams } from 'expo-router';
-
 import BookingScheduleScreen from '@/components/HomeComponent/DetailSportComponent/BookingScheduleScreen';
 import BookingSummary from '@/components/HomeComponent/DetailSportComponent/BookingSummary';
 import { Card, CardContent } from '@/components/Card';
@@ -15,6 +13,8 @@ import HeaderUser from '@/components/ui/HeaderUser';
 import { Ionicons } from '@expo/vector-icons';
 import Carousel from 'react-native-reanimated-carousel';
 import { fixedTimeSlotIdToApiTimeSlotId, getErrorMessage, processApiLockedSlots } from '@/lib/utils';
+import { ScrollView } from 'react-native';
+import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
 
 
 type CourtDetail = {
@@ -80,6 +80,8 @@ const genDaysNext30 = () => {
 
 export default function bookingSchedule() {
   const insets = useSafeAreaInsets();
+  const tabBarHeight = typeof useBottomTabBarHeight === 'function' ? useBottomTabBarHeight() : 0;
+
   const { courtID } = useLocalSearchParams<{ courtID: string }>();
   const { width } = Dimensions.get('window');
 
@@ -295,159 +297,159 @@ export default function bookingSchedule() {
   if (loadingCourt) return <BookingScheduleSkeleton />;
 
   return (
-    <KeyboardProvider>
-      <SafeAreaView className="flex-1 bg-white">
-        <KeyboardAwareScrollView
-          keyboardShouldPersistTaps="handled"
-          extraKeyboardSpace={0}
-          contentContainerStyle={{ paddingBottom: insets.bottom + 150, flexGrow: 1 }}
-        >
+    <SafeAreaView className="flex-1 bg-white">
+      <ScrollView
+        keyboardShouldPersistTaps="handled"
+        keyboardDismissMode="on-drag"
+        automaticallyAdjustKeyboardInsets
+        contentInsetAdjustmentBehavior="always"
+        contentContainerStyle={{
+          paddingBottom: (insets?.bottom ?? 0) + (tabBarHeight ?? 0) + 24,
+        }}
+      >
+        <View className="px-4">
+          <HeaderUser />
+        </View>
 
-          <View className="px-4">
-            <HeaderUser />
-          </View>
-
-          {/* header back */}
-          <View className="px-4">
-            <TouchableOpacity
-              className="flex-row items-center gap-2 py-2"
-              onPress={() => router.back()}
-            >
-              <Ionicons name="chevron-back" size={20} />
-              <Text className="text-base text-primary font-medium">Trở về trang trước</Text>
-            </TouchableOpacity>
-          </View>
+        {/* header back */}
+        <View className="px-4">
+          <TouchableOpacity
+            className="flex-row items-center gap-2 py-2"
+            onPress={() => router.back()}
+          >
+            <Ionicons name="chevron-back" size={20} />
+            <Text className="text-base text-primary font-medium">Trở về trang trước</Text>
+          </TouchableOpacity>
+        </View>
 
 
-          {/* HERO carousel */}
-          <View>
-            <View className="w-full" style={{ aspectRatio: 16 / 12 }}>
-              <Carousel
-                loop={false}
-                width={width}
-                height={(width * 12) / 16}
-                data={images}
-                scrollAnimationDuration={600}
-                renderItem={({ item }) => (
-                  <ImageBackground
-                    source={{ uri: item }}
-                    resizeMode="cover"
-                    className="w-full h-full"
-                  >
-                    <View className="absolute inset-0 bg-black/25" />
-                    {/* texts overlay — bind từ data */}
-                    <View className="px-4 mt-2">
-                      <Text className="text-lg text-gray-200">
-                        {court?.address || '—'}
-                      </Text>
+        {/* HERO carousel */}
+        <View>
+          <View className="w-full" style={{ aspectRatio: 16 / 12 }}>
+            <Carousel
+              loop={false}
+              width={width}
+              height={(width * 12) / 16}
+              data={images}
+              scrollAnimationDuration={600}
+              renderItem={({ item }) => (
+                <ImageBackground
+                  source={{ uri: item }}
+                  resizeMode="cover"
+                  className="w-full h-full"
+                >
+                  <View className="absolute inset-0 bg-black/25" />
+                  {/* texts overlay — bind từ data */}
+                  <View className="px-4 mt-2">
+                    <Text className="text-lg text-gray-200">
+                      {court?.address || '—'}
+                    </Text>
 
-                      <Text
-                        style={{ color: '#FFF200' }}
-                        className="mt-2 text-4xl font-medium leading-tight"
-                        numberOfLines={2}
-                      >
-                        {court?.courtName?.toUpperCase?.() || '—'}
-                      </Text>
+                    <Text
+                      style={{ color: '#FFF200' }}
+                      className="mt-2 text-4xl font-medium leading-tight"
+                      numberOfLines={2}
+                    >
+                      {court?.courtName?.toUpperCase?.() || '—'}
+                    </Text>
 
-                      <View className="mt-3 flex-row items-center">
-                        <View className="flex-row items-center gap-1 rounded-full bg-black/60 px-3 py-1.5">
-                          <Text className="text-white text-base font-semibold">
-                            {typeof court?.avgRating === 'number'
-                              ? court.avgRating.toFixed(1)
-                              : '0.0'}
-                          </Text>
-                          <Ionicons name="star" size={14} color="#FFD54F" />
-                        </View>
+                    <View className="mt-3 flex-row items-center">
+                      <View className="flex-row items-center gap-1 rounded-full bg-black/60 px-3 py-1.5">
+                        <Text className="text-white text-base font-semibold">
+                          {typeof court?.avgRating === 'number'
+                            ? court.avgRating.toFixed(1)
+                            : '0.0'}
+                        </Text>
+                        <Ionicons name="star" size={14} color="#FFD54F" />
                       </View>
                     </View>
-                  </ImageBackground>
-                )}
-              />
-            </View>
-          </View>
-
-          {/* Lịch chọn giờ */}
-          <BookingScheduleScreen
-            key={`${activeDayId}`}
-            days={days}
-            activeDayId={activeDayId}
-            setActiveDayId={(id) => {
-              setActiveDayId(id);
-              if (!selectedByDay[id]) {
-                setSelectedByDay(prev => ({ ...prev, [id]: new Set() }));
-              }
-            }}
-            timeSlots={fixedTimeSlots}
-            selected={selectedByDay[activeDayId] || new Set()}
-            onToggle={onToggleSlot}
-            pricePerHour={court?.pricePerHour ?? 0}
-            sportType={court?.sportType}
-            lockedSlots={lockedSlotsByDay[activeDayId] || new Set()}
-            loadingLockedSlots={loadingLockedSlots} // Pass loading state
-          />
-
-          {/* Chi tiết giờ đã chọn: nhóm AM/PM */}
-          <View className="px-4">
-            <Card className="rounded-2xl" style={{ borderWidth: 0 }}>
-              <CardContent className="px-4 py-4">
-                <Text className="text-[20px] font-medium text-[#292929] mb-2">
-                  Chi tiết giờ đã chọn
-                </Text>
-                {Object.entries(selectedByDay).filter(([_, s]) => s && s.size > 0).length === 0 ? (
-                  <Text className="text-gray-500">Chưa chọn khung giờ nào.</Text>
-                ) : (
-                  Object.entries(selectedByDay).map(([date, set]) => {
-                    if (!set || set.size === 0) return null;
-                    const keys = Array.from(set);
-                    // Extract just the timeSlotId part from the full key for display
-                    const amSelectedTimeIds = keys.filter(k => k.startsWith('am_')).map(k => k.split('slot-')[1]);
-                    const pmSelectedTimeIds = keys.filter(k => k.startsWith('pm_')).map(k => k.split('slot-')[1]);
-
-                    // Use fixedTimeSlots to get labels based on the timeSlotId
-                    const getLabels = (timeIds: string[], allSlots: Slot[]) => allSlots
-                      .filter(sl => timeIds.includes(sl.id))
-                      .map(sl => sl.label)
-                      .join(', ');
-
-                    const hours = set.size;
-                    return (
-                      <View key={date} className="mb-3">
-                        <Text className="text-[15px] font-semibold">
-                          {date} — {hours} giờ
-                        </Text>
-                        {amSelectedTimeIds.length > 0 && (
-                          <Text className="text-[14px] text-gray-700 mt-1">AM: {getLabels(amSelectedTimeIds, fixedTimeSlots)}</Text>
-                        )}
-                        {pmSelectedTimeIds.length > 0 && (
-                          <Text className="text-[14px] text-gray-700 mt-1">PM: {getLabels(pmSelectedTimeIds, fixedTimeSlots)}</Text>
-                        )}
-                      </View>
-                    );
-                  })
-                )}
-              </CardContent>
-            </Card>
-          </View>
-
-          {/* Summary + Invite + Submit */}
-          <View className="px-4">
-            <BookingSummary
-              totalHours={totalHours}
-              totalPrice={totalPrice}
-              onCancel={() => { }}
-              onSubmit={handleSubmit}
-              note={note}
-              onChangeNote={setNote}
-              onPickFriend={onPickFriend}
-              invited={invited}
-              onRemoveInvited={removeInvited}
+                  </View>
+                </ImageBackground>
+              )}
             />
           </View>
-        </KeyboardAwareScrollView>
-      </SafeAreaView>
+        </View>
 
+        {/* Lịch chọn giờ */}
+        <BookingScheduleScreen
+          key={`${activeDayId}`}
+          days={days}
+          activeDayId={activeDayId}
+          setActiveDayId={(id) => {
+            setActiveDayId(id);
+            if (!selectedByDay[id]) {
+              setSelectedByDay(prev => ({ ...prev, [id]: new Set() }));
+            }
+          }}
+          timeSlots={fixedTimeSlots}
+          selected={selectedByDay[activeDayId] || new Set()}
+          onToggle={onToggleSlot}
+          pricePerHour={court?.pricePerHour ?? 0}
+          sportType={court?.sportType}
+          lockedSlots={lockedSlotsByDay[activeDayId] || new Set()}
+          loadingLockedSlots={loadingLockedSlots} // Pass loading state
+        />
+
+        {/* Chi tiết giờ đã chọn: nhóm AM/PM */}
+        <View className="px-4">
+          <Card className="rounded-2xl" style={{ borderWidth: 0 }}>
+            <CardContent className="px-4 py-4">
+              <Text className="text-[20px] font-medium text-[#292929] mb-2">
+                Chi tiết giờ đã chọn
+              </Text>
+              {Object.entries(selectedByDay).filter(([_, s]) => s && s.size > 0).length === 0 ? (
+                <Text className="text-gray-500">Chưa chọn khung giờ nào.</Text>
+              ) : (
+                Object.entries(selectedByDay).map(([date, set]) => {
+                  if (!set || set.size === 0) return null;
+                  const keys = Array.from(set);
+                  // Extract just the timeSlotId part from the full key for display
+                  const amSelectedTimeIds = keys.filter(k => k.startsWith('am_')).map(k => k.split('slot-')[1]);
+                  const pmSelectedTimeIds = keys.filter(k => k.startsWith('pm_')).map(k => k.split('slot-')[1]);
+
+                  // Use fixedTimeSlots to get labels based on the timeSlotId
+                  const getLabels = (timeIds: string[], allSlots: Slot[]) => allSlots
+                    .filter(sl => timeIds.includes(sl.id))
+                    .map(sl => sl.label)
+                    .join(', ');
+
+                  const hours = set.size;
+                  return (
+                    <View key={date} className="mb-3">
+                      <Text className="text-[15px] font-semibold">
+                        {date} — {hours} giờ
+                      </Text>
+                      {amSelectedTimeIds.length > 0 && (
+                        <Text className="text-[14px] text-gray-700 mt-1">AM: {getLabels(amSelectedTimeIds, fixedTimeSlots)}</Text>
+                      )}
+                      {pmSelectedTimeIds.length > 0 && (
+                        <Text className="text-[14px] text-gray-700 mt-1">PM: {getLabels(pmSelectedTimeIds, fixedTimeSlots)}</Text>
+                      )}
+                    </View>
+                  );
+                })
+              )}
+            </CardContent>
+          </Card>
+        </View>
+
+        {/* Summary + Invite + Submit */}
+        <View className="px-4">
+          <BookingSummary
+            totalHours={totalHours}
+            totalPrice={totalPrice}
+            onCancel={() => { }}
+            onSubmit={handleSubmit}
+            note={note}
+            onChangeNote={setNote}
+            onPickFriend={onPickFriend}
+            invited={invited}
+            onRemoveInvited={removeInvited}
+          />
+        </View>
+      </ScrollView>
       {/* Toast container */}
       <Toast />
-    </KeyboardProvider>
+    </SafeAreaView>
   );
 }

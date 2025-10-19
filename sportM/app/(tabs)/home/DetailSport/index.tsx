@@ -5,11 +5,7 @@ import { useAxios } from '@/lib/api';
 import { Ionicons } from '@expo/vector-icons';
 import { router, useLocalSearchParams } from 'expo-router';
 import React, { useEffect, useState } from 'react';
-import { Dimensions, ImageBackground, Text, TouchableOpacity, View } from 'react-native';
-import {
-  KeyboardAwareScrollView,
-  KeyboardProvider,
-} from 'react-native-keyboard-controller';
+import { Dimensions, ImageBackground, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import {
   SafeAreaView,
   useSafeAreaInsets,
@@ -68,84 +64,83 @@ const DetailCourt = () => {
   if (!court) return <DetailCourtSkeleton />;
 
   return (
-    <KeyboardProvider>
-      <SafeAreaView className="flex-1 bg-white">
-        <KeyboardAwareScrollView
-          keyboardShouldPersistTaps="handled"
-          extraKeyboardSpace={0}
-          contentContainerStyle={{
-            paddingBottom: bottomGap,
-            flexGrow: 1,
-          }}
-        >
-          <View className="px-4">
-            <HeaderUser />
-          </View>
+    <SafeAreaView className="flex-1 bg-white">
+      <ScrollView
+        keyboardShouldPersistTaps="handled"
+        keyboardDismissMode="on-drag"
+        automaticallyAdjustKeyboardInsets
+        contentInsetAdjustmentBehavior="always"
+        contentContainerStyle={{
+          paddingBottom: (insets?.bottom ?? 0) + (tabBarHeight ?? 0) + 24,
+        }}
+      >
+        <View className="px-4">
+          <HeaderUser />
+        </View>
 
-          {/* header back */}
-          <View className="px-4">
-            <TouchableOpacity
-              className="flex-row items-center gap-2 py-2"
-              onPress={() => router.back()}
-            >
-              <Ionicons name="chevron-back" size={20} />
-              <Text className="text-base text-primary font-medium">Trở về trang trước</Text>
-            </TouchableOpacity>
-          </View>
+        {/* header back */}
+        <View className="px-4">
+          <TouchableOpacity
+            className="flex-row items-center gap-2 py-2"
+            onPress={() => router.back()}
+          >
+            <Ionicons name="chevron-back" size={20} />
+            <Text className="text-base text-primary font-medium">Trở về trang trước</Text>
+          </TouchableOpacity>
+        </View>
 
-          {/* HERO carousel */}
-          <View>
-            <View className="w-full" style={{ aspectRatio: 16 / 12 }}>
-              <Carousel
-                loop={false}
-                width={width}
-                height={(width * 12) / 16}
-                data={images}
-                scrollAnimationDuration={600}
-                renderItem={({ item }) => (
-                  <ImageBackground
-                    source={{ uri: item }}
-                    resizeMode="cover"
-                    className="w-full h-full"
-                  >
-                    <View className="absolute inset-0 bg-black/25" />
-                    {/* texts overlay — bind từ data */}
-                    <View className="px-4 mt-2">
-                      <Text className="text-lg text-gray-200">
-                        {court?.address || '—'}
-                      </Text>
+        {/* HERO carousel */}
+        <View>
+          <View className="w-full" style={{ aspectRatio: 16 / 12 }}>
+            <Carousel
+              loop={false}
+              width={width}
+              height={(width * 12) / 16}
+              data={images}
+              scrollAnimationDuration={600}
+              renderItem={({ item }) => (
+                <ImageBackground
+                  source={{ uri: item }}
+                  resizeMode="cover"
+                  className="w-full h-full"
+                >
+                  <View className="absolute inset-0 bg-black/25" />
+                  {/* texts overlay — bind từ data */}
+                  <View className="px-4 mt-2">
+                    <Text className="text-lg text-gray-200">
+                      {court?.address || '—'}
+                    </Text>
 
-                      <Text
-                        style={{ color: '#FFF200' }}
-                        className="mt-2 text-4xl font-medium leading-tight"
-                        numberOfLines={2}
-                      >
-                        {court?.courtName?.toUpperCase?.() || '—'}
-                      </Text>
+                    <Text
+                      style={{ color: '#FFF200' }}
+                      className="mt-2 text-4xl font-medium leading-tight"
+                      numberOfLines={2}
+                    >
+                      {court?.courtName?.toUpperCase?.() || '—'}
+                    </Text>
 
-                      <View className="mt-3 flex-row items-center">
-                        <View className="flex-row items-center gap-1 rounded-full bg-black/60 px-3 py-1.5">
-                          <Text className="text-white text-base font-semibold">
-                            {typeof court?.avgRating === 'number'
-                              ? court.avgRating.toFixed(1)
-                              : '0.0'}
-                          </Text>
-                          <Ionicons name="star" size={14} color="#FFD54F" />
-                        </View>
+                    <View className="mt-3 flex-row items-center">
+                      <View className="flex-row items-center gap-1 rounded-full bg-black/60 px-3 py-1.5">
+                        <Text className="text-white text-base font-semibold">
+                          {typeof court?.avgRating === 'number'
+                            ? court.avgRating.toFixed(1)
+                            : '0.0'}
+                        </Text>
+                        <Ionicons name="star" size={14} color="#FFD54F" />
                       </View>
                     </View>
-                  </ImageBackground>
-                )}
-              />
-            </View>
+                  </View>
+                </ImageBackground>
+              )}
+            />
           </View>
+        </View>
 
-          <View className="shadow-2xl">
-            <DetailInfoCard courtID={courtID} court={court || undefined} />
-          </View>
-        </KeyboardAwareScrollView>
-      </SafeAreaView>
-    </KeyboardProvider>
+        <View className="shadow-2xl">
+          <DetailInfoCard courtID={courtID} court={court || undefined} />
+        </View>
+      </ScrollView>
+    </SafeAreaView>
   );
 };
 

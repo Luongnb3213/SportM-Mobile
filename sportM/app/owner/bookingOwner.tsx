@@ -6,16 +6,13 @@ import {
     TextInput,
     ActivityIndicator,
     Platform,
-    Alert
+    Alert,
+    ScrollView
 } from 'react-native';
 import { Feather, Ionicons } from '@expo/vector-icons';
 import { Card } from '@/components/Card';
 import { Badge } from '@/components/Badge';
 import { Button } from '@/components/Button';
-import {
-    KeyboardAwareScrollView,
-    KeyboardProvider,
-} from 'react-native-keyboard-controller';
 import {
     SafeAreaView,
     useSafeAreaInsets,
@@ -232,217 +229,219 @@ export default function BookingOwnerScreen() {
     }
 
     return (
-        <KeyboardProvider>
-            <SafeAreaView className="flex-1 bg-white">
-                <View className="px-4">
-                    <HeaderUser />
-                    <View className="flex-row px-4 items-center bg-white rounded-xl h-20 mb-4">
-                        <Feather name="search" size={25} color="#0a0a0a" />
-                        <TextInput
-                            value={searchText}
-                            onChangeText={setSearchText}
-                            placeholder="Nhập Booking ID" // Changed placeholder
-                            placeholderTextColor="#000000"
-                            className="flex-1 text-lg text-black px-2"
-                            returnKeyType="search"
+        <SafeAreaView className="flex-1 bg-white">
+            <View className="px-4">
+                <HeaderUser />
+                <View className="flex-row px-4 items-center bg-white rounded-xl h-20 mb-4">
+                    <Feather name="search" size={25} color="#0a0a0a" />
+                    <TextInput
+                        value={searchText}
+                        onChangeText={setSearchText}
+                        placeholder="Nhập Booking ID" // Changed placeholder
+                        placeholderTextColor="#000000"
+                        className="flex-1 text-lg text-black px-2"
+                        returnKeyType="search"
+                    />
+                </View>
+                <View className="flex-row justify-start">
+                    <TouchableOpacity
+                        onPress={() => router.back()}
+                        className="flex-row items-center gap-2 py-2"
+                    >
+                        <Ionicons name="chevron-back" size={22} />
+                        <Text className="text-[15px] text-primary font-medium">Trở về trang trước</Text>
+                    </TouchableOpacity>
+                </View>
+            </View>
+
+            <View className="bg-primary px-5 py-5" style={Platform.OS === 'android' ? { zIndex: 10 } : { zIndex: 9999 }}>
+                <View className="flex-row gap-2 flex-wrap items-center justify-between">
+                    <Text lineBreakMode='clip' numberOfLines={1} className="text-2xl font-medium text-primary-foreground">
+                        Bookings của sân {courtName}
+                    </Text>
+                    <View className="w-[180px]">
+                        <DropDownPicker
+                            open={open}
+                            value={statusFilter}
+                            items={statusItems}
+                            setOpen={setOpen}
+                            setValue={setStatusFilter}
+                            setItems={setStatusItems}
+                            placeholder="Trạng thái"
+                            style={{
+                                backgroundColor: 'white',
+                                borderColor: 'transparent',
+                                borderRadius: 10,
+                                minHeight: 40,
+                            }}
+                            textStyle={{
+                                fontSize: 14,
+                                color: '#0a0a0a',
+                            }}
+                            dropDownContainerStyle={{
+                                backgroundColor: 'white',
+                                borderColor: '#ccc',
+                                borderRadius: 10,
+                            }}
+                            ArrowDownIconComponent={({ style }) => <Ionicons name="chevron-down" size={20} color="#0a0a0a" />}
+                            ArrowUpIconComponent={({ style }) => <Ionicons name="chevron-up" size={20} color="#0a0a0a" />}
                         />
                     </View>
-                    <View className="flex-row justify-start">
-                        <TouchableOpacity
-                            onPress={() => router.back()}
-                            className="flex-row items-center gap-2 py-2"
-                        >
-                            <Ionicons name="chevron-back" size={22} />
-                            <Text className="text-[15px] text-primary font-medium">Trở về trang trước</Text>
-                        </TouchableOpacity>
-                    </View>
                 </View>
-
-                <View className="bg-primary px-5 py-5" style={Platform.OS === 'android' ? { zIndex: 10 } : { zIndex: 9999 }}>
-                    <View className="flex-row gap-2 flex-wrap items-center justify-between">
-                        <Text lineBreakMode='clip' numberOfLines={1} className="text-2xl font-medium text-primary-foreground">
-                            Bookings của sân {courtName}
-                        </Text>
-                        <View className="w-[180px]">
-                            <DropDownPicker
-                                open={open}
-                                value={statusFilter}
-                                items={statusItems}
-                                setOpen={setOpen}
-                                setValue={setStatusFilter}
-                                setItems={setStatusItems}
-                                placeholder="Trạng thái"
-                                style={{
-                                    backgroundColor: 'white',
-                                    borderColor: 'transparent',
-                                    borderRadius: 10,
-                                    minHeight: 40,
-                                }}
-                                textStyle={{
-                                    fontSize: 14,
-                                    color: '#0a0a0a',
-                                }}
-                                dropDownContainerStyle={{
-                                    backgroundColor: 'white',
-                                    borderColor: '#ccc',
-                                    borderRadius: 10,
-                                }}
-                                ArrowDownIconComponent={({ style }) => <Ionicons name="chevron-down" size={20} color="#0a0a0a" />}
-                                ArrowUpIconComponent={({ style }) => <Ionicons name="chevron-up" size={20} color="#0a0a0a" />}
-                            />
-                        </View>
-                    </View>
-                </View>
-                <KeyboardAwareScrollView
-                    keyboardShouldPersistTaps="handled"
-                    contentContainerStyle={{ paddingBottom: insets.bottom + 150 }}
-                    extraKeyboardSpace={0}
+            </View>
+            <ScrollView
+                keyboardShouldPersistTaps="handled"
+                keyboardDismissMode="on-drag"
+                automaticallyAdjustKeyboardInsets
+                contentInsetAdjustmentBehavior="always"
+                contentContainerStyle={{
+                    paddingBottom: (insets?.bottom ?? 0) + 24,
+                }}
+            >
+                {/* Content */}
+                <Card
+                    className="m-4 bg-background rounded-2xl overflow-hidden"
+                    style={{ borderWidth: 0 }}
                 >
-                    {/* Content */}
-                    <Card
-                        className="m-4 bg-background rounded-2xl overflow-hidden"
-                        style={{ borderWidth: 0 }}
-                    >
-                        {/* Loading initial */}
-                        {loadingInitial ? (
-                            Array.from({ length: 4 }).map((_, i) => (
-                                <View key={i} className="py-4">
-                                    <View className="h-5 w-80 bg-muted rounded mb-2" />
-                                    <View className="h-3 w-96 bg-muted rounded" />
-                                </View>
-                            ))
-                        ) : items.length === 0 ? (
-                            <EmptyState
-                                icon="golf-outline"
-                                title="Chưa có lượt đặt nào"
-                                description="Hiện chưa có lượt đặt nào với trạng thái này cho sân của bạn."
-                            />
-                        ) : (
-                            <>
-                                {items.map((item, i) => (
-                                    <View key={`group-${i}`}>
-                                        {/* Assuming each item is a booking directly, not a group with 'bookings' array */}
+                    {/* Loading initial */}
+                    {loadingInitial ? (
+                        Array.from({ length: 4 }).map((_, i) => (
+                            <View key={i} className="py-4">
+                                <View className="h-5 w-80 bg-muted rounded mb-2" />
+                                <View className="h-3 w-96 bg-muted rounded" />
+                            </View>
+                        ))
+                    ) : items.length === 0 ? (
+                        <EmptyState
+                            icon="golf-outline"
+                            title="Chưa có lượt đặt nào"
+                            description="Hiện chưa có lượt đặt nào với trạng thái này cho sân của bạn."
+                        />
+                    ) : (
+                        <>
+                            {items.map((item, i) => (
+                                <View key={`group-${i}`}>
+                                    {/* Assuming each item is a booking directly, not a group with 'bookings' array */}
 
-                                        {item?.bookings?.map((b: any, j: number) => (
-                                            <React.Fragment key={b?.bookingId ?? `${i}`}>
-                                                <TouchableOpacity
-                                                    activeOpacity={0.8}
-                                                >
-                                                    <View className="flex-row items-start justify-between py-4 gap-3">
-                                                        {/* Left */}
-                                                        <View className="flex-1 pr-2">
-                                                            <View className="flex-row items-center">
-                                                                <Text>
-                                                                    {getStatusIcon(b?.status)}
-                                                                </Text>
-                                                                <Text className="text-lg font-semibold text-[#292929] ml-2">
-                                                                    {b?.court?.courtName || '—'}
-                                                                </Text>
-                                                            </View>
-                                                            <Text className="text-[12px] mt-1 text-muted-foreground">
-                                                                Booking ID: {b?.bookingId ? `#${b.bookingId}` : '—'}
+                                    {item?.bookings?.map((b: any, j: number) => (
+                                        <React.Fragment key={b?.bookingId ?? `${i}`}>
+                                            <TouchableOpacity
+                                                activeOpacity={0.8}
+                                            >
+                                                <View className="flex-row items-start justify-between py-4 gap-3">
+                                                    {/* Left */}
+                                                    <View className="flex-1 pr-2">
+                                                        <View className="flex-row items-center">
+                                                            <Text>
+                                                                {getStatusIcon(b?.status)}
                                                             </Text>
-                                                            <Text className="text-[12px] mt-1 text-muted-foreground capitalize">
-                                                                Trạng thái: {BOOKING_STATUSES.find(s => s.value === b?.status)?.label || b?.status || '—'}
-                                                            </Text>
-                                                            <Text className="text-[12px] mt-1 text-muted-foreground">
-                                                                Đặt bởi: {item?.user?.fullName || '—'}
+                                                            <Text className="text-lg font-semibold text-[#292929] ml-2">
+                                                                {b?.court?.courtName || '—'}
                                                             </Text>
                                                         </View>
+                                                        <Text className="text-[12px] mt-1 text-muted-foreground">
+                                                            Booking ID: {b?.bookingId ? `#${b.bookingId}` : '—'}
+                                                        </Text>
+                                                        <Text className="text-[12px] mt-1 text-muted-foreground capitalize">
+                                                            Trạng thái: {BOOKING_STATUSES.find(s => s.value === b?.status)?.label || b?.status || '—'}
+                                                        </Text>
+                                                        <Text className="text-[12px] mt-1 text-muted-foreground">
+                                                            Đặt bởi: {item?.user?.fullName || '—'}
+                                                        </Text>
+                                                    </View>
 
-                                                        {/* Right */}
-                                                        <View className="items-end max-w-[48%]">
-                                                            <Badge
-                                                                label={formatViShortDate(b?.bookingDate)}
-                                                                className="px-3 py-1 rounded-full bg-transparent border border-[#1F2257]"
-                                                                labelClasses="text-[11px] text-[#1F2257] font-medium"
-                                                            />
-                                                            <Text
-                                                                numberOfLines={1}
-                                                                className="mt-2 text-[12px] text-muted-foreground text-right"
-                                                            >
-                                                                {b?.court?.address || '—'}
-                                                            </Text>
-                                                            <Text
-                                                                numberOfLines={1}
-                                                                className="mt-2 text-[12px] text-muted-foreground text-right"
-                                                            >
-                                                                {toAmPm(b?.startTime)} - {toAmPm(b?.endTime)}
-                                                            </Text>
+                                                    {/* Right */}
+                                                    <View className="items-end max-w-[48%]">
+                                                        <Badge
+                                                            label={formatViShortDate(b?.bookingDate)}
+                                                            className="px-3 py-1 rounded-full bg-transparent border border-[#1F2257]"
+                                                            labelClasses="text-[11px] text-[#1F2257] font-medium"
+                                                        />
+                                                        <Text
+                                                            numberOfLines={1}
+                                                            className="mt-2 text-[12px] text-muted-foreground text-right"
+                                                        >
+                                                            {b?.court?.address || '—'}
+                                                        </Text>
+                                                        <Text
+                                                            numberOfLines={1}
+                                                            className="mt-2 text-[12px] text-muted-foreground text-right"
+                                                        >
+                                                            {toAmPm(b?.startTime)} - {toAmPm(b?.endTime)}
+                                                        </Text>
 
-                                                            {/* Action Buttons for PENDING_DEPOSIT */}
-                                                            {b?.status === 'PENDING_DEPOSIT' && (
-                                                                <View className="flex-row mt-3 gap-2">
-                                                                    <Button
-                                                                        variant="default" // You might want a custom variant for confirm
-                                                                        className="px-3 py-1 rounded-full bg-green-500" // Green for confirm
-                                                                        onPress={() => handleConfirmBooking(item?.orderId)}
-                                                                        disabled={processingBookingId === item?.orderId}
-                                                                    >
-                                                                        {processingBookingId === item?.orderId ? (
-                                                                            <ActivityIndicator color="white" />
-                                                                        ) : (
-                                                                            <Text className="text-white text-[11px] font-medium">Xác nhận</Text>
-                                                                        )}
-                                                                    </Button>
-                                                                </View>
-                                                            )}
-
-                                                            {/* Action Button for CONFIRMED */}
-                                                            {b?.status === 'CONFIRMED' && (
+                                                        {/* Action Buttons for PENDING_DEPOSIT */}
+                                                        {b?.status === 'PENDING_DEPOSIT' && (
+                                                            <View className="flex-row mt-3 gap-2">
                                                                 <Button
-                                                                    variant="default"
-                                                                    className="mt-3 px-3 py-1 rounded-full bg-blue-500"
-                                                                    onPress={() => handleInitiateCompleteBooking(item?.orderId)}
+                                                                    variant="default" // You might want a custom variant for confirm
+                                                                    className="px-3 py-1 rounded-full bg-green-500" // Green for confirm
+                                                                    onPress={() => handleConfirmBooking(item?.orderId)}
                                                                     disabled={processingBookingId === item?.orderId}
                                                                 >
                                                                     {processingBookingId === item?.orderId ? (
                                                                         <ActivityIndicator color="white" />
                                                                     ) : (
-                                                                        <Text className="text-white text-[11px] font-medium">Hoàn thành</Text>
+                                                                        <Text className="text-white text-[11px] font-medium">Xác nhận</Text>
                                                                     )}
                                                                 </Button>
-                                                            )}
-                                                        </View>
+                                                            </View>
+                                                        )}
+
+                                                        {/* Action Button for CONFIRMED */}
+                                                        {b?.status === 'CONFIRMED' && (
+                                                            <Button
+                                                                variant="default"
+                                                                className="mt-3 px-3 py-1 rounded-full bg-blue-500"
+                                                                onPress={() => handleInitiateCompleteBooking(item?.orderId)}
+                                                                disabled={processingBookingId === item?.orderId}
+                                                            >
+                                                                {processingBookingId === item?.orderId ? (
+                                                                    <ActivityIndicator color="white" />
+                                                                ) : (
+                                                                    <Text className="text-white text-[11px] font-medium">Hoàn thành</Text>
+                                                                )}
+                                                            </Button>
+                                                        )}
                                                     </View>
-                                                </TouchableOpacity>
+                                                </View>
+                                            </TouchableOpacity>
 
-                                                {/* Divider giữa các booking */}
-                                                <View className="h-[1px] bg-black/5" />
-                                            </React.Fragment>
+                                            {/* Divider giữa các booking */}
+                                            <View className="h-[1px] bg-black/5" />
+                                        </React.Fragment>
 
-                                        ))}
+                                    ))}
 
 
-                                    </View>
-                                ))}
+                                </View>
+                            ))}
 
-                                {/* Load more */}
-                                {hasMore ? (
-                                    <View className="items-center py-3">
-                                        {loadingMore ? (
-                                            <View className="px-3 py-2 flex-row items-center">
-                                                <ActivityIndicator />
-                                                <Text className="ml-2">Đang tải...</Text>
-                                            </View>
-                                        ) : (
-                                            <Button
-                                                variant="ghost"
-                                                className="px-3 py-2"
-                                                onPress={onLoadMore}
-                                            >
-                                                <Text className="mr-1">Xem thêm</Text>
-                                                <Ionicons name="chevron-down" size={16} />
-                                            </Button>
-                                        )}
-                                    </View>
-                                ) : null}
-                            </>
-                        )}
-                    </Card>
-                </KeyboardAwareScrollView>
-                <Toast />
-            </SafeAreaView>
-        </KeyboardProvider>
+                            {/* Load more */}
+                            {hasMore ? (
+                                <View className="items-center py-3">
+                                    {loadingMore ? (
+                                        <View className="px-3 py-2 flex-row items-center">
+                                            <ActivityIndicator />
+                                            <Text className="ml-2">Đang tải...</Text>
+                                        </View>
+                                    ) : (
+                                        <Button
+                                            variant="ghost"
+                                            className="px-3 py-2"
+                                            onPress={onLoadMore}
+                                        >
+                                            <Text className="mr-1">Xem thêm</Text>
+                                            <Ionicons name="chevron-down" size={16} />
+                                        </Button>
+                                    )}
+                                </View>
+                            ) : null}
+                        </>
+                    )}
+                </Card>
+            </ScrollView>
+            <Toast />
+        </SafeAreaView>
     );
 }

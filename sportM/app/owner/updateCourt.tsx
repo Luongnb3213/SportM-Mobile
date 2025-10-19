@@ -9,11 +9,10 @@ import {
   TouchableOpacity,
   View,
   Dimensions,
+  ScrollView,
+  KeyboardAvoidingView,
+  Platform,
 } from 'react-native';
-import {
-  KeyboardAwareScrollView,
-  KeyboardProvider,
-} from 'react-native-keyboard-controller';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams } from 'expo-router';
 import { Ionicons, MaterialIcons, FontAwesome, FontAwesome5, MaterialCommunityIcons } from '@expo/vector-icons';
@@ -366,12 +365,20 @@ const UpdateCourt = () => {
   if (initialLoading) return <UpdateCourtSkeleton />;
 
   return (
-    <KeyboardProvider>
-      <SafeAreaView className="flex-1">
-        <KeyboardAwareScrollView
+    <SafeAreaView className="flex-1">
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        keyboardVerticalOffset={insets.top}
+      >
+        <ScrollView
           keyboardShouldPersistTaps="handled"
-          extraKeyboardSpace={0}
-          contentContainerStyle={{ paddingBottom: insets.bottom + 50, flexGrow: 1, backgroundColor: 'white' }}
+          keyboardDismissMode="on-drag"
+          automaticallyAdjustKeyboardInsets
+          contentInsetAdjustmentBehavior="always"
+          contentContainerStyle={{
+            paddingBottom: (insets?.bottom ?? 0) + 24,
+          }}
         >
           <View className="px-4">
             <HeaderUser />
@@ -559,9 +566,8 @@ const UpdateCourt = () => {
               </CardFooter>
             </Card>
           </View>
-        </KeyboardAwareScrollView>
-      </SafeAreaView>
-
+        </ScrollView>
+      </KeyboardAvoidingView>
       {/* Map Modal */}
       <Modal visible={mapVisible} animationType="slide" onRequestClose={() => setMapVisible(false)}>
         <SafeAreaView className="flex-1 bg-white">
@@ -645,7 +651,7 @@ const UpdateCourt = () => {
           </View>
         </SafeAreaView>
       </Modal>
-    </KeyboardProvider>
+    </SafeAreaView>
   );
 };
 

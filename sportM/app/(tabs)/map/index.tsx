@@ -11,7 +11,6 @@ import { GolfCourseCardSkeleton } from '@/components/Skeleton/GolfCourseCardSkel
 import { router } from 'expo-router';
 import { useAuth } from '@/providers/AuthProvider';
 import { Feather } from '@expo/vector-icons';
-import { KeyboardProvider } from 'react-native-keyboard-controller';
 import { SafeAreaView } from 'react-native-safe-area-context';
 type NearByYardProps = {
   id: string;
@@ -63,7 +62,6 @@ export default function SearchScreen() {
   }, [])
 
   return (
-    <KeyboardProvider>
       <SafeAreaView className="flex-1 relative">
         {/* Row 1: search input */}
         <TouchableOpacity onPress={() => {
@@ -114,9 +112,7 @@ export default function SearchScreen() {
             />
           )}
         </View>
-      </SafeAreaView>
-    </KeyboardProvider>
-
+    </SafeAreaView>
   );
 }
 
