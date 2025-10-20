@@ -1,6 +1,6 @@
 // ProfileScreen.tsx
 import React, { useEffect } from 'react';
-import { Image, View, Text, TouchableOpacity, ScrollView, TextInput, Alert, Modal } from 'react-native';
+import { Image, View, Text, TouchableOpacity, ScrollView, TextInput, Alert, Modal, Linking } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { FontAwesome, Ionicons, MaterialCommunityIcons, MaterialIcons, Octicons } from '@expo/vector-icons';
 
@@ -240,7 +240,7 @@ export default function ProfileScreen() {
                   <ListItem
                     icon={<Ionicons name="document-text-outline" size={18} />}
                     label="Điều khoản và chính sách"
-                    onPress={() => setShowTerms(true)}
+                    onPress={() => Linking.openURL('https://sportm-policy.web.app/').catch(err => console.error('Error opening maps', err))}
                   />
                   <ListItem
                     icon={<MaterialIcons name="delete-outline" size={18} color="#b71c1c" />}
