@@ -240,7 +240,17 @@ export default function ProfileScreen() {
                   <ListItem
                     icon={<Ionicons name="document-text-outline" size={18} />}
                     label="Điều khoản và chính sách"
-                    onPress={() => Linking.openURL('https://sportm-policy.web.app/').catch(err => console.error('Error opening maps', err))}
+                    onPress={() =>
+                      router.push(
+                        {
+                          pathname: '/(tabs)/settingsAccount/webview',
+                          params: {
+                            url: encodeURIComponent('https://sportm-policy.web.app/'),
+                            title: encodeURIComponent('Điều khoản & Chính sách'),
+                          },
+                        }
+                      )
+                    }
                   />
                   <ListItem
                     icon={<MaterialIcons name="delete-outline" size={18} color="#b71c1c" />}
