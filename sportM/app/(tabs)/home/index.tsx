@@ -153,8 +153,7 @@ export default function HomeScreen() {
               <TrustStatsSection
                 heading1="Sẻ chia sự"
                 heading2="tin tưởng khi sử dụng"
-                paragraph={`Mỗi một đồng bạn đặt xuống là một đồng tôi nhận được. Fact thôi nhưng tôi sẽ cân bạn sâu vcl.
-Everybody knows that but who gives a fuck`}
+                paragraph={``}
                 ctaLabel="Đăng ký chủ sân"
                 onPressCTA={() =>
                   Linking.openURL('https://www.sportm.site/bang-gia').catch((err) =>
