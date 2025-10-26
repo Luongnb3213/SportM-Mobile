@@ -265,14 +265,14 @@ export default function SignInForm() {
       </View>
 
       {/* GOOGLE SIGN-IN */}
-      {/* <TouchableOpacity
+      <TouchableOpacity
         className="mt-5 h-12 rounded-xl bg-black/90 flex-row items-center justify-center"
         onPress={handleGoogleSignin}
         activeOpacity={0.85}
       >
         <AntDesign name="google" size={18} color="#fff" />
         <Text className="text-white ml-8">Or sign in with Google</Text>
-      </TouchableOpacity> */}
+      </TouchableOpacity>
     </View>
   );
 }

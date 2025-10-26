@@ -245,13 +245,13 @@ export default function SignUpForm({ email }: { email?: string }) {
         </TouchableOpacity>
       </View>
 
-      {/* <TouchableOpacity
+      <TouchableOpacity
         className="h-11 mt-3 rounded-xl bg-black/90 flex-row items-center justify-center"
         onPress={handleGoogleSignin}
       >
         <AntDesign name="google" size={18} color="#fff" />
         <Text className="text-white ml-8">hoặc đăng ký với Google</Text>
-      </TouchableOpacity> */}
+      </TouchableOpacity>
     </View>
   );
 }
