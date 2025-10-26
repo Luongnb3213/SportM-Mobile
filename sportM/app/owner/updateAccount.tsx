@@ -20,6 +20,7 @@ import Toast from 'react-native-toast-message';
 import { jwtDecode } from 'jwt-decode';
 import { ScrollView } from 'react-native';
 import { Platform } from 'react-native';
+import { getErrorMessage } from '@/lib/utils';
 
 type Gender = 'male' | 'female' | '';
 
@@ -191,6 +192,7 @@ const UpdateAccount = () => {
       };
 
       const { data: patchUserRes } = await useAxios.patch(`/users/${userId}`, bodyUser);
+      console.log('Cập nhật user response:', patchUserRes);
       const newUser = patchUserRes?.data
       auth.setUser(newUser);
 
@@ -201,16 +203,15 @@ const UpdateAccount = () => {
         bankName: bankName.trim(),
         qrCodeUrl: qrCodeUrlFinal as string, // đã validate bắt buộc
       };
-
-      await useAxios.put('/admin/users/payment-info', paymentPayload);
-
+      await useAxios.patch('/users/payment-info', paymentPayload);
+      
       Toast.show({
         type: 'success',
         text1: 'Cập nhật thành công',
         text2: 'Thông tin tài khoản & thanh toán đã được cập nhật.',
       });
     } catch (err: any) {
-      console.log('Lỗi cập nhật:', JSON.stringify(err) || err);
+      console.log('Lỗi cập nhật:', getErrorMessage(err));
       Toast.show({
         type: 'error',
         text1: 'Cập nhật thất bại',

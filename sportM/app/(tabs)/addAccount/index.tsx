@@ -48,7 +48,7 @@ export default function FeedScreen() {
     (async () => {
       try {
         setInitialLoading(true);
-        const { data } = await useAxios.get('friend/available');
+        const { data } = await useAxios.get('/friend/available');
         const { data: dataItem } = await useAxios.get('/friend/get-one');
         console.log(dataItem.data)
         setItems(dataItem.data)

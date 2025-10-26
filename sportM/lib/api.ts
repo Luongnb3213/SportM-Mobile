@@ -48,7 +48,7 @@ async function callRefresh(refreshToken: string) {
 
 export function getApi(): AxiosInstance {
   if (api) return api;
-  api = axios.create({ baseURL: BASE_URL, timeout: 5000 });
+  api = axios.create({ baseURL: BASE_URL, timeout: 20000 });
 
   // --- Request: chỉ cần gắn access token hiện có ---
   api.interceptors.request.use(async (config) => {
