@@ -79,10 +79,10 @@ function InfoRow({
   children: React.ReactNode;
 }) {
   return (
-    <View className="my-2 rounded-xl bg-gray-100 px-4 py-3">
+    <View className="my-2 rounded-xl  px-4 py-3">
       <View className="flex-row items-center gap-2">
-        <Ionicons name={icon} size={18} />
-        <Text className="text-[15px] text-primary">{children}</Text>
+        <Ionicons name={icon} size={25} />
+        <Text className="text-[15px] text-black font-medium">{children}</Text>
       </View>
     </View>
   );

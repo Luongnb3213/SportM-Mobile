@@ -103,18 +103,18 @@ export default function AdvertisementDetailScreen() {
                 {/* Hero Image / Skeleton */}
                 <View className="px-4">
                     {loading ? (
-                        <Skeleton className="w-full rounded-2xl" style={{ aspectRatio: 16 / 9 }} />
+                        <Skeleton className="w-full rounded-2xl" style={{ aspectRatio: 6 / 5 }} />
                     ) : data?.imageUrl ? (
                         <Image
                             source={{ uri: data.imageUrl }}
                             className="w-full rounded-2xl"
-                            style={{ aspectRatio: 16 / 9 }}
+                            style={{ aspectRatio: 6 / 5 }}
                             resizeMode="cover"
                         />
                     ) : (
                         <View
                             className="w-full rounded-2xl bg-[#f2f2f2] items-center justify-center"
-                            style={{ aspectRatio: 16 / 9 }}
+                            style={{ aspectRatio: 6 / 5 }}
                         >
                             <Ionicons name="image-outline" size={30} color="#999" />
                         </View>
