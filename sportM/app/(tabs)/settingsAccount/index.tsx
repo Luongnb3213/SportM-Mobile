@@ -81,14 +81,9 @@ export default function ProfileScreen() {
       <View className="px-4 pb-2 flex-row items-center justify-between">
         <TouchableOpacity
           onPress={() => {
-            router.back();
           }}
           className="flex-row items-center gap-2 py-2"
         >
-          <Ionicons name="chevron-back" size={22} />
-          <Text className="text-[15px] text-primary font-medium">
-            Trở về trang trước
-          </Text>
         </TouchableOpacity>
 
         <TouchableOpacity
