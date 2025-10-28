@@ -11,6 +11,7 @@ import Toast from 'react-native-toast-message';
 import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
 import { useAuth } from '@/providers/AuthProvider';
 import { Avatar, AvatarFallback } from '@/components/Avatar';
+import { PanGesture } from 'react-native-gesture-handler';
 
 const { height: SCREEN_HEIGHT, width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -119,23 +120,8 @@ export default function FeedScreen() {
 
   if (initialLoading) {
     return (
-        <SafeAreaView className="flex-1">
-          <View className="px-4 pb-2 flex-row justify-start">
-            <TouchableOpacity
-              onPress={() => router.back()}
-              className="flex-row items-center gap-2 py-2"
-            >
-              <Ionicons name="chevron-back" size={22} />
-              <Text className="text-[15px] text-primary font-medium">Trở về trang trước</Text>
-            </TouchableOpacity>
-          </View>
-          <FriendCardSkeleton />
-      </SafeAreaView>
-    );
-  }
-  return (
       <SafeAreaView className="flex-1">
-        <View className="px-4 pb-2 flex-row justify-between items-center">
+        <View className="px-4 pb-2 flex-row justify-start">
           <TouchableOpacity
             onPress={() => router.back()}
             className="flex-row items-center gap-2 py-2"
@@ -143,125 +129,147 @@ export default function FeedScreen() {
             <Ionicons name="chevron-back" size={22} />
             <Text className="text-[15px] text-primary font-medium">Trở về trang trước</Text>
           </TouchableOpacity>
-          <TouchableOpacity
-            className="flex-row items-center gap-2 py-2"
-            onPress={() => router.push('/(tabs)/addAccount/listFriendRequest')}
-          >
-            <Text className="text-base text-primary font-medium">Xem lời mời</Text>
-            <Ionicons name="chevron-back" style={{ transform: [{ rotateY: '180deg' }] }} size={20} />
-          </TouchableOpacity>
         </View>
+        <FriendCardSkeleton />
+      </SafeAreaView>
+    );
+  }
+  return (
+    <SafeAreaView className="flex-1">
+      <View className="px-4 pb-2 flex-row justify-between items-center">
+        <TouchableOpacity
+          onPress={() => router.back()}
+          className="flex-row items-center gap-2 py-2"
+        >
+          <Ionicons name="chevron-back" size={22} />
+          <Text className="text-[15px] text-primary font-medium">Trở về trang trước</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          className="flex-row items-center gap-2 py-2"
+          onPress={() => router.push('/(tabs)/addAccount/listFriendRequest')}
+        >
+          <Text className="text-base text-primary font-medium">Xem lời mời</Text>
+          <Ionicons name="chevron-back" style={{ transform: [{ rotateY: '180deg' }] }} size={20} />
+        </TouchableOpacity>
+      </View>
 
-        <View className="flex-1 bg-white" style={{ paddingBottom: bottomGap + 80 }}>
-          {items.length === 0 ? (
-            <EmptyState
-              icon="people-outline"
-              title="Không có gợi ý nào"
-              description="Hiện chưa có gợi ý kết bạn nào."
-            />
-          ) : (
-            <Carousel
-              ref={carouselRef}
-              vertical
-              width={SCREEN_WIDTH}
-              height={SCREEN_HEIGHT}
-              data={items}
-              loop={false}
-              pagingEnabled
-              enabled={false}
-              onSnapToItem={handleSnap}
-              renderItem={({ item }) => (
-                <View className="w-full h-full relative bg-white">
-                  <View
-                    style={{ marginHorizontal: 15, height: SCREEN_HEIGHT - (bottomGap + 130) }}
-                    className="rounded-2xl relative"
-                  >
-                    {item?.avatarUrl ? (
-                      <Image
-                        source={{ uri: item?.avatarUrl }}
-                        resizeMode="cover"
-                        style={{
-                          position: 'absolute',
-                          inset: 0,
-                          width: '100%',
-                          height: '100%',
-                          borderRadius: 16,
-                        }}
-                      />
-                    ) : (
-                      <Avatar style={{
+      <View className="flex-1 bg-white" style={{ paddingBottom: bottomGap + 80 }}>
+        {items.length === 0 ? (
+          <EmptyState
+            icon="people-outline"
+            title="Không có gợi ý nào"
+            description="Hiện chưa có gợi ý kết bạn nào."
+          />
+        ) : (
+          <Carousel
+            ref={carouselRef}
+            vertical
+            width={SCREEN_WIDTH}
+            height={SCREEN_HEIGHT}
+            data={items}
+            loop={false}
+            pagingEnabled
+            enabled={false}
+            onSnapToItem={handleSnap}
+            onConfigurePanGesture={(g: PanGesture) => {
+              'worklet';
+              g.enabled(false);
+              g.activeOffsetX([999999, 999999]);
+              g.activeOffsetY([999999, 999999]);
+            }}
+            autoPlay={false}
+            renderItem={({ item }) => (
+              <View className="w-full h-full relative bg-white">
+                <View
+                  style={{ marginHorizontal: 15, height: SCREEN_HEIGHT - (bottomGap + 130) }}
+                  className="rounded-2xl relative"
+                >
+                  {item?.avatarUrl ? (
+                    <Image
+                      source={{ uri: item?.avatarUrl }}
+                      resizeMode="cover"
+                      style={{
                         position: 'absolute',
                         inset: 0,
                         width: '100%',
                         height: '100%',
                         borderRadius: 16,
-                      }}>
-                        <AvatarFallback style={{
-                          borderRadius: 16,
-                        }} textClassname="text-xxl">{item.fullName?.split(' ').map(w => w[0]).slice(0, 2).join('') || 'U'}</AvatarFallback>
-                      </Avatar>
-                    )}
+                      }}
+                    />
+                  ) : (
+                    <Avatar style={{
+                      position: 'absolute',
+                      inset: 0,
+                      width: '100%',
+                      height: '100%',
+                      borderRadius: 16,
+                    }}>
+                      <AvatarFallback style={{
+                        borderRadius: 16,
+                      }} textClassname="text-xxl">{item.fullName?.split(' ').map(w => w[0]).slice(0, 2).join('') || 'U'}</AvatarFallback>
+                    </Avatar>
+                  )}
 
 
-                    <View style={{ position: 'absolute', inset: 0, justifyContent: 'flex-end' }}>
-                      <View className="bg-black/60 p-4 pb-28 rounded-2xl">
-                        <Text className="text-white text-2xl font-bold">{item.fullName}</Text>
-                        <Text className="text-gray-200 mt-1" numberOfLines={3}>
-                          {item.bio}
-                        </Text>
-                      </View>
-                    </View>
-
-                    <View
-                      style={{ position: 'absolute', bottom: -30, left: 0, right: 0 }}
-                      className="flex-row justify-center gap-6"
-                    >
-                      {/* Skip */}
-                      <TouchableOpacity
-                        onPress={handleSkip}
-                        style={{
-                          width: 70,
-                          height: 70,
-                          borderRadius: 9999,
-                          backgroundColor: '#D8D8D8',
-                          justifyContent: 'center',
-                          alignItems: 'center',
-                        }}
-                      >
-                        <Ionicons name="close" size={28} color="white" />
-                      </TouchableOpacity>
-                      {/* Add */}
-                      <TouchableOpacity
-                        onPress={handleSendRequest}
-                        style={{
-                          width: 70,
-                          height: 70,
-                          borderRadius: 9999,
-                          backgroundColor: '#1F2257',
-                          justifyContent: 'center',
-                          alignItems: 'center',
-                        }}
-                      >
-                        <Ionicons name="add" size={28} color="white" />
-                      </TouchableOpacity>
+                  <View style={{ position: 'absolute', inset: 0, justifyContent: 'flex-end' }}>
+                    <View className="bg-black/60 p-4 pb-28 rounded-2xl">
+                      <Text className="text-white text-2xl font-bold">{item.fullName}</Text>
+                      <Text className="text-gray-200 mt-1" numberOfLines={3}>
+                        {item.bio}
+                      </Text>
                     </View>
                   </View>
 
-                  {/* Loading indicator khi đang prefetch */}
-                  {loadingMore && (
-                    <View className="absolute right-3 top-3 bg-black/40 rounded-full px-3 py-2">
-                      <View className="flex-row items-center gap-2">
-                        <ActivityIndicator />
-                        <Text className="text-white text-xs">Đang tải...</Text>
-                      </View>
-                    </View>
-                  )}
+                  <View
+                    style={{ position: 'absolute', bottom: -30, left: 0, right: 0 }}
+                    className="flex-row justify-center gap-6"
+                  >
+                    {/* Skip */}
+                    <TouchableOpacity
+                      onPress={handleSkip}
+                      style={{
+                        width: 70,
+                        height: 70,
+                        borderRadius: 9999,
+                        backgroundColor: '#D8D8D8',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                      }}
+                    >
+                      <Ionicons name="close" size={28} color="white" />
+                    </TouchableOpacity>
+                    {/* Add */}
+                    <TouchableOpacity
+                      onPress={handleSendRequest}
+                      style={{
+                        width: 70,
+                        height: 70,
+                        borderRadius: 9999,
+                        backgroundColor: '#1F2257',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                      }}
+                    >
+                      <Ionicons name="add" size={28} color="white" />
+                    </TouchableOpacity>
+                  </View>
                 </View>
-              )}
-            />
-          )
+
+                {/* Loading indicator khi đang prefetch */}
+                {loadingMore && (
+                  <View className="absolute right-3 top-3 bg-black/40 rounded-full px-3 py-2">
+                    <View className="flex-row items-center gap-2">
+                      <ActivityIndicator />
+                      <Text className="text-white text-xs">Đang tải...</Text>
+                    </View>
+                  </View>
+                )}
+              </View>
+            )}
+          />
+        )
         }
-        </View>
+      </View>
     </SafeAreaView>
   );
 }

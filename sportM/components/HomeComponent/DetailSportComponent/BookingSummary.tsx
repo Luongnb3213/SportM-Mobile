@@ -47,6 +47,7 @@ export default function BookingSummary({
         multiline
         numberOfLines={4}
         textAlignVertical="top"
+        placeholderTextColor="#757575"
         className="h-28 rounded-2xl border border-gray-200 bg-white px-3 py-3 placeholder:text-gray-400"
       />
 

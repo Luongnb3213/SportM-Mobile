@@ -18,6 +18,7 @@ const Input = forwardRef<React.ElementRef<typeof TextInput>, InputProps>(
           'border border-input py-2.5 px-4 rounded-lg',
           inputClasses
         )}
+        placeholderTextColor="#757575" 
         {...props}
       />
     </View>

@@ -303,6 +303,7 @@ const UpdateAccount = () => {
                   editable={!submitting}
                   numberOfLines={4}
                   style={{ textAlignVertical: 'top', padding: 12 }}
+                  placeholderTextColor="#757575"
                 />
                 {errors.bio ? (
                   <Text className="text-red-500 text-sm mt-1">{errors.bio}</Text>
