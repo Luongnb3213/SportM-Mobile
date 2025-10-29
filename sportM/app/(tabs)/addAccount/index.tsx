@@ -136,7 +136,7 @@ export default function FeedScreen() {
   }
   return (
     <SafeAreaView className="flex-1">
-      <View className="px-4 pb-2 flex-row justify-between items-center">
+      <View className="px-4 pb-2 flex-row justify-between items-center bg-white">
         <TouchableOpacity
           onPress={() => router.back()}
           className="flex-row items-center gap-2 py-2"
@@ -197,19 +197,29 @@ export default function FeedScreen() {
                       }}
                     />
                   ) : (
-                    <Avatar style={{
-                      position: 'absolute',
-                      inset: 0,
-                      width: '100%',
-                      height: '100%',
-                      borderRadius: 16,
-                    }}>
-                      <AvatarFallback style={{
+                    <Avatar
+                      style={{
+                        position: 'absolute',
+                        inset: 0,
+                        width: '100%',
+                        height: '100%',
                         borderRadius: 16,
-                      }} textClassname="text-xxl">{item.fullName?.split(' ').map(w => w[0]).slice(0, 2).join('') || 'U'}</AvatarFallback>
+                      }}
+                    >
+                      <AvatarFallback
+                        style={{
+                          borderRadius: 16,
+                        }}
+                        textClassname="text-xxl"
+                      >
+                        {item.fullName
+                          ?.split(' ')
+                          .map(w => w[0])
+                          .slice(0, 2)
+                          .join('') || 'U'}
+                      </AvatarFallback>
                     </Avatar>
                   )}
-
 
                   <View style={{ position: 'absolute', inset: 0, justifyContent: 'flex-end' }}>
                     <View className="bg-black/60 p-4 pb-28 rounded-2xl">
@@ -267,8 +277,7 @@ export default function FeedScreen() {
               </View>
             )}
           />
-        )
-        }
+        )}
       </View>
     </SafeAreaView>
   );

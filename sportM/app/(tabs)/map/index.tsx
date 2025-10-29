@@ -62,56 +62,57 @@ export default function SearchScreen() {
   }, [])
 
   return (
-      <SafeAreaView className="flex-1 relative">
-        {/* Row 1: search input */}
-        <TouchableOpacity onPress={() => {
+    <SafeAreaView className="flex-1 relative bg-white">
+      {/* Row 1: search input */}
+      <TouchableOpacity
+        onPress={() => {
           router.push('/(tabs)/home/search');
-        }} className="flex-row px-4 items-center bg-[#EEEEEE] rounded-xl h-14 mx-4 mt-4">
-          <Feather name="search" size={25} color="#0a0a0a" />
-          <View
-            className="flex-1 text-lg text-black px-2"
-          >
-            <Text className="text-black text-lg">Nhập địa điểm</Text>
-          </View>
-        </TouchableOpacity>
-        <MapboxMap />
-        <View className="absolute z-10 bottom-[24] left-0 right-0 justify-center items-center overflow-visible">
-          {listCourt ? (
-            <Carousel
-              width={screenWidth}
-              height={CARD_H}
-              data={listCourt}
-              scrollAnimationDuration={500}
-              renderItem={renderItem}
-              loop={false}
-              mode="parallax"
-              modeConfig={{
-                parallaxScrollingScale: 0.9,
-                parallaxScrollingOffset: 50,
-              }}
-              style={{
-                width: screenWidth,
-              }}
-            />
-          ) : (
-            <Carousel
-              width={screenWidth}
-              height={CARD_H}
-              data={dataMock}
-              scrollAnimationDuration={500}
-              renderItem={() => <GolfCourseCardSkeleton />}
-              loop={false}
-              mode="parallax"
-              modeConfig={{
-                parallaxScrollingScale: 0.9,
-                parallaxScrollingOffset: 50,
-              }}
-              style={{
-                width: screenWidth,
-              }}
-            />
-          )}
+        }}
+        className="flex-row px-4 items-center bg-[#EEEEEE] rounded-xl h-14 mx-4 mt-4"
+      >
+        <Feather name="search" size={25} color="#0a0a0a" />
+        <View className="flex-1 text-lg text-black px-2">
+          <Text className="text-black text-lg">Nhập địa điểm</Text>
         </View>
+      </TouchableOpacity>
+      <MapboxMap />
+      <View className="absolute z-10 bottom-[24] left-0 right-0 justify-center items-center overflow-visible">
+        {listCourt ? (
+          <Carousel
+            width={screenWidth}
+            height={CARD_H}
+            data={listCourt}
+            scrollAnimationDuration={500}
+            renderItem={renderItem}
+            loop={false}
+            mode="parallax"
+            modeConfig={{
+              parallaxScrollingScale: 0.9,
+              parallaxScrollingOffset: 50,
+            }}
+            style={{
+              width: screenWidth,
+            }}
+          />
+        ) : (
+          <Carousel
+            width={screenWidth}
+            height={CARD_H}
+            data={dataMock}
+            scrollAnimationDuration={500}
+            renderItem={() => <GolfCourseCardSkeleton />}
+            loop={false}
+            mode="parallax"
+            modeConfig={{
+              parallaxScrollingScale: 0.9,
+              parallaxScrollingOffset: 50,
+            }}
+            style={{
+              width: screenWidth,
+            }}
+          />
+        )}
+      </View>
     </SafeAreaView>
   );
 }
