@@ -12,6 +12,7 @@ import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
 import { useAuth } from '@/providers/AuthProvider';
 import { Avatar, AvatarFallback } from '@/components/Avatar';
 import { PanGesture } from 'react-native-gesture-handler';
+import { getErrorMessage } from '@/lib/utils';
 
 const { height: SCREEN_HEIGHT, width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -21,7 +22,7 @@ type FeedItem = {
   birthDate: string;
   fullName: string;
   gender: boolean;
-  userId: string
+  userId: string;
 };
 
 const FLOAT_GAP = 12;
@@ -40,9 +41,9 @@ export default function FeedScreen() {
 
   useEffect(() => {
     if (!user) {
-      router.replace('/authentication')
+      router.replace('/authentication');
     }
-  }, [])
+  }, []);
 
   // Fake seed data
   useEffect(() => {
@@ -51,14 +52,13 @@ export default function FeedScreen() {
         setInitialLoading(true);
         const { data } = await useAxios.get('/friend/available');
         const { data: dataItem } = await useAxios.get('/friend/get-one');
-        console.log(dataItem.data)
-        setItems(dataItem.data)
+        setItems(dataItem.data);
         setInitialLoading(false);
       } catch (error) {
-        console.log('error while fetching friend', error)
+        console.log('error while fetching friend', error);
         setInitialLoading(false);
       }
-    })()
+    })();
   }, []);
 
   // Fake fetch /fiend/get-one (commented)
@@ -84,15 +84,26 @@ export default function FeedScreen() {
         fetchOneAndAppend();
       }
     },
-    [items.length, fetchOneAndAppend]
+    [items.length, fetchOneAndAppend],
   );
 
-  const handleSkip = () => {
-    const next = Math.min(activeIndex + 1, items.length - 1);
-    if (next !== activeIndex) {
-      carouselRef.current?.scrollTo({ index: next, animated: true });
+  const sleep = (ms: number) => new Promise(res => setTimeout(res, ms));
+
+  const scrollThenRemoveCurrent = async () => {
+    const currIndex = activeIndex;
+    const currItem = items[currIndex];
+    if (!currItem) return;
+    const nextIndex = currIndex + 1;
+    if (nextIndex < items.length) {
+      carouselRef.current?.scrollTo?.({ index: nextIndex, animated: true });
+    } else {
     }
-  }
+  };
+
+  const handleSkip = async () => {
+    if (!items[activeIndex]) return;
+    await scrollThenRemoveCurrent();
+  };
 
   const handleSendRequest = async () => {
     try {
@@ -104,19 +115,24 @@ export default function FeedScreen() {
         text1: 'Đã gửi lời mời kết bạn',
         text2: current.fullName ? `Tới ${current.fullName}` : undefined,
       });
-      const next = Math.min(activeIndex + 1, items.length - 1);
-      if (next !== activeIndex) {
-        carouselRef.current?.scrollTo({ index: next, animated: true });
-      }
+      await scrollThenRemoveCurrent();
     } catch (e) {
-      console.log('send friend-request error', e);
-      Toast.show({
-        type: 'error',
-        text1: 'Gửi lời mời thất bại',
-        text2: 'Vui lòng thử lại',
-      });
+      console.log('send friend-request error', getErrorMessage(e));
+      if (getErrorMessage(e) === 'Lời mời kết bạn đã tồn tại') {
+        Toast.show({
+          type: 'error',
+          text1: 'Gửi lời mời thất bại',
+          text2: 'Bạn đã gửi lời mời kết bạn tới người này rồi',
+        });
+      } else {
+        Toast.show({
+          type: 'error',
+          text1: 'Gửi lời mời thất bại',
+          text2: 'Vui lòng thử lại',
+        });
+      }
     }
-  }
+  };
 
   if (initialLoading) {
     return (
@@ -169,14 +185,7 @@ export default function FeedScreen() {
             data={items}
             loop={false}
             pagingEnabled
-            enabled={false}
             onSnapToItem={handleSnap}
-            onConfigurePanGesture={(g: PanGesture) => {
-              'worklet';
-              g.enabled(false);
-              g.activeOffsetX([999999, 999999]);
-              g.activeOffsetY([999999, 999999]);
-            }}
             autoPlay={false}
             renderItem={({ item }) => (
               <View className="w-full h-full relative bg-white">

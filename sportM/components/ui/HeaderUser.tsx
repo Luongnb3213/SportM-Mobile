@@ -80,19 +80,19 @@ const HeaderUser = () => {
             Xin chào, {user?.fullName || ''}
           </Text>
           <TouchableOpacity onPress={handleClickIconHeader}>
-            <View className="w-12 h-12 rounded-full bg-white items-center justify-center shadow-2xl">
+            <View
+              className={`w-12 h-12 rounded-full bg-white items-center justify-center ${
+                user?.role === 'OWNER' ? 'shadow-2xl' : ''
+              }  `}
+            >
               {user?.role === 'OWNER' ? (
                 pathname === '/owner' ? (
-                  <AntDesign name="plus" size={24} color='black' />
+                  <AntDesign name="plus" size={24} color="black" />
                 ) : (
-                  <Ionicons
-                    name="notifications-outline"
-                    size={24}
-                      color='black'
-                  />
+                  <Ionicons name="notifications-outline" size={24} color="black" />
                 )
               ) : (
-                  <></>
+                <></>
               )}
             </View>
           </TouchableOpacity>

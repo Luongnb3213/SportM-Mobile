@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { View, Text, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { Feather, AntDesign } from '@expo/vector-icons';
 import { Input } from '@/components/Input';
@@ -17,13 +17,12 @@ import Toast from 'react-native-toast-message';
 import { useAuth } from '@/providers/AuthProvider';
 import { decodeJwt } from '@/lib/jwt';
 import { getErrorMessage } from '@/lib/utils';
+import { clearCredentials, getCredentials, saveCredentials } from '@/lib/credentialStorage';
 
 GoogleSignin.configure({
-  webClientId:
-    '504083896204-iff4f78io6sc5rs1otq0t9o1lhitignv.apps.googleusercontent.com',
+  webClientId: '504083896204-iff4f78io6sc5rs1otq0t9o1lhitignv.apps.googleusercontent.com',
   profileImageSize: 120,
-  iosClientId:
-    '504083896204-du75dra9lbe1kglvlsrsa5apv7d3145e.apps.googleusercontent.com',
+  iosClientId: '504083896204-du75dra9lbe1kglvlsrsa5apv7d3145e.apps.googleusercontent.com',
 });
 
 export default function SignInForm() {
@@ -39,10 +38,24 @@ export default function SignInForm() {
   const [errors, setErrors] = useState<{ email?: string; pwd?: string }>({});
 
   const isEmail = useMemo(() => {
-    // Regex email đơn giản, đủ dùng mobile form
     const re = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/i;
     return re.test(String(email).trim());
   }, [email]);
+
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      const creds = await getCredentials();
+      if (mounted && creds) {
+        setEmail(creds.email ?? '');
+        setPwd(creds.password ?? '');
+        setRemember(true);
+      }
+    })();
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   const validate = () => {
     const next: typeof errors = {};
@@ -76,6 +89,12 @@ export default function SignInForm() {
       const payload = decodeJwt(access);
       auth.setUser(payload);
       await saveTokens('accessToken', access);
+      console.log(remember);
+      if (remember) {
+        await saveCredentials(email.trim(), pwd);
+      } else {
+        await clearCredentials();
+      }
       if (payload?.role == 'CLIENT') {
         router.replace('/home');
       } else {
@@ -150,9 +169,9 @@ export default function SignInForm() {
         <Input
           label="Email"
           value={email}
-          onChangeText={(t) => {
+          onChangeText={t => {
             setEmail(t);
-            if (errors.email) setErrors((e) => ({ ...e, email: undefined }));
+            if (errors.email) setErrors(e => ({ ...e, email: undefined }));
           }}
           placeholder="Nhập email"
           inputClasses="rounded-xl bg-white"
@@ -161,9 +180,7 @@ export default function SignInForm() {
           autoCapitalize="none"
           autoCorrect={false}
         />
-        {errors.email ? (
-          <Text className="text-red-500 italic mb-2">{errors.email}</Text>
-        ) : null}
+        {errors.email ? <Text className="text-red-500 italic mb-2">{errors.email}</Text> : null}
       </View>
 
       {/* PASSWORD */}
@@ -172,9 +189,9 @@ export default function SignInForm() {
         <View className="flex-row items-center mb-1">
           <Input
             value={pwd}
-            onChangeText={(t) => {
+            onChangeText={t => {
               setPwd(t);
-              if (errors.pwd) setErrors((e) => ({ ...e, pwd: undefined }));
+              if (errors.pwd) setErrors(e => ({ ...e, pwd: undefined }));
             }}
             placeholder="Nhập mật khẩu"
             secureTextEntry={!showPwd}
@@ -183,17 +200,14 @@ export default function SignInForm() {
           />
           <TouchableOpacity
             className="absolute right-3 h-full justify-center"
-            onPress={() => setShowPwd((v) => !v)}
+            onPress={() => setShowPwd(v => !v)}
             activeOpacity={0.8}
           >
             <Feather name={showPwd ? 'eye-off' : 'eye'} size={18} />
           </TouchableOpacity>
         </View>
         {errors.pwd ? (
-          <Text
-            className="text-red-500 italic mb-2"
-            style={{ fontStyle: 'italic' }}
-          >
+          <Text className="text-red-500 italic mb-2" style={{ fontStyle: 'italic' }}>
             {errors.pwd}
           </Text>
         ) : null}
@@ -216,23 +230,31 @@ export default function SignInForm() {
       </Button>
 
       {/* LỖI SERVER */}
-      {serverError ? (
-        <Text className="text-red-500 italic mt-2">{serverError}</Text>
-      ) : null}
+      {serverError ? <Text className="text-red-500 italic mt-2">{serverError}</Text> : null}
 
       {/* FORGOT PASSWORD */}
       <View className="flex-row items-center justify-between mt-5">
         <TouchableOpacity
           className="flex-row items-center"
-          onPress={() => setRemember((v) => !v)}
+          onPress={() => setRemember(v => !v)}
           activeOpacity={0.8}
         >
-          <Checkbox
-            checkboxClasses="w-4 h-4 rounded"
-            checked={remember}
-            className="mr-2"
-          />
-          <Text>Ghi nhớ mật khẩu</Text>
+          <View
+            style={{
+              width: 18,
+              height: 18,
+              borderRadius: 4,
+              borderWidth: 1.5,
+              borderColor: '#1F2257',
+              alignItems: 'center',
+              justifyContent: 'center',
+              backgroundColor: remember ? '#1F2257' : 'transparent',
+            }}
+          >
+            {remember && <Text style={{ color: '#fff', fontSize: 12, fontWeight: 'bold' }}>✓</Text>}
+          </View>
+
+          <Text style={{ marginLeft: 8 }}>Ghi nhớ mật khẩu</Text>
         </TouchableOpacity>
         <View className="underline">
           <Text
