@@ -104,11 +104,14 @@ export default function BookingsScreen() {
         setLoadingInitial(true);
         setPage(1);
         const statusParam = statusFilter ? `&status=${statusFilter}` : '';
-        const { data } = await useAxios.get(`/bookings/my-bookings?page=1&limit=${LIMIT}&search=${debouncedSearch}${statusParam}`, { signal: ctrl.signal });
+        const { data } = await useAxios.get(
+          `/bookings/my-bookings?page=1&limit=${LIMIT}&search=${debouncedSearch}${statusParam}`,
+          { signal: ctrl.signal },
+        );
         setItems(data.data?.items);
         setHasMore(data.data?.items?.length > 0);
       } catch (e) {
-        console.log("Fetch bookings aborted or failed:", e);
+        console.log('Fetch bookings aborted or failed:', e);
       } finally {
         setLoadingInitial(false);
       }
@@ -128,16 +131,19 @@ export default function BookingsScreen() {
       setLoadingMore(true);
       const nextPage = page + 1;
       const statusParam = statusFilter ? `&status=${statusFilter}` : '';
-      const { data } = await useAxios.get(`/bookings/my-bookings?page=${nextPage}&limit=${LIMIT}&search=${debouncedSearch}${statusParam}`, { signal: ctrl.signal });
+      const { data } = await useAxios.get(
+        `/bookings/my-bookings?page=${nextPage}&limit=${LIMIT}&search=${debouncedSearch}${statusParam}`,
+        { signal: ctrl.signal },
+      );
       if (data.data?.items?.length > 0) {
-        setItems((prev) => [...prev, ...data.data.items]);
+        setItems(prev => [...prev, ...data.data.items]);
         setPage(nextPage);
         setHasMore(data.data.items?.length > 0);
       } else {
         setHasMore(false);
       }
     } catch (e) {
-      console.log("Load more bookings aborted or failed:", e);
+      console.log('Load more bookings aborted or failed:', e);
     } finally {
       setLoadingMore(false);
     }
@@ -150,7 +156,7 @@ export default function BookingsScreen() {
       Toast.show({
         type: 'success',
         text1: 'Hủy đặt sân thành công!',
-        text2: `Booking ID #${bookingId} đã được hủy.`,
+        text2: `Order ID #${bookingId} đã được hủy.`,
       });
       setStatusFilter('CANCELLED');
     } catch (error: any) {
@@ -204,11 +210,12 @@ export default function BookingsScreen() {
         </View>
       </View>
 
-      <View className="bg-primary px-5 py-5" style={Platform.OS === 'android' ? { zIndex: 10 } : { zIndex: 9999 }}>
+      <View
+        className="bg-primary px-5 py-5"
+        style={Platform.OS === 'android' ? { zIndex: 10 } : { zIndex: 9999 }}
+      >
         <View className="flex-row items-center justify-between">
-          <Text className="text-2xl font-medium text-primary-foreground">
-            Tất cả sân đã đặt
-          </Text>
+          <Text className="text-2xl font-medium text-primary-foreground">Tất cả sân đã đặt</Text>
           <View className="w-[180px]">
             <DropDownPicker
               open={open}
@@ -233,7 +240,9 @@ export default function BookingsScreen() {
                 borderColor: '#ccc',
                 borderRadius: 10,
               }}
-              ArrowDownIconComponent={() => <Ionicons name="chevron-down" size={20} color="#0a0a0a" />}
+              ArrowDownIconComponent={() => (
+                <Ionicons name="chevron-down" size={20} color="#0a0a0a" />
+              )}
               ArrowUpIconComponent={() => <Ionicons name="chevron-up" size={20} color="#0a0a0a" />}
             />
           </View>
@@ -241,7 +250,7 @@ export default function BookingsScreen() {
       </View>
 
       <ScrollView
-          keyboardShouldPersistTaps="handled"
+        keyboardShouldPersistTaps="handled"
         keyboardDismissMode="on-drag"
         automaticallyAdjustKeyboardInsets
         contentInsetAdjustmentBehavior="always"
@@ -249,10 +258,7 @@ export default function BookingsScreen() {
           paddingBottom: (insets?.bottom ?? 0) + (tabBarHeight ?? 0) + 24,
         }}
       >
-        <Card
-          className="m-4 bg-background rounded-2xl overflow-hidden"
-          style={{ borderWidth: 0 }}
-        >
+        <Card className="m-4 bg-background rounded-2xl overflow-hidden" style={{ borderWidth: 0 }}>
           {loadingInitial ? (
             Array.from({ length: 4 }).map((_, i) => (
               <View key={i} className="py-4">
@@ -277,7 +283,7 @@ export default function BookingsScreen() {
                           router.push({
                             pathname: '/(tabs)/home/DetailSport',
                             params: { courtID: b?.courtId },
-                          })
+                          });
                         }}
                         activeOpacity={0.8}
                       >
@@ -294,7 +300,10 @@ export default function BookingsScreen() {
                               Booking ID: {b?.bookingId ? `#${b.bookingId}` : '—'}
                             </Text>
                             <Text className="text-[12px] mt-1 text-muted-foreground capitalize">
-                              Trạng thái: {BOOKING_STATUSES.find(s => s.value === b?.status)?.label || b?.status || '—'}
+                              Trạng thái:{' '}
+                              {BOOKING_STATUSES.find(s => s.value === b?.status)?.label ||
+                                b?.status ||
+                                '—'}
                             </Text>
                           </View>
 
@@ -326,18 +335,22 @@ export default function BookingsScreen() {
                                   className="px-3 py-1 rounded-full"
                                   onPress={() => openPaymentModal(b)}
                                 >
-                                  <Text className="text-white text-[11px] font-medium">Thanh toán</Text>
+                                  <Text className="text-white text-[11px] font-medium">
+                                    Thanh toán
+                                  </Text>
                                 </Button>
                                 <Button
                                   variant="destructive"
                                   className="px-3 py-1 rounded-full"
-                                  onPress={() => handleCancelBooking(b?.bookingId)}
-                                  disabled={cancelingBookingId === b?.bookingId}
+                                  onPress={() => handleCancelBooking(item?.orderId)}
+                                  disabled={cancelingBookingId === item?.orderId}
                                 >
-                                  {cancelingBookingId === b?.bookingId ? (
+                                  {cancelingBookingId === item?.orderId ? (
                                     <ActivityIndicator color="white" />
                                   ) : (
-                                    <Text className="text-white text-[11px] font-medium">Hủy đặt sân</Text>
+                                    <Text className="text-white text-[11px] font-medium">
+                                      Hủy đặt sân
+                                    </Text>
                                   )}
                                 </Button>
                               </View>
@@ -362,11 +375,7 @@ export default function BookingsScreen() {
                       <Text className="ml-2">Đang tải...</Text>
                     </View>
                   ) : (
-                    <Button
-                      variant="ghost"
-                      className="px-3 py-2"
-                      onPress={onLoadMore}
-                    >
+                    <Button variant="ghost" className="px-3 py-2" onPress={onLoadMore}>
                       <Text className="mr-1">Xem thêm</Text>
                       <Ionicons name="chevron-down" size={16} />
                     </Button>
@@ -410,7 +419,8 @@ export default function BookingsScreen() {
               </TouchableOpacity>
             </View>
             <Text className="text-[12px] text-muted-foreground mb-4">
-              Vui lòng chuyển khoản theo thông tin bên dưới và ghi kèm mã Booking để được xác nhận nhanh hơn.
+              Vui lòng chuyển khoản theo thông tin bên dưới và ghi kèm mã Booking để được xác nhận
+              nhanh hơn.
             </Text>
 
             {paymentInfo ? (
@@ -430,7 +440,10 @@ export default function BookingsScreen() {
 
                 <View className="mt-1 mb-2">
                   <Text className="text-[13px] text-muted-foreground mb-2">QR chuyển khoản</Text>
-                  <View className="w-full overflow-hidden rounded-xl border border-border" style={{ aspectRatio: 1 }}>
+                  <View
+                    className="w-full overflow-hidden rounded-xl border border-border"
+                    style={{ aspectRatio: 1 }}
+                  >
                     <Image
                       source={{ uri: paymentInfo.qrCodeUrl }}
                       style={{ width: '100%', height: '100%' }}
