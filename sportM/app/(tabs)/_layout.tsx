@@ -29,13 +29,9 @@ export default function TabsLayout() {
 
 
   return (
-    <Tabs
-      initialRouteName="home"
-      screenOptions={{ headerShown: false }}
-      tabBar={(props) => <TabBar {...props} />}
-    >
+    <Tabs initialRouteName="home" screenOptions={{ headerShown: false }}>
       <Tabs.Screen name="index" options={{ href: null }} />
-      {tabs.map((t) => (
+      {tabs.map(t => (
         <Tabs.Screen key={t.name} name={t.name} options={{}} />
       ))}
     </Tabs>
