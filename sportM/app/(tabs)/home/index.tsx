@@ -10,7 +10,7 @@ import {
 } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
-import { Ionicons } from '@expo/vector-icons';
+import { Feather, Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 
 import Button from '@/components/Button';
@@ -45,7 +45,6 @@ export default function HomeScreen() {
     })();
   }, []);
 
-
   return (
     <SafeAreaView className="flex-1" style={{ backgroundColor: '#fff' }}>
       <KeyboardAvoidingView
@@ -59,19 +58,32 @@ export default function HomeScreen() {
           automaticallyAdjustKeyboardInsets
           contentInsetAdjustmentBehavior="always"
           contentContainerStyle={{
-            paddingBottom: (insets?.bottom ?? 0) + (tabBarHeight ?? 0) + 24, 
+            paddingBottom: (insets?.bottom ?? 0) + (tabBarHeight ?? 0) + 24,
           }}
         >
           <View style={{ backgroundColor: 'white' }}>
             {/* Header */}
             <View className="bg-white px-4">
               <HeaderUser />
+              <TouchableOpacity
+                onPress={() => {
+                  router.push('/(tabs)/home/search');
+                }}
+                className="flex-row px-4 items-center bg-[#EEEEEE] rounded-xl h-14 mt-4"
+              >
+                <Feather name="search" size={25} color="#0a0a0a" />
+                <View className="flex-1 text-lg text-black px-2">
+                  <Text className="text-black text-lg">Nhập địa điểm</Text>
+                </View>
+              </TouchableOpacity>
             </View>
 
             {/* Ads / Sự kiện */}
             <View className="gap-5 px-2 mt-4 flex-col">
               <View className="flex-row items-center justify-between px-4 bg-white">
-                <Text className="text-3xl font-bold leading-snug text-primary">Sự kiện nổi bật</Text>
+                <Text className="text-3xl font-bold leading-snug text-primary">
+                  Sự kiện nổi bật
+                </Text>
                 <TouchableOpacity
                   onPress={() => router.push('/(tabs)/home/ads-page')}
                   className="flex-row items-center"
@@ -107,12 +119,12 @@ export default function HomeScreen() {
                     />
                   ) : (
                     <>
-                        {bookingCourt.map((court: any) => (
-                          <GolfCourseCard
-                            key={court?.courtId}
-                            title={court?.courtName}
-                            pricePerHour={formatPriceVND(court?.pricePerHour)}
-                            rating={court?.avgRating || 0}
+                      {bookingCourt.map((court: any) => (
+                        <GolfCourseCard
+                          key={court?.courtId}
+                          title={court?.courtName}
+                          pricePerHour={formatPriceVND(court?.pricePerHour)}
+                          rating={court?.avgRating || 0}
                           imageUri={
                             court?.courtImages?.[0] ||
                             'https://sportm.vn/static/meda/san1.2f6f5f5f.jpg'
@@ -126,17 +138,17 @@ export default function HomeScreen() {
                         />
                       ))}
                       <View className="items-center py-3">
-                          <Button
-                            onPress={() => router.push('/(tabs)/home/booking')}
-                            variant="ghost"
-                            className="px-3 py-2"
-                          >
+                        <Button
+                          onPress={() => router.push('/(tabs)/home/booking')}
+                          variant="ghost"
+                          className="px-3 py-2"
+                        >
                           <Text className="mr-1">Xem thêm</Text>
                           <Ionicons name="chevron-down" size={16} />
                         </Button>
                       </View>
-                      </>
-                    )
+                    </>
+                  )
                 ) : (
                   Array.from({ length: 3 }).map((_, idx) => <GolfCourseCardSkeleton key={idx} />)
                 )}
@@ -153,12 +165,11 @@ export default function HomeScreen() {
               <TrustStatsSection
                 heading1="Sẻ chia sự"
                 heading2="tin tưởng khi sử dụng"
-                paragraph={`Mỗi một đồng bạn đặt xuống là một đồng tôi nhận được. Fact thôi nhưng tôi sẽ cân bạn sâu vcl.
-Everybody knows that but who gives a fuck`}
+                paragraph={``}
                 ctaLabel="Đăng ký chủ sân"
                 onPressCTA={() =>
-                  Linking.openURL('https://www.sportm.site/bang-gia').catch((err) =>
-                    console.error('Error opening maps', err)
+                  Linking.openURL('https://www.sportm.site/bang-gia').catch(err =>
+                    console.error('Error opening maps', err),
                   )
                 }
                 stat1Value="360+"
@@ -173,7 +184,7 @@ Everybody knows that but who gives a fuck`}
               <EmailSubscribeSection
                 defaultEmail="example@gmail.com"
                 privacyUrl="https://www.sportm.site/about-us"
-                onSubmit={async (email) => {
+                onSubmit={async email => {
                   console.log('subscribe:', email);
                 }}
               />

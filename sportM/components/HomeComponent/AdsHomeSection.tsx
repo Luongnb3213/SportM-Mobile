@@ -63,7 +63,7 @@ export default function AdsHomeSection() {
                             <View className="px-4">
                                 {items?.map((ad, idx) => (
                                     <Card key={idx} className="mb-3 rounded-2xl overflow-hidden">
-                                        <Image source={{ uri: ad.imageUrl }} style={{ width: '100%', height: 140 }} />
+                                        <Image source={{ uri: ad.imageUrl }} style={{ width: '100%', aspectRatio: 6 / 5 }} />
                                         <View className="p-3">
                                             <Text className="text-[15px] font-semibold text-primary" numberOfLines={1}>
                                                 {ad.title}

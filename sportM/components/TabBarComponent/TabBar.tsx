@@ -1,53 +1,72 @@
-import type React from 'react';
+import React, { useRef, useEffect } from 'react';
 import { View, StyleSheet } from 'react-native';
+import { CommonActions, StackActions, TabActions } from '@react-navigation/native';
 import TabBarButton from './TabBarButton';
 import { BottomTabBarProps } from '@react-navigation/bottom-tabs';
-import { RouteNames } from './icons';
-import { useNotificationStatus } from '@/providers/NotificationContext';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useNotificationStatus } from '@/providers/NotificationContext';
 
 const FLOAT_GAP = 12;
-const TabBar: React.FC<BottomTabBarProps> = ({
-  state,
-  descriptors,
-  navigation,
-}) => {
+
+const TabBar: React.FC<BottomTabBarProps> = ({ state, descriptors, navigation }) => {
   const primaryColor = '#1F2257';
   const whiteColor = 'white';
   const { hasUnreadNotifications } = useNotificationStatus();
   const { bottom: insetBottom } = useSafeAreaInsets();
+
+  const pendingRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    pendingRef.current = null;
+  }, [state.index]);
+
   return (
-    <View style={[styles.tabbar, { bottom: insetBottom + FLOAT_GAP }, { paddingBottom: styles.tabbar.paddingVertical + (insetBottom > 0 ? 4 : 0) }]}>
+    <View
+      style={[
+        styles.tabbar,
+        { bottom: insetBottom + FLOAT_GAP },
+        { paddingBottom: styles.tabbar.paddingVertical + (insetBottom > 0 ? 4 : 0) },
+      ]}
+    >
       {state.routes.map((route, index) => {
         const { options } = descriptors[route.key];
-        const label =
-          options.tabBarLabel !== undefined
-            ? options.tabBarLabel
-            : options.title !== undefined
-              ? options.title
-              : route.name;
+        const label = options.tabBarLabel ?? options.title ?? route.name;
 
         if (['+not-found', 'index'].includes(route.name)) return null;
 
         const isFocused = state.index === index;
+        const currentRoute = state.routes[state.index];
+        const currentTabName = currentRoute.name;
 
         const onPress = () => {
-          const event = navigation.emit({
-            type: 'tabPress',
-            target: route.key,
-            canPreventDefault: true,
-          });
+          if (currentTabName === route.name) {
+            const nestedState = currentRoute.state;
 
-          if (!isFocused && !event.defaultPrevented) {
-            navigation.navigate(route.name, route.params);
+            if (
+              nestedState &&
+              nestedState.type === 'stack' &&
+              nestedState.routes.length > 1
+            ) {
+              navigation.dispatch(
+                CommonActions.reset({
+                  index: 0,
+                  routes: [{ name: route.name }],
+                })
+              );
+            } else {
+              console.log('Đang ở root, không pop');
+            }
+            return;
           }
+
+          if (pendingRef.current === route.key) return;
+          pendingRef.current = route.key;
+
+          navigation.dispatch(TabActions.jumpTo(route.name, route.params));
         };
 
         const onLongPress = () => {
-          navigation.emit({
-            type: 'tabLongPress',
-            target: route.key,
-          });
+          navigation.emit({ type: 'tabLongPress', target: route.key });
         };
 
         return (
@@ -56,7 +75,7 @@ const TabBar: React.FC<BottomTabBarProps> = ({
             onPress={onPress}
             onLongPress={onLongPress}
             isFocused={isFocused}
-            routeName={route.name as RouteNames}
+            routeName={route.name as any}
             color={isFocused ? primaryColor : whiteColor}
             hasUnreadNotifications={route.name === 'notification' ? hasUnreadNotifications : false}
             label={label as string}

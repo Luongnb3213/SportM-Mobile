@@ -81,6 +81,7 @@ export default function EmailSubscribeSection({
           textContentType="emailAddress"
           returnKeyType="done"
           onSubmitEditing={handleSubmit}
+          placeholderTextColor="#757575"
         />
       </View>
 

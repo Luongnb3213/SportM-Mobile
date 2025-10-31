@@ -12,6 +12,7 @@ export default function AccountStack() {
       <Stack.Screen name="index" />
       <Stack.Screen name="detailAccount" />
       <Stack.Screen name="updateAccount" />
+      <Stack.Screen name="webview" />
     </Stack>
   );
 }

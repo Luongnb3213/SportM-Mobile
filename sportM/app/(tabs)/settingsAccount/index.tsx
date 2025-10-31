@@ -1,6 +1,6 @@
 // ProfileScreen.tsx
 import React, { useEffect } from 'react';
-import { Image, View, Text, TouchableOpacity, ScrollView, TextInput, Alert, Modal } from 'react-native';
+import { Image, View, Text, TouchableOpacity, ScrollView, TextInput, Alert, Modal, Linking } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { FontAwesome, Ionicons, MaterialCommunityIcons, MaterialIcons, Octicons } from '@expo/vector-icons';
 
@@ -81,14 +81,9 @@ export default function ProfileScreen() {
       <View className="px-4 pb-2 flex-row items-center justify-between">
         <TouchableOpacity
           onPress={() => {
-            router.back();
           }}
           className="flex-row items-center gap-2 py-2"
         >
-          <Ionicons name="chevron-back" size={22} />
-          <Text className="text-[15px] text-primary font-medium">
-            Trở về trang trước
-          </Text>
         </TouchableOpacity>
 
         <TouchableOpacity
@@ -240,7 +235,17 @@ export default function ProfileScreen() {
                   <ListItem
                     icon={<Ionicons name="document-text-outline" size={18} />}
                     label="Điều khoản và chính sách"
-                    onPress={() => setShowTerms(true)}
+                    onPress={() =>
+                      router.push(
+                        {
+                          pathname: '/(tabs)/settingsAccount/webview',
+                          params: {
+                            url: encodeURIComponent('https://sportm-policy.web.app/'),
+                            title: encodeURIComponent('Điều khoản & Chính sách'),
+                          },
+                        }
+                      )
+                    }
                   />
                   <ListItem
                     icon={<MaterialIcons name="delete-outline" size={18} color="#b71c1c" />}

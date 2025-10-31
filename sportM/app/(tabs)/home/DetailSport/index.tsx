@@ -104,13 +104,9 @@ const DetailCourt = () => {
                   resizeMode="cover"
                   className="w-full h-full"
                 >
-                  <View className="absolute inset-0 bg-black/25" />
+                  <View className="absolute inset-0 bg-black/40" />
                   {/* texts overlay — bind từ data */}
-                  <View className="px-4 mt-2">
-                    <Text className="text-lg text-gray-200">
-                      {court?.address || '—'}
-                    </Text>
-
+                  <View className="px-4 mt-2 flex-1 justify-end pb-12">
                     <Text
                       style={{ color: '#FFF200' }}
                       className="mt-2 text-4xl font-medium leading-tight"
@@ -136,7 +132,7 @@ const DetailCourt = () => {
           </View>
         </View>
 
-        <View className="shadow-2xl">
+        <View className="shadow-2xl relative">
           <DetailInfoCard courtID={courtID} court={court || undefined} />
         </View>
       </ScrollView>

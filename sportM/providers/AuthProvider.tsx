@@ -26,22 +26,33 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<JWTPayload | null>(null);
 
   const refreshFromStorage = async () => {
-    const tokens = await getTokens();
-    const access = tokens;
-    if (access) {
-      const payload = decodeJwt(access);
-      console.log('Decoded JWT payload:', payload);
+    try {
+      const token = await getTokens();
+      if (!token) throw new Error('No token found');
+
+      const payload = decodeJwt(token);
+      if (!payload) throw new Error('Invalid token structure');
+
+      const now = Math.floor(Date.now() / 1000);
+      if (payload.exp && payload.exp < now) {
+        throw new Error('Token expired');
+      }
+
       setUser(payload);
-      if (payload?.role == "CLIENT") {
+      if (payload.role === 'CLIENT') {
         setStatus('log_client');
-      }else{
+      } else {
         setStatus('log_owner');
       }
-    } else {
+
+    } catch (err) {
+      console.log('Token decode error:', err);
+      await clearTokens();
       setUser(null);
       setStatus('unauthenticated');
     }
   };
+
 
   const signOut = async () => {
     await clearTokens();

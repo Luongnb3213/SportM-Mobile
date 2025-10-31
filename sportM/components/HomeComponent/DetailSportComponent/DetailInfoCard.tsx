@@ -46,21 +46,21 @@ export default function DetailInfoCard({
   const [active, setActive] = useState('info');
   const { user } = useAuth();
   return (
-    <Card className="mx-3 my-3 overflow-hidden rounded-2xl ">
+    <Card className="mx-3 my-3 overflow-hidden rounded-2xl bg-white ">
       {/* HEADER tabs */}
       <CardHeader className="p-0">
-        <View className="bg-yellow-300 py-3 flex-row px-3 justify-center gap-8">
+        <View className={`flex-row justify-center mt-3 mx-4 rounded-lg overflow-hidden`}>
           {TABS.map((item) => {
             const focused = item.key === active;
             return (
               <TouchableOpacity
                 onPress={() => setActive(item.key)}
-                className="text-center"
+                className={`text-center py-3  ${focused ? 'bg-[#fce82f]' : 'bg-[#fef18b]'} flex-1 `}
                 key={item.key}
               >
                 <View className={`rounded-full ${focused ? 'text-white' : ''}`}>
                   <Text
-                    className={`text-lg ${focused ? 'font-semibold text-primary' : 'font-medium'}`}
+                    className={`text-lg text-center font-semibold ${focused ? '' : ''}`}
                   >
                     {item.label}
                   </Text>

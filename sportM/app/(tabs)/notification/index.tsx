@@ -217,69 +217,65 @@ export default function NotificationsScreen() {
   }, [updateUnreadStatus]);
 
   return (
-      <SafeAreaView className="flex-1">
-        <View className='px-4'>
-          <HeaderUser />
-          <View className="flex-row items-center justify-start px-4 py-3 border-b border-border bg-white">
-            <TouchableOpacity onPress={() => router.back()} className="pr-2">
-              <Ionicons name="chevron-back" size={20} />
-            </TouchableOpacity>
-            <Text className="text-base font-semibold text-primary">Thông báo</Text>
-          </View>
+    <SafeAreaView className="flex-1 bg-white">
+      <View className="px-4">
+        <HeaderUser />
+        <View className="flex-row items-center justify-start px-4 py-3 border-b border-border bg-white">
+          <TouchableOpacity onPress={() => router.back()} className="pr-2">
+            <Ionicons name="chevron-back" size={20} />
+          </TouchableOpacity>
+          <Text className="text-base font-semibold text-primary">Thông báo</Text>
         </View>
+      </View>
 
-        <Card
-          className="m-4 mx-0 rounded-2xl overflow-hidden bg-background"
-          style={{ borderWidth: 0, marginBottom: 50 }} // keep inline style for specific overrides
-        >
-          {loadingInitial ? (
-            Array.from({ length: 6 }).map((_, i) => (
-              <View key={i} className="px-4 py-4 border-b border-border">
-                <View className="h-4 w-40 bg-muted rounded mb-2" />
-                <View className="h-3 w-28 bg-muted rounded" />
-              </View>
-            ))
-          ) : items.length === 0 ? (
-            <View className="px-4 py-10 items-center">
-              <EmptyState
-                icon="golf-outline"
-                title="Chưa có thông báo nào"
-                description="Hiện chưa có thông báo nào."
-              />
+      <Card
+        className="m-4 mx-0 rounded-2xl overflow-hidden bg-white"
+        style={{ borderWidth: 0, marginBottom: 50 }} // keep inline style for specific overrides
+      >
+        {loadingInitial ? (
+          Array.from({ length: 6 }).map((_, i) => (
+            <View key={i} className="px-4 py-4 border-b border-border">
+              <View className="h-4 w-40 bg-muted rounded mb-2" />
+              <View className="h-3 w-28 bg-muted rounded" />
             </View>
-          ) : (
-            <FlatList
-              data={items}
-                  keyExtractor={(it) => it.id}
-                  renderItem={({ item }) => (
-                    <NotificationLine n={item} onAction={onAction} onMarkAsRead={onMarkAsRead} />
-                  )}
-                  ItemSeparatorComponent={() => (
-                    <View className="border-b border-border" />
-                  )}
-                  refreshControl={
-                    <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-                  }
-                  contentContainerStyle={{ paddingBottom: 200 }}
-                  onEndReachedThreshold={0.9}
-                  onEndReached={onLoadMore}
-                  ListFooterComponent={
-                <View className="items-center py-4">
-                  {loadingMore ? (
-                    <View className="flex-row items-center">
-                      <ActivityIndicator />
-                      <Text className="ml-2">Đang tải thêm...</Text>
-                    </View>
-                      ) : !hasMore && items.length > 0 ? (
-                    <Text className="text-muted-foreground text-sm">
-                      Đã hiển thị tất cả thông báo
-                    </Text>
-                  ) : null}
-                </View>
-              }
+          ))
+        ) : items.length === 0 ? (
+          <View className="px-4 py-10 items-center">
+            <EmptyState
+              icon="golf-outline"
+              title="Chưa có thông báo nào"
+              description="Hiện chưa có thông báo nào."
             />
-          )}
-        </Card>
+          </View>
+        ) : (
+          <FlatList
+            data={items}
+            keyExtractor={it => it.id}
+            renderItem={({ item }) => (
+              <NotificationLine n={item} onAction={onAction} onMarkAsRead={onMarkAsRead} />
+            )}
+            ItemSeparatorComponent={() => <View className="border-b border-border" />}
+            refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+            contentContainerStyle={{ paddingBottom: 200 }}
+            onEndReachedThreshold={0.9}
+            onEndReached={onLoadMore}
+            ListFooterComponent={
+              <View className="items-center py-4">
+                {loadingMore ? (
+                  <View className="flex-row items-center">
+                    <ActivityIndicator />
+                    <Text className="ml-2">Đang tải thêm...</Text>
+                  </View>
+                ) : !hasMore && items.length > 0 ? (
+                  <Text className="text-muted-foreground text-sm">
+                    Đã hiển thị tất cả thông báo
+                  </Text>
+                ) : null}
+              </View>
+            }
+          />
+        )}
+      </Card>
     </SafeAreaView>
   );
 }

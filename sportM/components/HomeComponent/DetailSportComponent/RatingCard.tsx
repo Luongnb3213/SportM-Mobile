@@ -250,6 +250,7 @@ export default function RatingCard({
               editable={!submitting}
               numberOfLines={4}
               style={{ textAlignVertical: 'top', padding: 12 }}
+              placeholderTextColor="#757575"
             />
 
             <Button className="mt-4 rounded-2xl" textClassName="text-base" onPress={handleSubmitRating} disabled={!canSubmit}>

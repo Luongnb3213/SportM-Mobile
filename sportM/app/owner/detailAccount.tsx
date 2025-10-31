@@ -1,6 +1,6 @@
 // ProfileScreen.tsx
 import React, { useEffect } from 'react';
-import { Image, View, Text, TouchableOpacity, ScrollView, KeyboardAvoidingView } from 'react-native';
+import { Image, View, Text, TouchableOpacity, ScrollView, KeyboardAvoidingView, Linking } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { FontAwesome, Ionicons, MaterialCommunityIcons, Octicons } from '@expo/vector-icons';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/Avatar';
@@ -200,7 +200,7 @@ export default function detailAccount() {
                     <ListItem
                       icon={<Ionicons name="document-text-outline" size={18} />}
                       label="Điều khoản và chính sách"
-                      onPress={() => setShowTerms(true)}
+                      onPress={() => Linking.openURL('https://sportm-policy.web.app/').catch(err => console.error('Error opening maps', err))}
                     />
                   </View>
                 </CardContent>

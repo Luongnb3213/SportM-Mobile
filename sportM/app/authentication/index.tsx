@@ -41,18 +41,18 @@ export default function AuthScreen() {
                 />
               </View>
               <View className="flex-row justify-center mb-8">
-                <Text
-                  className={`w-1/2 text-2xl text-[#292929] text-center ${screen === 'login' ? 'font-bold text-primary underline' : ''
+                {screen === 'login' ? (<Text
+                  className={`w-1/2 text-2xl text-[#292929] text-center ${screen === 'login' ? 'font-bold text-primary' : ''
                     }`}
                 >
                   Đăng nhập
-                </Text>
-                <Text
-                  className={`w-1/2 text-2xl text-[#292929] text-center ${screen === 'signup' ? 'font-bold text-primary underline' : ''
+                </Text>) : (<Text
+                  className={`w-1/2 text-2xl text-[#292929] text-center ${screen === 'signup' ? 'font-bold text-primary' : ''
                     }`}
                 >
                   Đăng ký
-                </Text>
+                </Text>)}
+
               </View>
               {screen === 'login' ? <SignInForm /> : <SignUpForm email={email} />}
             </View>
