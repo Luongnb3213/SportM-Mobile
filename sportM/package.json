@@ -11,6 +11,7 @@
     "lint": "expo lint"
   },
   "dependencies": {
+    "@codsod/react-native-chat": "^1.0.14",
     "@expo/vector-icons": "^14.1.0",
     "@nativecn/cli": "^0.3.7",
     "@react-native-community/datetimepicker": "8.4.1",
@@ -59,6 +60,7 @@
     "react-native-vector-icons": "^10.3.0",
     "react-native-web": "~0.20.0",
     "react-native-webview": "13.13.5",
+    "rn-emoji-keyboard": "^1.7.0",
     "socket.io-client": "^4.8.1",
     "tailwind-merge": "^3.3.1",
     "tailwindcss": "^3.4.17"
