@@ -1,26 +1,28 @@
-import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, Alert, ScrollView } from 'react-native';
+import { auth } from '@/firebaseConfig';
 import { AntDesign } from '@expo/vector-icons';
 import {
   GoogleSignin,
-  isSuccessResponse,
   isErrorWithCode,
+  isSuccessResponse,
   statusCodes,
 } from '@react-native-google-signin/google-signin';
-import { auth } from '@/firebaseConfig';
-import { signInWithCredential, GoogleAuthProvider, signOut as firebaseSignOut } from 'firebase/auth';
-
-GoogleSignin.configure({
-  webClientId: '541367103107-65bmjade8oc66jc67hs9fh5vdk4d1cgf.apps.googleusercontent.com',
-  profileImageSize: 120,
-  iosClientId: '541367103107-cv9gqeavsmtslnuk3j35p9ecjca8g733.apps.googleusercontent.com',
-});
+import { signOut as firebaseSignOut, GoogleAuthProvider, signInWithCredential } from 'firebase/auth';
+import React, { useState, useEffect } from 'react';
+import { Alert, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 
 export default function FirebaseGoogleSignInTest() {
   const [firebaseUser, setFirebaseUser] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [log, setLog] = useState<string[]>(['Ready to test Firebase Google Sign-In']);
 
+  useEffect(() => {
+    GoogleSignin.configure({
+      webClientId: '541367103107-65bmjade8oc66jc67hs9fh5vdk4d1cgf.apps.googleusercontent.com',
+      profileImageSize: 120,
+      iosClientId: '541367103107-cv9gqeavsmtslnuk3j35p9ecjca8g733.apps.googleusercontent.com',
+    });
+    addLog('✓ Google Sign-In configured');
+  }, []);
   const addLog = (message: string) => {
     setLog(prev => [...prev, `[${new Date().toLocaleTimeString()}] ${message}`]);
   };
@@ -71,6 +73,7 @@ export default function FirebaseGoogleSignInTest() {
       );
     } catch (error: any) {
       addLog(`✗ Error: ${error.message || error}`);
+      console.log(`✗ Error: ${error.message || error}`);
 
       if (isErrorWithCode(error)) {
         switch (error.code) {
@@ -119,7 +122,7 @@ export default function FirebaseGoogleSignInTest() {
       <View className="mb-6">
         <Text className="text-2xl font-bold mb-2">Firebase Google Sign-In Test</Text>
         <Text className="text-gray-600">
-          Test Firebase Authentication với Google Sign-In provider
+          Dùng @react-native-google-signin + Firebase Auth
         </Text>
       </View>
 
