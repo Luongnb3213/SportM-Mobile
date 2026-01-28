@@ -3,13 +3,13 @@ import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyAFRzS7Jas1jMzWsGDrTmG6TpLy60bMwsQ",
-  authDomain: "sportm-eb72c.firebaseapp.com",
-  projectId: "sportm-eb72c",
-  storageBucket: "sportm-eb72c.firebasestorage.app",
-  messagingSenderId: "1013531353218",
-  appId: "1:1013531353218:web:01539d8ac6560c0852949b",
-  measurementId: "G-48S11C3WR7"
+  apiKey: 'AIzaSyC6V1bYCq2N2tCYVsVfJLUb1DDBIkTp3_0',
+  authDomain: 'sport-cf3bb.firebaseapp.com',
+  projectId: 'sport-cf3bb',
+  storageBucket: 'sport-cf3bb.firebasestorage.app',
+  messagingSenderId: '541367103107',
+  appId: '1:541367103107:web:da3a17ce4b8569b62475b6',
+  measurementId: 'G-78W5XBHY2M',
 };
 
 const app = initializeApp(firebaseConfig);

@@ -1,10 +1,10 @@
 // app/(auth)/index.tsx
 import React from 'react';
-import { View, Text, Image, KeyboardAvoidingView } from 'react-native';
+import { View, Text, Image, KeyboardAvoidingView, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import SignInForm from '../../components/AuthenticationComponent/SignInForm';
 import SignUpForm from '../../components/AuthenticationComponent/SignUpForm';
-import { useLocalSearchParams } from 'expo-router';
+import { useLocalSearchParams, router } from 'expo-router';
 import { ScrollView } from 'react-native';
 import { Platform } from 'react-native';
 
@@ -55,6 +55,16 @@ export default function AuthScreen() {
 
               </View>
               {screen === 'login' ? <SignInForm /> : <SignUpForm email={email} />}
+
+              {/* Firebase Test Button */}
+              <TouchableOpacity
+                className="mt-4 p-3 bg-blue-100 rounded-lg"
+                onPress={() => router.push('/authentication/firebase-test')}
+              >
+                <Text className="text-blue-800 text-center font-semibold">
+                  🧪 Test Firebase Google Sign-In
+                </Text>
+              </TouchableOpacity>
             </View>
           </View>
         </ScrollView>
