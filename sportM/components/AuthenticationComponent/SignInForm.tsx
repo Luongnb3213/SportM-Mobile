@@ -13,17 +13,13 @@ import {
   isErrorWithCode,
   statusCodes,
 } from '@react-native-google-signin/google-signin';
+import { auth as firebaseAuth } from '@/firebaseConfig';
+import { GoogleAuthProvider, signInWithCredential } from 'firebase/auth';
 import Toast from 'react-native-toast-message';
 import { useAuth } from '@/providers/AuthProvider';
 import { decodeJwt } from '@/lib/jwt';
 import { getErrorMessage } from '@/lib/utils';
 import { clearCredentials, getCredentials, saveCredentials } from '@/lib/credentialStorage';
-
-GoogleSignin.configure({
-  webClientId: '504083896204-iff4f78io6sc5rs1otq0t9o1lhitignv.apps.googleusercontent.com',
-  profileImageSize: 120,
-  iosClientId: '504083896204-du75dra9lbe1kglvlsrsa5apv7d3145e.apps.googleusercontent.com',
-});
 
 export default function SignInForm() {
   const [email, setEmail] = useState('');
@@ -41,6 +37,14 @@ export default function SignInForm() {
     const re = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/i;
     return re.test(String(email).trim());
   }, [email]);
+
+  useEffect(() => {
+    GoogleSignin.configure({
+      webClientId: '541367103107-65bmjade8oc66jc67hs9fh5vdk4d1cgf.apps.googleusercontent.com',
+      profileImageSize: 120,
+      iosClientId: '541367103107-cv9gqeavsmtslnuk3j35p9ecjca8g733.apps.googleusercontent.com',
+    });
+  }, []);
 
   useEffect(() => {
     let mounted = true;
@@ -117,22 +121,32 @@ export default function SignInForm() {
       await GoogleSignin.signOut();
       await GoogleSignin.hasPlayServices();
       const response = await GoogleSignin.signIn();
+
       if (isSuccessResponse(response)) {
-        const { user } = response.data;
+        const { idToken, user } = response.data;
         const { email, name } = user;
+
+        // Sign in to Firebase with Google credential
+        const googleCredential = GoogleAuthProvider.credential(idToken);
+        await signInWithCredential(firebaseAuth, googleCredential);
+
+        // Call backend API
         const { data } = await useAxios.post('/auth/signin', {
           email: email.trim(),
           fullName: name,
         });
         const { access } = data.data;
+
         Toast.show({
           type: 'success',
           text1: 'Đăng nhập thành công',
           text2: 'Chào mừng bạn đã trở lại!',
         });
+
         const payload = decodeJwt(access);
         auth.setUser(payload);
         await saveTokens('accessToken', access);
+
         if (payload?.role == 'CLIENT') {
           router.replace('/home');
         } else {
@@ -159,6 +173,8 @@ export default function SignInForm() {
           default:
             console.log('Some other error happened:', error);
         }
+      } else {
+        console.log('Firebase authentication error:', error);
       }
     }
   };
