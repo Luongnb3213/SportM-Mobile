@@ -56,13 +56,22 @@ export default function AuthScreen() {
               </View>
               {screen === 'login' ? <SignInForm /> : <SignUpForm email={email} />}
 
-              {/* Firebase Test Button */}
+              {/* Firebase Test Buttons */}
               <TouchableOpacity
                 className="mt-4 p-3 bg-blue-100 rounded-lg"
                 onPress={() => router.push('/authentication/firebase-test')}
               >
                 <Text className="text-blue-800 text-center font-semibold">
                   🧪 Test Firebase Google Sign-In
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                className="mt-3 p-3 bg-[#1877F2] rounded-lg"
+                onPress={() => router.push('/authentication/facebook-test')}
+              >
+                <Text className="text-white text-center font-semibold">
+                  🧪 Test Firebase Facebook Sign-In
                 </Text>
               </TouchableOpacity>
             </View>
