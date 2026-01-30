@@ -71,7 +71,20 @@
       ],
       "expo-build-properties",
       "expo-secure-store",
-      "expo-notifications"
+      "expo-notifications",
+      [
+        "react-native-fbsdk-next",
+        {
+          "appID": "1854307095290666",
+          "clientToken": "1affdf902d04f7641bb99ee919a40112",
+          "displayName": "SportM",
+          "scheme": "fb1854307095290666",
+          "advertiserIDCollectionEnabled": false,
+          "autoLogAppEventsEnabled": false,
+          "isAutoInitEnabled": true,
+          "iosUserTrackingPermission": "This identifier will be used to deliver personalized ads to you."
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true
