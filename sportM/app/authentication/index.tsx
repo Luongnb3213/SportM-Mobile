@@ -28,7 +28,7 @@ export default function AuthScreen() {
           automaticallyAdjustKeyboardInsets
           contentInsetAdjustmentBehavior="always"
           contentContainerStyle={{
-            flexGrow: 1
+            flexGrow: 1,
           }}
         >
           {/* khung xanh + panel trắng giống mockup */}
@@ -41,39 +41,25 @@ export default function AuthScreen() {
                 />
               </View>
               <View className="flex-row justify-center mb-8">
-                {screen === 'login' ? (<Text
-                  className={`w-1/2 text-2xl text-[#292929] text-center ${screen === 'login' ? 'font-bold text-primary' : ''
+                {screen === 'login' ? (
+                  <Text
+                    className={`w-1/2 text-2xl text-[#292929] text-center ${
+                      screen === 'login' ? 'font-bold text-primary' : ''
                     }`}
-                >
-                  Đăng nhập
-                </Text>) : (<Text
-                  className={`w-1/2 text-2xl text-[#292929] text-center ${screen === 'signup' ? 'font-bold text-primary' : ''
+                  >
+                    Đăng nhập
+                  </Text>
+                ) : (
+                  <Text
+                    className={`w-1/2 text-2xl text-[#292929] text-center ${
+                      screen === 'signup' ? 'font-bold text-primary' : ''
                     }`}
-                >
-                  Đăng ký
-                </Text>)}
-
+                  >
+                    Đăng ký
+                  </Text>
+                )}
               </View>
               {screen === 'login' ? <SignInForm /> : <SignUpForm email={email} />}
-
-              {/* Firebase Test Buttons */}
-              <TouchableOpacity
-                className="mt-4 p-3 bg-blue-100 rounded-lg"
-                onPress={() => router.push('/authentication/firebase-test')}
-              >
-                <Text className="text-blue-800 text-center font-semibold">
-                  🧪 Test Firebase Google Sign-In
-                </Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                className="mt-3 p-3 bg-[#1877F2] rounded-lg"
-                onPress={() => router.push('/authentication/facebook-test')}
-              >
-                <Text className="text-white text-center font-semibold">
-                  🧪 Test Firebase Facebook Sign-In
-                </Text>
-              </TouchableOpacity>
             </View>
           </View>
         </ScrollView>

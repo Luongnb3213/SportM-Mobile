@@ -1,17 +1,17 @@
-import React, { useEffect, useMemo, useState } from 'react';
-import { View, Text, TouchableOpacity, ActivityIndicator } from 'react-native';
-import { Feather } from '@expo/vector-icons';
-import { Input } from '@/components/Input';
 import Button from '@/components/Button';
-import { router } from 'expo-router';
-import { useAxios } from '@/lib/api';
-import { saveTokens } from '@/lib/tokenStorage';
-import Toast from 'react-native-toast-message';
-import { useAuth } from '@/providers/AuthProvider';
-import { decodeJwt } from '@/lib/jwt';
-import { clearCredentials, getCredentials, saveCredentials } from '@/lib/credentialStorage';
-import GoogleSignInButton from '@/components/SocialAuth/GoogleSignInButton';
+import { Input } from '@/components/Input';
 import FacebookSignInButton from '@/components/SocialAuth/FacebookSignInButton';
+import GoogleSignInButton from '@/components/SocialAuth/GoogleSignInButton';
+import { useAxios } from '@/lib/api';
+import { clearCredentials, getCredentials, saveCredentials } from '@/lib/credentialStorage';
+import { decodeJwt } from '@/lib/jwt';
+import { saveTokens } from '@/lib/tokenStorage';
+import { useAuth } from '@/providers/AuthProvider';
+import { Feather } from '@expo/vector-icons';
+import { router } from 'expo-router';
+import React, { useEffect, useMemo, useState } from 'react';
+import { ActivityIndicator, Text, TouchableOpacity, View } from 'react-native';
+import Toast from 'react-native-toast-message';
 
 export default function SignInForm() {
   const [email, setEmail] = useState('');
@@ -64,7 +64,7 @@ export default function SignInForm() {
     if (!validate()) return;
     try {
       setSubmitting(true);
-      const { data } = await useAxios.post('/auth/login', {
+      const { data } = await useAxios.post('/auth/signin', {
         email: email.trim(),
         password: pwd,
       });
