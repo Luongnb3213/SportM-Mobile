@@ -1,22 +1,13 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
-import { Feather, AntDesign } from '@expo/vector-icons';
+import { Feather } from '@expo/vector-icons';
 import { Input } from '@/components/Input'; // :contentReference[oaicite:2]{index=2}
 import Button from '@/components/Button'; // :contentReference[oaicite:3]{index=3}
-import { router, useLocalSearchParams } from 'expo-router';
+import { router } from 'expo-router';
 import Toast from 'react-native-toast-message';
 import { useAxios } from '@/lib/api';
-import {
-  GoogleSignin,
-  isErrorWithCode,
-  isSuccessResponse,
-  statusCodes,
-} from '@react-native-google-signin/google-signin';
-import { auth as firebaseAuth } from '@/firebaseConfig';
-import { GoogleAuthProvider, signInWithCredential } from 'firebase/auth';
-import { saveTokens } from '@/lib/tokenStorage';
-import { decodeJwt } from '@/lib/jwt';
-import { useAuth } from '@/providers/AuthProvider';
+import GoogleSignInButton from '@/components/SocialAuth/GoogleSignInButton';
+import FacebookSignInButton from '@/components/SocialAuth/FacebookSignInButton';
 export default function SignUpForm({ email }: { email?: string }) {
   const [fullName, setFullName] = useState('');
   const [pwd, setPwd] = useState('');
@@ -29,7 +20,6 @@ export default function SignUpForm({ email }: { email?: string }) {
     pwd?: string;
     pwd2?: string;
   }>({});
-  const auth = useAuth();
   const pwdOK = useMemo(() => {
     const p = pwd;
     if (p.length < 6) return false;
@@ -93,14 +83,6 @@ export default function SignUpForm({ email }: { email?: string }) {
   };
 
   useEffect(() => {
-    GoogleSignin.configure({
-      webClientId: '541367103107-65bmjade8oc66jc67hs9fh5vdk4d1cgf.apps.googleusercontent.com',
-      profileImageSize: 120,
-      iosClientId: '541367103107-cv9gqeavsmtslnuk3j35p9ecjca8g733.apps.googleusercontent.com',
-    });
-  }, []);
-
-  useEffect(() => {
     if (!email) {
       router.push({
         pathname: '/authentication/VerifyEmail',
@@ -109,64 +91,6 @@ export default function SignUpForm({ email }: { email?: string }) {
       return;
     }
   }, []);
-
-  const handleGoogleSignin = async () => {
-    try {
-      await GoogleSignin.signOut();
-      await GoogleSignin.hasPlayServices();
-      const response = await GoogleSignin.signIn();
-
-      if (isSuccessResponse(response)) {
-        const { idToken, user } = response.data;
-        const { email, name } = user;
-
-        // Sign in to Firebase with Google credential
-        const googleCredential = GoogleAuthProvider.credential(idToken);
-        await signInWithCredential(firebaseAuth, googleCredential);
-
-        // Call backend API
-        const { data } = await useAxios.post('/auth/signin', {
-          email: email.trim(),
-          fullName: name,
-        });
-        const { access } = data.data;
-
-        Toast.show({
-          type: 'success',
-          text1: 'Đăng nhập thành công',
-          text2: 'Chào mừng bạn đã trở lại!',
-        });
-
-        const payload = decodeJwt(access);
-        auth.setUser(payload);
-        await saveTokens('accessToken', access);
-        router.replace('/home');
-      }
-    } catch (error) {
-      Toast.show({
-        type: 'error',
-        text1: 'Lỗi',
-        text2: 'Đăng nhập thất bại. Vui lòng thử lại.',
-      });
-      if (isErrorWithCode(error)) {
-        switch (error.code) {
-          case statusCodes.SIGN_IN_CANCELLED:
-            console.log('User cancelled the login flow');
-            break;
-          case statusCodes.IN_PROGRESS:
-            console.log('Sign in is in progress already');
-            break;
-          case statusCodes.PLAY_SERVICES_NOT_AVAILABLE:
-            console.log('Play services not available or outdated');
-            break;
-          default:
-            console.log('Some other error happened:', JSON.stringify(error));
-        }
-      } else {
-        console.log('Firebase authentication error:', error);
-      }
-    }
-  };
 
   return (
     <View className="border-0 p-0 flex-col gap-3">
@@ -257,13 +181,15 @@ export default function SignUpForm({ email }: { email?: string }) {
         </TouchableOpacity>
       </View>
 
-      <TouchableOpacity
+      {/* SOCIAL SIGN-IN */}
+      <GoogleSignInButton
+        text="hoặc đăng ký với Google"
         className="h-11 mt-3 rounded-xl bg-black/90 flex-row items-center justify-center"
-        onPress={handleGoogleSignin}
-      >
-        <AntDesign name="google" size={18} color="#fff" />
-        <Text className="text-white ml-8">hoặc đăng ký với Google</Text>
-      </TouchableOpacity>
+      />
+      <FacebookSignInButton
+        text="hoặc đăng ký với Facebook"
+        className="h-11 mt-3 rounded-xl bg-[#1877F2] flex-row items-center justify-center"
+      />
     </View>
   );
 }

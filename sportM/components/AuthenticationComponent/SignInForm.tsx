@@ -1,25 +1,17 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { View, Text, TouchableOpacity, ActivityIndicator } from 'react-native';
-import { Feather, AntDesign } from '@expo/vector-icons';
+import { Feather } from '@expo/vector-icons';
 import { Input } from '@/components/Input';
 import Button from '@/components/Button';
 import { router } from 'expo-router';
 import { useAxios } from '@/lib/api';
 import { saveTokens } from '@/lib/tokenStorage';
-import { Checkbox } from '../Checkbox';
-import {
-  GoogleSignin,
-  isSuccessResponse,
-  isErrorWithCode,
-  statusCodes,
-} from '@react-native-google-signin/google-signin';
-import { auth as firebaseAuth } from '@/firebaseConfig';
-import { GoogleAuthProvider, signInWithCredential } from 'firebase/auth';
 import Toast from 'react-native-toast-message';
 import { useAuth } from '@/providers/AuthProvider';
 import { decodeJwt } from '@/lib/jwt';
-import { getErrorMessage } from '@/lib/utils';
 import { clearCredentials, getCredentials, saveCredentials } from '@/lib/credentialStorage';
+import GoogleSignInButton from '@/components/SocialAuth/GoogleSignInButton';
+import FacebookSignInButton from '@/components/SocialAuth/FacebookSignInButton';
 
 export default function SignInForm() {
   const [email, setEmail] = useState('');
@@ -37,14 +29,6 @@ export default function SignInForm() {
     const re = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/i;
     return re.test(String(email).trim());
   }, [email]);
-
-  useEffect(() => {
-    GoogleSignin.configure({
-      webClientId: '541367103107-65bmjade8oc66jc67hs9fh5vdk4d1cgf.apps.googleusercontent.com',
-      profileImageSize: 120,
-      iosClientId: '541367103107-cv9gqeavsmtslnuk3j35p9ecjca8g733.apps.googleusercontent.com',
-    });
-  }, []);
 
   useEffect(() => {
     let mounted = true;
@@ -80,7 +64,7 @@ export default function SignInForm() {
     if (!validate()) return;
     try {
       setSubmitting(true);
-      const { data } = await useAxios.post('/auth/signin', {
+      const { data } = await useAxios.post('/auth/login', {
         email: email.trim(),
         password: pwd,
       });
@@ -105,77 +89,14 @@ export default function SignInForm() {
         router.replace('/owner');
       }
     } catch (err: any) {
-      console.log(getErrorMessage(err));
+      console.log(err);
       Toast.show({
         type: 'error',
         text1: 'Đăng nhập thất bại. Vui lòng thử lại.',
-        text2: 'Vui lòng kiểm tra lại email và mật khẩu. Mật khẩu không được chứa ký tự đặc biệt.',
+        text2: 'Vui lòng kiểm tra lại email và mật khẩu.',
       });
     } finally {
       setSubmitting(false);
-    }
-  };
-
-  const handleGoogleSignin = async () => {
-    try {
-      await GoogleSignin.signOut();
-      await GoogleSignin.hasPlayServices();
-      const response = await GoogleSignin.signIn();
-
-      if (isSuccessResponse(response)) {
-        const { idToken, user } = response.data;
-        const { email, name } = user;
-
-        // Sign in to Firebase with Google credential
-        const googleCredential = GoogleAuthProvider.credential(idToken);
-        await signInWithCredential(firebaseAuth, googleCredential);
-
-        // Call backend API
-        const { data } = await useAxios.post('/auth/signin', {
-          email: email.trim(),
-          fullName: name,
-        });
-        const { access } = data.data;
-
-        Toast.show({
-          type: 'success',
-          text1: 'Đăng nhập thành công',
-          text2: 'Chào mừng bạn đã trở lại!',
-        });
-
-        const payload = decodeJwt(access);
-        auth.setUser(payload);
-        await saveTokens('accessToken', access);
-
-        if (payload?.role == 'CLIENT') {
-          router.replace('/home');
-        } else {
-          router.replace('/owner');
-        }
-      }
-    } catch (error) {
-      Toast.show({
-        type: 'error',
-        text1: 'Lỗi',
-        text2: 'Đăng nhập thất bại. Vui lòng thử lại.',
-      });
-      if (isErrorWithCode(error)) {
-        switch (error.code) {
-          case statusCodes.SIGN_IN_CANCELLED:
-            console.log('User cancelled the login flow');
-            break;
-          case statusCodes.IN_PROGRESS:
-            console.log('Sign in is in progress already');
-            break;
-          case statusCodes.PLAY_SERVICES_NOT_AVAILABLE:
-            console.log('Play services not available or outdated');
-            break;
-          default:
-            console.log('Some other error happened:', error);
-        }
-      } else {
-        console.log('Firebase authentication error:', error);
-      }
     }
   };
 
@@ -302,15 +223,9 @@ export default function SignInForm() {
         </TouchableOpacity>
       </View>
 
-      {/* GOOGLE SIGN-IN */}
-      <TouchableOpacity
-        className="mt-5 h-12 rounded-xl bg-black/90 flex-row items-center justify-center"
-        onPress={handleGoogleSignin}
-        activeOpacity={0.85}
-      >
-        <AntDesign name="google" size={18} color="#fff" />
-        <Text className="text-white ml-8">Or sign in with Google</Text>
-      </TouchableOpacity>
+      {/* SOCIAL SIGN-IN */}
+      <GoogleSignInButton text="Or sign in with Google" />
+      <FacebookSignInButton text="Or sign in with Facebook" />
     </View>
   );
 }

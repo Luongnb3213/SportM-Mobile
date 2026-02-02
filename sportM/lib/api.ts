@@ -67,8 +67,7 @@ export function getApi(): AxiosInstance {
     (res) => res,
     async (error: AxiosError) => {
       const original = error.config!;
-      // if (error.response?.status !== 401) throw error;
-      if (true) throw error;
+      if (error.response?.status !== 401) throw error;
 
 
       // @ts-expect-error: tránh vòng lặp vô hạn
