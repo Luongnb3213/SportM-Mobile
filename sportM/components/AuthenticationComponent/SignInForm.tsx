@@ -65,7 +65,7 @@ export default function SignInForm() {
     try {
       setSubmitting(true);
       const { data } = await useAxios.post('/auth/signin', {
-        email: email.trim(),
+        emailOrPhone: email.trim(),
         password: pwd,
       });
       const { access } = data.data;
@@ -89,7 +89,7 @@ export default function SignInForm() {
         router.replace('/owner');
       }
     } catch (err: any) {
-      console.log(err);
+      console.log(err.response.data);
       Toast.show({
         type: 'error',
         text1: 'Đăng nhập thất bại. Vui lòng thử lại.',
